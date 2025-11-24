@@ -169,6 +169,76 @@ export const AssetForm = ({ assetType, initialData, onSubmit, onCancel }) => {
                 const renderTriple = (field1, field2, field3) => {
                   if (!field1 || !assetConfig.fields.includes(field1)) return null;
 
+                  // Special handling for sell plan checkbox with date fields
+                  if (field1 === 'sellPlanEnabled') {
+                    const fieldDef1 = FIELD_DEFINITIONS[field1];
+                    const fieldDef2 = field2 ? FIELD_DEFINITIONS[field2] : null;
+                    const fieldDef3 = field3 ? FIELD_DEFINITIONS[field3] : null;
+                    const value1 = formData[field1];
+                    const value2 = field2 ? formData[field2] : null;
+                    const value3 = field3 ? formData[field3] : null;
+
+                    return (
+                      <div key={`${field1}-${field2}-${field3}`} className="form-group-sell-plan">
+                        <div className="sell-plan-header">
+                          <label htmlFor={field1}>
+                            {fieldDef1.label}
+                          </label>
+                          <input
+                            id={field1}
+                            type="checkbox"
+                            name={field1}
+                            checked={value1 === true || value1 === 1}
+                            onChange={handleInputChange}
+                            className="checkbox-input"
+                          />
+                        </div>
+                        <div className="sell-plan-dates">
+                          {field2 && assetConfig.fields.includes(field2) && fieldDef2 ? (
+                            <div className="form-group">
+                              <label htmlFor={field2}>
+                                {fieldDef2.label}
+                              </label>
+                              <input
+                                id={field2}
+                                type={fieldDef2.type}
+                                name={field2}
+                                placeholder={fieldDef2.placeholder || ''}
+                                value={value2}
+                                onChange={handleInputChange}
+                                step={fieldDef2.step || 'any'}
+                                min={fieldDef2.min}
+                                max={fieldDef2.max}
+                                className={errors[field2] ? 'input-error' : ''}
+                              />
+                              {errors[field2] && <span className="error-message">{errors[field2]}</span>}
+                            </div>
+                          ) : null}
+                          {field3 && assetConfig.fields.includes(field3) && fieldDef3 ? (
+                            <div className="form-group">
+                              <label htmlFor={field3}>
+                                {fieldDef3.label}
+                              </label>
+                              <input
+                                id={field3}
+                                type={fieldDef3.type}
+                                name={field3}
+                                placeholder={fieldDef3.placeholder || ''}
+                                value={value3}
+                                onChange={handleInputChange}
+                                step={fieldDef3.step || 'any'}
+                                min={fieldDef3.min}
+                                max={fieldDef3.max}
+                                className={errors[field3] ? 'input-error' : ''}
+                              />
+                              {errors[field3] && <span className="error-message">{errors[field3]}</span>}
+                            </div>
+                          ) : null}
+                        </div>
+                      </div>
+                    );
+                  }
+
                   return (
                     <div key={`${field1}-${field2}-${field3}`} className="form-group-triple">
                       {renderField(field1)}
