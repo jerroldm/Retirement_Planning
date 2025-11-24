@@ -429,7 +429,6 @@ export const defaultInputs = {
   rothIRAContribution: 5000,
   rothIRACompanyMatch: 0,
   investmentAccountsContribution: 5000,
-  saleProceeds: 0,
 
   // Person 2 Information (for married couples)
   spouse2BirthMonth: 6,
