@@ -8,6 +8,7 @@ import { ExpensesTable } from './components/ExpensesTable'
 import { MortgageAmortizationTable } from './components/MortgageAmortizationTable'
 import { calculateRetirementProjection, generateMortgageAmortizationSchedule, defaultInputs, calculateAge } from './utils/calculations'
 import { financialAPI } from './api/client'
+import { assetAPI } from './api/assetClient'
 import './App.css'
 
 function AppContent() {
@@ -17,6 +18,37 @@ function AppContent() {
   const [isSaving, setIsSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState(null)
   const [isLoadingData, setIsLoadingData] = useState(false)
+
+  // Helper function to extract home asset data and merge into inputs
+  const mergeAssetDataIntoInputs = (baseInputs, assets) => {
+    if (!assets || assets.length === 0) {
+      return baseInputs;
+    }
+
+    const homeAsset = assets.find(asset => asset.assetType === 'primary-residence');
+    if (!homeAsset) {
+      return baseInputs;
+    }
+
+    // Merge home asset data into inputs, preferring asset values when available
+    return {
+      ...baseInputs,
+      homeValue: homeAsset.currentValue || baseInputs.homeValue,
+      homeMortgage: homeAsset.loanBalance || baseInputs.homeMortgage,
+      homeMortgageRate: homeAsset.loanRate || baseInputs.homeMortgageRate,
+      homeMortgageMonthlyPayment: homeAsset.monthlyPayment || baseInputs.homeMortgageMonthlyPayment,
+      homeMortgagePayoffYear: homeAsset.payoffYear || baseInputs.homeMortgagePayoffYear,
+      homeMortgagePayoffMonth: homeAsset.payoffMonth || baseInputs.homeMortgagePayoffMonth,
+      homePropertyTax: homeAsset.propertyTax || baseInputs.homePropertyTax,
+      homePropertyTaxAnnualIncrease: homeAsset.propertyTaxAnnualIncrease || baseInputs.homePropertyTaxAnnualIncrease,
+      homeInsurance: homeAsset.insurance || baseInputs.homeInsurance,
+      homeInsuranceAnnualIncrease: homeAsset.insuranceAnnualIncrease || baseInputs.homeInsuranceAnnualIncrease,
+      homeSalePlanEnabled: homeAsset.sellPlanEnabled || baseInputs.homeSalePlanEnabled,
+      homeSaleYear: homeAsset.sellYear || baseInputs.homeSaleYear,
+      homeSaleMonth: homeAsset.sellMonth || baseInputs.homeSaleMonth,
+      homeMortgageExtraPrincipalPayment: homeAsset.extraPrincipalPayment || baseInputs.homeMortgageExtraPrincipalPayment,
+    };
+  };
 
   // Load user's financial data on mount
   useEffect(() => {
@@ -30,7 +62,8 @@ function AppContent() {
           const calculatedAge = calculateAge(data.birthMonth, data.birthYear);
           const calculatedSpouse2Age = calculateAge(data.spouse2BirthMonth, data.spouse2BirthYear);
 
-          setInputs({
+          // Create base inputs from financial data
+          const baseInputs = {
             maritalStatus: data.maritalStatus || 'single',
             currentAge: calculatedAge,
             birthMonth: data.birthMonth,
@@ -85,7 +118,18 @@ function AppContent() {
             inflationRate: data.inflationRate,
             federalTaxRate: data.federalTaxRate,
             stateTaxRate: data.stateTaxRate,
-          })
+          };
+
+          // Try to load and merge assets if available
+          try {
+            const assets = await assetAPI.getAssets();
+            const mergedInputs = mergeAssetDataIntoInputs(baseInputs, assets);
+            setInputs(mergedInputs);
+          } catch (assetError) {
+            console.log('Could not load assets, using financial data:', assetError.message);
+            setInputs(baseInputs);
+          }
+
           setLastSaved(new Date(data.updatedAt))
         }
       } catch (err) {
