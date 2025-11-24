@@ -95,6 +95,51 @@ const initializeDatabase = () => {
     )
   `);
 
+  // Assets table (for managing individual assets)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS assets (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      userId INTEGER NOT NULL,
+      assetType TEXT NOT NULL,
+      assetName TEXT NOT NULL,
+      currentValue REAL DEFAULT 0,
+
+      -- Mortgage/Loan fields (for homes, vehicles)
+      loanBalance REAL,
+      loanRate REAL,
+      monthlyPayment REAL,
+      payoffYear INTEGER,
+      payoffMonth INTEGER,
+      extraPrincipalPayment REAL DEFAULT 0,
+
+      -- Tax/Insurance fields (for homes)
+      propertyTax REAL,
+      propertyTaxAnnualIncrease REAL,
+      insurance REAL,
+      insuranceAnnualIncrease REAL,
+
+      -- Expenses
+      annualExpenses REAL,
+      annualExpensesAnnualIncrease REAL,
+
+      -- Rental income (for investment properties)
+      rentalIncome REAL,
+      rentalIncomeAnnualIncrease REAL,
+
+      -- Appreciation/Depreciation
+      appreciationRate REAL DEFAULT 0,
+
+      -- Sell plan
+      sellPlanEnabled BOOLEAN DEFAULT 0,
+      sellYear INTEGER,
+      sellMonth INTEGER,
+
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (userId) REFERENCES users(id)
+    )
+  `);
+
   // Scenarios table (for saving different scenarios)
   db.run(`
     CREATE TABLE IF NOT EXISTS scenarios (

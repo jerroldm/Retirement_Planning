@@ -1,9 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { defaultInputs, calculateAge } from '../utils/calculations';
+import { AssetList } from './AssetList';
+import { AssetTypeSelector } from './AssetTypeSelector';
+import { AssetForm } from './AssetForm';
+import { assetAPI } from '../api/assetClient';
 import './InputForm.css';
 
 export const InputForm = ({ onInputsChange, inputs, activeTab }) => {
   const [formData, setFormData] = useState(inputs || defaultInputs);
+  const [assets, setAssets] = useState([]);
+  const [assetsLoading, setAssetsLoading] = useState(false);
+  const [showAssetTypeSelector, setShowAssetTypeSelector] = useState(false);
+  const [showAssetForm, setShowAssetForm] = useState(false);
+  const [selectedAssetType, setSelectedAssetType] = useState(null);
+  const [editingAsset, setEditingAsset] = useState(null);
+
+  // Load assets when component mounts
+  useEffect(() => {
+    loadAssets();
+  }, []);
+
+  const loadAssets = async () => {
+    try {
+      setAssetsLoading(true);
+      const loadedAssets = await assetAPI.getAssets();
+      setAssets(loadedAssets);
+    } catch (error) {
+      console.error('Failed to load assets:', error);
+    } finally {
+      setAssetsLoading(false);
+    }
+  };
 
   // Sync formData when inputs prop changes (e.g., after loading from database)
   useEffect(() => {
@@ -32,6 +59,57 @@ export const InputForm = ({ onInputsChange, inputs, activeTab }) => {
   const handleReset = () => {
     setFormData(defaultInputs);
     onInputsChange(defaultInputs);
+  };
+
+  // Asset management handlers
+  const handleAddAssetClick = () => {
+    setEditingAsset(null);
+    setShowAssetTypeSelector(true);
+  };
+
+  const handleTypeSelect = (assetType) => {
+    setSelectedAssetType(assetType);
+    setShowAssetTypeSelector(false);
+    setShowAssetForm(true);
+  };
+
+  const handleEditAsset = (asset) => {
+    setEditingAsset(asset);
+    setSelectedAssetType(asset.assetType);
+    setShowAssetForm(true);
+  };
+
+  const handleAssetFormSubmit = async (submittedData) => {
+    try {
+      if (editingAsset) {
+        await assetAPI.updateAsset(editingAsset.id, submittedData);
+      } else {
+        await assetAPI.createAsset(submittedData);
+      }
+      await loadAssets();
+      setShowAssetForm(false);
+      setEditingAsset(null);
+      setSelectedAssetType(null);
+    } catch (error) {
+      console.error('Failed to save asset:', error);
+      alert('Failed to save asset. Please try again.');
+    }
+  };
+
+  const handleDeleteAsset = async (id) => {
+    try {
+      await assetAPI.deleteAsset(id);
+      await loadAssets();
+    } catch (error) {
+      console.error('Failed to delete asset:', error);
+      alert('Failed to delete asset. Please try again.');
+    }
+  };
+
+  const handleCloseAssetForm = () => {
+    setShowAssetForm(false);
+    setEditingAsset(null);
+    setSelectedAssetType(null);
   };
 
   return (
@@ -518,234 +596,13 @@ export const InputForm = ({ onInputsChange, inputs, activeTab }) => {
         {activeTab === 'assets' && (
           <section className="form-section">
             <h3>Assets</h3>
-
-            {/* Home Section Box */}
-            <div className="home-section-box">
-              <h4>Home</h4>
-
-              {/* Line 1: Home Value */}
-              <div className="form-grid" style={{gridTemplateColumns: '1fr'}}>
-                <div className="form-group">
-                  <label htmlFor="homeValue">Home Value</label>
-                  <input
-                    type="number"
-                    id="homeValue"
-                    name="homeValue"
-                    value={formData.homeValue}
-                    onChange={handleChange}
-                    min="0"
-                  />
-                </div>
-              </div>
-
-              {/* Line 2: Mortgage Balance, Mortgage Interest Rate */}
-              <div className="form-grid" style={{gridTemplateColumns: 'repeat(2, 1fr)'}}>
-                <div className="form-group">
-                  <label htmlFor="homeMortgage">Mortgage Balance</label>
-                  <input
-                    type="number"
-                    id="homeMortgage"
-                    name="homeMortgage"
-                    value={formData.homeMortgage}
-                    onChange={handleChange}
-                    min="0"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="homeMortgageRate">Mortgage Interest Rate (%)</label>
-                  <input
-                    type="number"
-                    id="homeMortgageRate"
-                    name="homeMortgageRate"
-                    value={formData.homeMortgageRate}
-                    onChange={handleChange}
-                    min="0"
-                    step="0.1"
-                  />
-                </div>
-              </div>
-
-              {/* Line 3: Mortgage Payoff Year, Month, Monthly Payment */}
-              <div className="form-grid" style={{gridTemplateColumns: 'repeat(3, 1fr)'}}>
-                <div className="form-group">
-                  <label htmlFor="homeMortgagePayoffYear">Mortgage Payoff Year</label>
-                  <input
-                    type="number"
-                    id="homeMortgagePayoffYear"
-                    name="homeMortgagePayoffYear"
-                    value={formData.homeMortgagePayoffYear}
-                    onChange={handleChange}
-                    min="2024"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="homeMortgagePayoffMonth">Mortgage Payoff Month (1-12)</label>
-                  <input
-                    type="number"
-                    id="homeMortgagePayoffMonth"
-                    name="homeMortgagePayoffMonth"
-                    value={formData.homeMortgagePayoffMonth}
-                    onChange={handleChange}
-                    min="1"
-                    max="12"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="homeMortgageMonthlyPayment">Monthly Mortgage Payment</label>
-                  <input
-                    type="number"
-                    id="homeMortgageMonthlyPayment"
-                    name="homeMortgageMonthlyPayment"
-                    value={formData.homeMortgageMonthlyPayment}
-                    onChange={handleChange}
-                    min="0"
-                    step="0.01"
-                  />
-                  <small style={{marginTop: '4px', color: '#999', fontSize: '12px'}}>
-                    Your actual monthly mortgage payment amount
-                  </small>
-                </div>
-              </div>
-
-              {/* Line 4: Extra Principal Payment */}
-              <div className="form-grid" style={{gridTemplateColumns: '1fr'}}>
-                <div className="form-group">
-                  <label htmlFor="homeMortgageExtraPrincipalPayment">Extra Principal Payment</label>
-                  <input
-                    type="number"
-                    id="homeMortgageExtraPrincipalPayment"
-                    name="homeMortgageExtraPrincipalPayment"
-                    value={formData.homeMortgageExtraPrincipalPayment || ''}
-                    onChange={handleChange}
-                    min="0"
-                    step="0.01"
-                  />
-                  <small style={{marginTop: '4px', color: '#999', fontSize: '12px'}}>
-                    Additional monthly principal to pay down mortgage early
-                  </small>
-                </div>
-              </div>
-
-              {/* Line 5: Annual Property Tax, Property Tax Annual Increase */}
-              <div className="form-grid" style={{gridTemplateColumns: 'repeat(2, 1fr)'}}>
-                <div className="form-group">
-                  <label htmlFor="homePropertyTax">Annual Property Tax</label>
-                  <input
-                    type="number"
-                    id="homePropertyTax"
-                    name="homePropertyTax"
-                    value={formData.homePropertyTax}
-                    onChange={handleChange}
-                    min="0"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="homePropertyTaxAnnualIncrease">Property Tax Annual Increase (%)</label>
-                  <input
-                    type="number"
-                    id="homePropertyTaxAnnualIncrease"
-                    name="homePropertyTaxAnnualIncrease"
-                    value={formData.homePropertyTaxAnnualIncrease}
-                    onChange={handleChange}
-                    min="0"
-                    step="0.1"
-                  />
-                </div>
-              </div>
-
-              {/* Line 6: Annual Home Insurance, Insurance Annual Increase */}
-              <div className="form-grid" style={{gridTemplateColumns: 'repeat(2, 1fr)'}}>
-                <div className="form-group">
-                  <label htmlFor="homeInsurance">Annual Home Insurance</label>
-                  <input
-                    type="number"
-                    id="homeInsurance"
-                    name="homeInsurance"
-                    value={formData.homeInsurance}
-                    onChange={handleChange}
-                    min="0"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="homeInsuranceAnnualIncrease">Insurance Annual Increase (%)</label>
-                  <input
-                    type="number"
-                    id="homeInsuranceAnnualIncrease"
-                    name="homeInsuranceAnnualIncrease"
-                    value={formData.homeInsuranceAnnualIncrease}
-                    onChange={handleChange}
-                    min="0"
-                    step="0.1"
-                  />
-                </div>
-              </div>
-
-              {/* Home Sale Plan Section */}
-              <div style={{marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #e0e0e0'}}>
-                <div style={{marginBottom: '15px'}}>
-                  <label style={{display: 'flex', alignItems: 'center', cursor: 'pointer', fontSize: '14px', fontWeight: '600'}}>
-                    <input
-                      type="checkbox"
-                      name="homeSalePlanEnabled"
-                      checked={formData.homeSalePlanEnabled || false}
-                      onChange={(e) => {
-                        const newData = {...formData, homeSalePlanEnabled: e.target.checked};
-                        setFormData(newData);
-                        onInputsChange(newData);
-                      }}
-                      style={{marginRight: '8px', width: '16px', height: '16px', cursor: 'pointer'}}
-                    />
-                    Plan to Sell Home
-                  </label>
-                  <small style={{display: 'block', marginTop: '6px', color: '#999', fontSize: '12px'}}>
-                    When enabled, property tax and insurance will stop after the sale date, and proceeds will go to investment accounts
-                  </small>
-                </div>
-
-                {formData.homeSalePlanEnabled && (
-                  <div className="form-grid" style={{gridTemplateColumns: 'repeat(2, 1fr)'}}>
-                    <div className="form-group">
-                      <label htmlFor="homeSaleYear">Sale Year</label>
-                      <input
-                        type="number"
-                        id="homeSaleYear"
-                        name="homeSaleYear"
-                        value={formData.homeSaleYear || ''}
-                        onChange={handleChange}
-                        min="2024"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="homeSaleMonth">Sale Month (1-12)</label>
-                      <input
-                        type="number"
-                        id="homeSaleMonth"
-                        name="homeSaleMonth"
-                        value={formData.homeSaleMonth || ''}
-                        onChange={handleChange}
-                        min="1"
-                        max="12"
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Other Assets */}
-            <div className="form-grid" style={{marginTop: '20px'}}>
-              <div className="form-group">
-                <label htmlFor="otherAssets">Other Assets (vehicles, etc.)</label>
-                <input
-                  type="number"
-                  id="otherAssets"
-                  name="otherAssets"
-                  value={formData.otherAssets}
-                  onChange={handleChange}
-                  min="0"
-                />
-              </div>
-            </div>
+            <AssetList
+              assets={assets}
+              onEdit={handleEditAsset}
+              onDelete={handleDeleteAsset}
+              isLoading={assetsLoading}
+              onAddClick={handleAddAssetClick}
+            />
           </section>
         )}
 
@@ -860,6 +717,24 @@ export const InputForm = ({ onInputsChange, inputs, activeTab }) => {
           </section>
         )}
       </div>
+
+      {/* Asset Type Selector Modal */}
+      {showAssetTypeSelector && (
+        <AssetTypeSelector
+          onSelect={handleTypeSelect}
+          onCancel={() => setShowAssetTypeSelector(false)}
+        />
+      )}
+
+      {/* Asset Form Modal */}
+      {showAssetForm && selectedAssetType && (
+        <AssetForm
+          assetType={selectedAssetType}
+          initialData={editingAsset}
+          onSubmit={handleAssetFormSubmit}
+          onCancel={handleCloseAssetForm}
+        />
+      )}
     </div>
   );
 };
