@@ -79,6 +79,10 @@ form {
   margin-bottom: 0;
 }
 
+.form-fields .form-group.full-width {
+  grid-column: 1 / -1;
+}
+
 .btn-submit {
   padding: 10px 20px;
   background: #007bff;

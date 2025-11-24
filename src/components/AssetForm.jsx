@@ -111,15 +111,22 @@ export const AssetForm = ({ assetType, initialData, onSubmit, onCancel }) => {
 
             {/* Dynamic Fields based on Asset Type */}
             <div className="form-fields">
-              {assetConfig.fields.map(fieldName => {
+              {assetConfig.fields.map((fieldName, index) => {
                 const fieldDef = FIELD_DEFINITIONS[fieldName];
                 if (!fieldDef) return null;
 
                 const isCheckbox = fieldDef.type === 'checkbox';
                 const value = formData[fieldName];
 
+                // Fields that should always be on their own line
+                const fullWidthFields = ['propertyTax', 'propertyTaxAnnualIncrease', 'insurance', 'insuranceAnnualIncrease'];
+                const isFullWidth = fullWidthFields.includes(fieldName);
+
                 return (
-                  <div key={fieldName} className="form-group">
+                  <div
+                    key={fieldName}
+                    className={`form-group ${isFullWidth ? 'full-width' : ''}`}
+                  >
                     <label htmlFor={fieldName}>
                       {fieldDef.label}
                     </label>
