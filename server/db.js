@@ -133,6 +133,7 @@ const initializeDatabase = () => {
       sellPlanEnabled BOOLEAN DEFAULT 0,
       sellYear INTEGER,
       sellMonth INTEGER,
+      expectedSaleProceeds REAL,
 
       createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
       updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,

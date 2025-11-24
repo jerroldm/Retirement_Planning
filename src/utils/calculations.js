@@ -172,6 +172,12 @@ export const calculateRetirementProjection = (inputs) => {
     inflationRate,
     federalTaxRate,
     stateTaxRate,
+    allAssets,
+    birthMonth,
+    birthYear,
+    homeSalePlanEnabled,
+    homeSaleYear,
+    homeSaleMonth,
   } = inputs;
 
   const isMarried = maritalStatus === 'married';
@@ -220,6 +226,7 @@ export const calculateRetirementProjection = (inputs) => {
   let currentTraditionalIRA = traditionalIRA;
   let currentRothIRA = rothIRA;
   let currentInvestmentAccounts = investmentAccounts;
+  let currentSaleProceeds = 0;
   let currentSalaryValue = currentSalary;
 
   // Person 2 variables (spouse)
@@ -245,6 +252,26 @@ export const calculateRetirementProjection = (inputs) => {
     const projectedCalendarYear = currentCalendarYear + yearIndex;
     let annualMortgagePayment = mortgagePaymentsByYear[projectedCalendarYear] || 0;
     let remainingMortgage = mortgagePaymentsByYear[`${projectedCalendarYear}_balance`] || 0;
+
+    // Check for asset sales and deposit proceeds
+    if (allAssets && allAssets.length > 0) {
+      for (const asset of allAssets) {
+        if (asset.sellPlanEnabled && asset.sellYear === year && asset.expectedSaleProceeds) {
+          currentSaleProceeds += asset.expectedSaleProceeds;
+        }
+      }
+    }
+
+    // Also check for primary residence sale (legacy home asset)
+    if (homeSalePlanEnabled && homeSaleYear === year) {
+      // Check if there are expected proceeds in the home asset from allAssets
+      if (allAssets && allAssets.length > 0) {
+        const homeAsset = allAssets.find(a => a.assetType === 'primary-residence');
+        if (homeAsset && homeAsset.expectedSaleProceeds) {
+          currentSaleProceeds += homeAsset.expectedSaleProceeds;
+        }
+      }
+    }
 
     // Calculate income for both people
     let grossIncome = 0;
@@ -310,7 +337,8 @@ export const calculateRetirementProjection = (inputs) => {
       currentRothIRA = currentRothIRA * (1 + investmentReturn / 100) + rothContribution;
       currentInvestmentAccounts =
         currentInvestmentAccounts * (1 + investmentReturn / 100) +
-        investmentContribution;
+        investmentContribution +
+        currentSaleProceeds;
 
       if (isMarried) {
         currentSpouse2TraditionalIRA = currentSpouse2TraditionalIRA * (1 + investmentReturn / 100) + spouse2TraditionalContribution;
@@ -323,7 +351,7 @@ export const calculateRetirementProjection = (inputs) => {
       // Current year: only add new contributions, no investment growth on existing balance
       currentTraditionalIRA = currentTraditionalIRA + traditionalContribution;
       currentRothIRA = currentRothIRA + rothContribution;
-      currentInvestmentAccounts = currentInvestmentAccounts + investmentContribution;
+      currentInvestmentAccounts = currentInvestmentAccounts + investmentContribution + currentSaleProceeds;
 
       if (isMarried) {
         currentSpouse2TraditionalIRA = currentSpouse2TraditionalIRA + spouse2TraditionalContribution;
@@ -331,6 +359,9 @@ export const calculateRetirementProjection = (inputs) => {
         currentSpouse2InvestmentAccounts = currentSpouse2InvestmentAccounts + spouse2InvestmentContribution;
       }
     }
+
+    // Reset sale proceeds after adding to investment accounts
+    currentSaleProceeds = 0;
 
     // Total portfolio value
     const totalRetirementSavings = Math.max(
@@ -398,6 +429,7 @@ export const defaultInputs = {
   rothIRAContribution: 5000,
   rothIRACompanyMatch: 0,
   investmentAccountsContribution: 5000,
+  saleProceeds: 0,
 
   // Person 2 Information (for married couples)
   spouse2BirthMonth: 6,

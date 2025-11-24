@@ -4,31 +4,31 @@ export const ASSET_TYPES = {
     label: 'Primary Residence',
     description: 'Your main home',
     icon: '🏠',
-    fields: ['currentValue', 'loanBalance', 'loanRate', 'monthlyPayment', 'payoffYear', 'payoffMonth', 'extraPrincipalPayment', 'propertyTax', 'propertyTaxAnnualIncrease', 'insurance', 'insuranceAnnualIncrease', 'appreciationRate', 'sellPlanEnabled', 'sellYear', 'sellMonth'],
+    fields: ['currentValue', 'loanBalance', 'loanRate', 'monthlyPayment', 'payoffYear', 'payoffMonth', 'extraPrincipalPayment', 'propertyTax', 'propertyTaxAnnualIncrease', 'insurance', 'insuranceAnnualIncrease', 'appreciationRate', 'sellPlanEnabled', 'sellYear', 'sellMonth', 'expectedSaleProceeds'],
   },
   'secondary-residence': {
     label: 'Secondary Residence',
     description: 'Vacation home or investment property',
     icon: '🏡',
-    fields: ['currentValue', 'loanBalance', 'loanRate', 'monthlyPayment', 'payoffYear', 'payoffMonth', 'extraPrincipalPayment', 'propertyTax', 'propertyTaxAnnualIncrease', 'insurance', 'insuranceAnnualIncrease', 'rentalIncome', 'rentalIncomeAnnualIncrease', 'annualExpenses', 'annualExpensesAnnualIncrease', 'appreciationRate', 'sellPlanEnabled', 'sellYear', 'sellMonth'],
+    fields: ['currentValue', 'loanBalance', 'loanRate', 'monthlyPayment', 'payoffYear', 'payoffMonth', 'extraPrincipalPayment', 'propertyTax', 'propertyTaxAnnualIncrease', 'insurance', 'insuranceAnnualIncrease', 'rentalIncome', 'rentalIncomeAnnualIncrease', 'annualExpenses', 'annualExpensesAnnualIncrease', 'appreciationRate', 'sellPlanEnabled', 'sellYear', 'sellMonth', 'expectedSaleProceeds'],
   },
   'vehicle': {
     label: 'Vehicle/Boat',
     description: 'Car, boat, or other transportation',
     icon: '🚗',
-    fields: ['currentValue', 'loanBalance', 'loanRate', 'monthlyPayment', 'payoffYear', 'payoffMonth', 'extraPrincipalPayment', 'insurance', 'insuranceAnnualIncrease', 'annualExpenses', 'annualExpensesAnnualIncrease', 'appreciationRate', 'sellPlanEnabled', 'sellYear', 'sellMonth'],
+    fields: ['currentValue', 'loanBalance', 'loanRate', 'monthlyPayment', 'payoffYear', 'payoffMonth', 'extraPrincipalPayment', 'insurance', 'insuranceAnnualIncrease', 'annualExpenses', 'annualExpensesAnnualIncrease', 'appreciationRate', 'sellPlanEnabled', 'sellYear', 'sellMonth', 'expectedSaleProceeds'],
   },
   'collectible': {
     label: 'Collectible/Precious Metal',
     description: 'Art, jewelry, coins, or other collectibles',
     icon: '💎',
-    fields: ['currentValue', 'appreciationRate', 'annualExpenses', 'annualExpensesAnnualIncrease', 'sellPlanEnabled', 'sellYear', 'sellMonth'],
+    fields: ['currentValue', 'appreciationRate', 'annualExpenses', 'annualExpensesAnnualIncrease', 'sellPlanEnabled', 'sellYear', 'sellMonth', 'expectedSaleProceeds'],
   },
   'generic': {
     label: 'Generic Asset',
     description: 'Other asset',
     icon: '📦',
-    fields: ['currentValue', 'appreciationRate', 'annualExpenses', 'annualExpensesAnnualIncrease', 'sellPlanEnabled', 'sellYear', 'sellMonth'],
+    fields: ['currentValue', 'appreciationRate', 'annualExpenses', 'annualExpensesAnnualIncrease', 'sellPlanEnabled', 'sellYear', 'sellMonth', 'expectedSaleProceeds'],
   },
 };
 
@@ -66,4 +66,5 @@ export const FIELD_DEFINITIONS = {
   sellPlanEnabled: { label: 'Plan to Sell', type: 'checkbox' },
   sellYear: { label: 'Sale Year', type: 'number', min: '2024' },
   sellMonth: { label: 'Sale Month (1-12)', type: 'number', min: '1', max: '12' },
+  expectedSaleProceeds: { label: 'Expected Proceeds from Sale (after taxes/fees)', type: 'number', step: '0.01', min: '0' },
 };

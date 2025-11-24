@@ -47,6 +47,7 @@ function AppContent() {
       homeSaleYear: homeAsset.sellYear || baseInputs.homeSaleYear,
       homeSaleMonth: homeAsset.sellMonth || baseInputs.homeSaleMonth,
       homeMortgageExtraPrincipalPayment: homeAsset.extraPrincipalPayment || baseInputs.homeMortgageExtraPrincipalPayment,
+      allAssets: assets,
     };
   };
 
