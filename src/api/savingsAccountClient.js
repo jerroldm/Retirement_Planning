@@ -20,7 +20,10 @@ export const savingsAccountAPI = {
       },
       body: JSON.stringify(accountData)
     });
-    if (!response.ok) throw new Error('Failed to create account');
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.details || errorData.error || 'Failed to create account');
+    }
     return response.json();
   },
 
