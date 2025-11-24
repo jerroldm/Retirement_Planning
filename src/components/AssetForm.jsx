@@ -109,38 +109,34 @@ export const AssetForm = ({ assetType, initialData, onSubmit, onCancel }) => {
               {errors.assetName && <span className="error-message">{errors.assetName}</span>}
             </div>
 
-            {/* Dynamic Fields based on Asset Type */}
-            <div className="form-fields">
-              {assetConfig.fields.map((fieldName, index) => {
-                const fieldDef = FIELD_DEFINITIONS[fieldName];
-                if (!fieldDef) return null;
+            {/* Dynamic Fields based on Asset Type - Structured Layout */}
+            <div className="form-fields-structured">
+              {/* Helper function to render a single field */}
+              {(() => {
+                const renderField = (fieldName) => {
+                  if (!fieldName || !assetConfig.fields.includes(fieldName)) return null;
 
-                const isCheckbox = fieldDef.type === 'checkbox';
-                const value = formData[fieldName];
+                  const fieldDef = FIELD_DEFINITIONS[fieldName];
+                  if (!fieldDef) return null;
 
-                // Skip these fields as they're handled in paired groups
-                const pairedGroupFields = ['propertyTaxAnnualIncrease', 'insuranceAnnualIncrease'];
-                if (pairedGroupFields.includes(fieldName)) {
-                  return null;
-                }
+                  const isCheckbox = fieldDef.type === 'checkbox';
+                  const value = formData[fieldName];
 
-                // Check if this field should be paired with the next field
-                const isPairingStart = fieldName === 'propertyTax' || fieldName === 'insurance';
-                let pairedFieldName = null;
-                if (fieldName === 'propertyTax') pairedFieldName = 'propertyTaxAnnualIncrease';
-                if (fieldName === 'insurance') pairedFieldName = 'insuranceAnnualIncrease';
-
-                const pairedFieldDef = pairedFieldName ? FIELD_DEFINITIONS[pairedFieldName] : null;
-                const pairedValue = pairedFieldName ? formData[pairedFieldName] : null;
-
-                if (isPairingStart && pairedFieldDef) {
-                  // Render paired group on one line
                   return (
-                    <div key={fieldName} className="form-group-pair">
-                      <div className="form-group">
-                        <label htmlFor={fieldName}>
-                          {fieldDef.label}
-                        </label>
+                    <div key={fieldName} className="form-group">
+                      <label htmlFor={fieldName}>
+                        {fieldDef.label}
+                      </label>
+                      {isCheckbox ? (
+                        <input
+                          id={fieldName}
+                          type="checkbox"
+                          name={fieldName}
+                          checked={value === true || value === 1}
+                          onChange={handleInputChange}
+                          className="checkbox-input"
+                        />
+                      ) : (
                         <input
                           id={fieldName}
                           type={fieldDef.type}
@@ -153,63 +149,79 @@ export const AssetForm = ({ assetType, initialData, onSubmit, onCancel }) => {
                           max={fieldDef.max}
                           className={errors[fieldName] ? 'input-error' : ''}
                         />
-                        {errors[fieldName] && <span className="error-message">{errors[fieldName]}</span>}
-                      </div>
-                      <div className="form-group">
-                        <label htmlFor={pairedFieldName}>
-                          {pairedFieldDef.label}
-                        </label>
-                        <input
-                          id={pairedFieldName}
-                          type={pairedFieldDef.type}
-                          name={pairedFieldName}
-                          placeholder={pairedFieldDef.placeholder || ''}
-                          value={pairedValue}
-                          onChange={handleInputChange}
-                          step={pairedFieldDef.step || 'any'}
-                          min={pairedFieldDef.min}
-                          max={pairedFieldDef.max}
-                          className={errors[pairedFieldName] ? 'input-error' : ''}
-                        />
-                        {errors[pairedFieldName] && <span className="error-message">{errors[pairedFieldName]}</span>}
-                      </div>
+                      )}
+                      {errors[fieldName] && <span className="error-message">{errors[fieldName]}</span>}
                     </div>
                   );
-                }
+                };
 
-                // Regular field rendering
+                const renderPair = (field1, field2) => {
+                  if (!field1 || !assetConfig.fields.includes(field1)) return null;
+
+                  return (
+                    <div key={`${field1}-${field2}`} className="form-group-pair">
+                      {renderField(field1)}
+                      {field2 && assetConfig.fields.includes(field2) ? renderField(field2) : null}
+                    </div>
+                  );
+                };
+
+                const renderTriple = (field1, field2, field3) => {
+                  if (!field1 || !assetConfig.fields.includes(field1)) return null;
+
+                  return (
+                    <div key={`${field1}-${field2}-${field3}`} className="form-group-triple">
+                      {renderField(field1)}
+                      {field2 && assetConfig.fields.includes(field2) ? renderField(field2) : null}
+                      {field3 && assetConfig.fields.includes(field3) ? renderField(field3) : null}
+                    </div>
+                  );
+                };
+
                 return (
-                  <div key={fieldName} className="form-group">
-                    <label htmlFor={fieldName}>
-                      {fieldDef.label}
-                    </label>
-                    {isCheckbox ? (
-                      <input
-                        id={fieldName}
-                        type="checkbox"
-                        name={fieldName}
-                        checked={value === true || value === 1}
-                        onChange={handleInputChange}
-                        className="checkbox-input"
-                      />
-                    ) : (
-                      <input
-                        id={fieldName}
-                        type={fieldDef.type}
-                        name={fieldName}
-                        placeholder={fieldDef.placeholder || ''}
-                        value={value}
-                        onChange={handleInputChange}
-                        step={fieldDef.step || 'any'}
-                        min={fieldDef.min}
-                        max={fieldDef.max}
-                        className={errors[fieldName] ? 'input-error' : ''}
-                      />
-                    )}
-                    {errors[fieldName] && <span className="error-message">{errors[fieldName]}</span>}
-                  </div>
+                  <>
+                    {/* Line 2: Current Value, Balance */}
+                    {renderPair('currentValue', 'loanBalance')}
+
+                    {/* Line 3: Interest Rate, Monthly Payment */}
+                    {renderPair('loanRate', 'monthlyPayment')}
+
+                    {/* Line 4: Payoff Year, Month */}
+                    {renderPair('payoffYear', 'payoffMonth')}
+
+                    {/* Line 5: Extra Principal */}
+                    {renderField('extraPrincipalPayment')}
+
+                    {/* Line 6: Property Tax, Increase */}
+                    {renderPair('propertyTax', 'propertyTaxAnnualIncrease')}
+
+                    {/* Line 7: Insurance, Increase */}
+                    {renderPair('insurance', 'insuranceAnnualIncrease')}
+
+                    {/* Line 8: Plan to Sell, Year, Month */}
+                    {renderTriple('sellPlanEnabled', 'sellYear', 'sellMonth')}
+
+                    {/* Remaining fields (annual expenses, rental income, appreciation, etc.) */}
+                    {(() => {
+                      const renderedFields = new Set([
+                        'currentValue', 'loanBalance', 'loanRate', 'monthlyPayment',
+                        'payoffYear', 'payoffMonth', 'extraPrincipalPayment',
+                        'propertyTax', 'propertyTaxAnnualIncrease',
+                        'insurance', 'insuranceAnnualIncrease',
+                        'sellPlanEnabled', 'sellYear', 'sellMonth'
+                      ]);
+
+                      return (
+                        <div className="form-fields-remaining">
+                          {assetConfig.fields.filter(f => !renderedFields.has(f)).map(fieldName => {
+                            return renderField(fieldName);
+                          })}
+                        </div>
+                      );
+                    })()}
+                  </>
                 );
-              })}
+              })()}
             </div>
           </div>
 

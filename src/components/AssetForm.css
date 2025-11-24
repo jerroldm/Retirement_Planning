@@ -79,10 +79,43 @@ form {
   margin-bottom: 0;
 }
 
+.form-fields-structured {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 30px;
+}
+
+.form-fields-structured .form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0;
+}
+
 .form-group-pair {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
+}
+
+.form-group-triple {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.form-group-triple .checkbox-input {
+  margin-top: 32px;
+}
+
+.form-fields-remaining {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
 }
 
 .btn-submit {
