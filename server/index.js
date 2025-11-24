@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url';
 import authRoutes from './routes/auth.js';
 import financialRoutes from './routes/financial.js';
 import assetRoutes from './routes/assets.js';
+import savingsAccountRoutes from './routes/savingsAccounts.js';
 
 dotenv.config();
 
@@ -30,6 +31,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/financial', financialRoutes);
 app.use('/api/assets', assetRoutes);
+app.use('/api/savings-accounts', savingsAccountRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

@@ -1,0 +1,41 @@
+.account-type-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.account-type-card {
+  padding: 20px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+  font-size: 14px;
+}
+
+.account-type-card:hover {
+  border-color: #4CAF50;
+  background-color: #f9f9f9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.account-type-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.account-type-card h4 {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.account-type-card p {
+  margin: 0;
+  color: #666;
+  font-size: 13px;
+}

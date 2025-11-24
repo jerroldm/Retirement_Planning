@@ -4,6 +4,10 @@ import { AssetList } from './AssetList';
 import { AssetTypeSelector } from './AssetTypeSelector';
 import { AssetForm } from './AssetForm';
 import { assetAPI } from '../api/assetClient';
+import { SavingsAccountList } from './SavingsAccountList';
+import { SavingsAccountTypeSelector } from './SavingsAccountTypeSelector';
+import { SavingsAccountForm } from './SavingsAccountForm';
+import { savingsAccountAPI } from '../api/savingsAccountClient';
 import './InputForm.css';
 
 export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) => {
@@ -15,10 +19,30 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
   const [selectedAssetType, setSelectedAssetType] = useState(null);
   const [editingAsset, setEditingAsset] = useState(null);
 
-  // Load assets when component mounts
+  const [savingsAccounts, setSavingsAccounts] = useState([]);
+  const [savingsAccountsLoading, setSavingsAccountsLoading] = useState(false);
+  const [showAccountTypeSelector, setShowAccountTypeSelector] = useState(false);
+  const [showAccountForm, setShowAccountForm] = useState(false);
+  const [selectedAccountType, setSelectedAccountType] = useState(null);
+  const [editingAccount, setEditingAccount] = useState(null);
+
+  // Load assets and savings accounts when component mounts
   useEffect(() => {
     loadAssets();
+    loadSavingsAccounts();
   }, []);
+
+  const loadSavingsAccounts = async () => {
+    try {
+      setSavingsAccountsLoading(true);
+      const loadedAccounts = await savingsAccountAPI.getAccounts();
+      setSavingsAccounts(loadedAccounts);
+    } catch (error) {
+      console.error('Failed to load savings accounts:', error);
+    } finally {
+      setSavingsAccountsLoading(false);
+    }
+  };
 
   const loadAssets = async () => {
     try {
@@ -133,6 +157,57 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
     setShowAssetForm(false);
     setEditingAsset(null);
     setSelectedAssetType(null);
+  };
+
+  // Savings Account handlers
+  const handleAddAccountClick = () => {
+    setEditingAccount(null);
+    setShowAccountTypeSelector(true);
+  };
+
+  const handleAccountTypeSelect = (accountType) => {
+    setSelectedAccountType(accountType);
+    setShowAccountTypeSelector(false);
+    setShowAccountForm(true);
+  };
+
+  const handleEditAccount = (account) => {
+    setEditingAccount(account);
+    setSelectedAccountType(account.accountType);
+    setShowAccountForm(true);
+  };
+
+  const handleAccountFormSubmit = async (submittedData) => {
+    try {
+      if (editingAccount) {
+        await savingsAccountAPI.updateAccount(editingAccount.id, submittedData);
+      } else {
+        await savingsAccountAPI.createAccount(submittedData);
+      }
+      await loadSavingsAccounts();
+      setShowAccountForm(false);
+      setEditingAccount(null);
+      setSelectedAccountType(null);
+    } catch (error) {
+      console.error('Failed to save account:', error);
+      alert('Failed to save account. Please try again.');
+    }
+  };
+
+  const handleDeleteAccount = async (id) => {
+    try {
+      await savingsAccountAPI.deleteAccount(id);
+      await loadSavingsAccounts();
+    } catch (error) {
+      console.error('Failed to delete account:', error);
+      alert('Failed to delete account. Please try again.');
+    }
+  };
+
+  const handleCloseAccountForm = () => {
+    setShowAccountForm(false);
+    setEditingAccount(null);
+    setSelectedAccountType(null);
   };
 
   return (
@@ -396,222 +471,12 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
         {activeTab === 'savings' && (
           <section className="form-section">
             <h3>Retirement Savings Accounts</h3>
-
-            <div className="subsection">
-              <h4>You (Person 1) - Traditional IRA/401(k)</h4>
-              <div className="form-grid">
-                <div className="form-group">
-                  <label htmlFor="traditionalIRA">Current Balance</label>
-                  <input
-                    type="number"
-                    id="traditionalIRA"
-                    name="traditionalIRA"
-                    value={formData.traditionalIRA}
-                    onChange={handleChange}
-                    min="0"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="traditionalIRAContribution">Annual Employee Contribution</label>
-                  <input
-                    type="number"
-                    id="traditionalIRAContribution"
-                    name="traditionalIRAContribution"
-                    value={formData.traditionalIRAContribution}
-                    onChange={handleChange}
-                    min="0"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="traditionIRACompanyMatch">Annual Company Match</label>
-                  <input
-                    type="number"
-                    id="traditionIRACompanyMatch"
-                    name="traditionIRACompanyMatch"
-                    value={formData.traditionIRACompanyMatch}
-                    onChange={handleChange}
-                    min="0"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="subsection">
-              <h4>You (Person 1) - Roth IRA/401(k)</h4>
-              <div className="form-grid">
-                <div className="form-group">
-                  <label htmlFor="rothIRA">Current Balance</label>
-                  <input
-                    type="number"
-                    id="rothIRA"
-                    name="rothIRA"
-                    value={formData.rothIRA}
-                    onChange={handleChange}
-                    min="0"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="rothIRAContribution">Annual Employee Contribution</label>
-                  <input
-                    type="number"
-                    id="rothIRAContribution"
-                    name="rothIRAContribution"
-                    value={formData.rothIRAContribution}
-                    onChange={handleChange}
-                    min="0"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="rothIRACompanyMatch">Annual Company Match</label>
-                  <input
-                    type="number"
-                    id="rothIRACompanyMatch"
-                    name="rothIRACompanyMatch"
-                    value={formData.rothIRACompanyMatch}
-                    onChange={handleChange}
-                    min="0"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="subsection">
-              <h4>You (Person 1) - Investment Accounts</h4>
-              <div className="form-grid">
-                <div className="form-group">
-                  <label htmlFor="investmentAccounts">Current Balance</label>
-                  <input
-                    type="number"
-                    id="investmentAccounts"
-                    name="investmentAccounts"
-                    value={formData.investmentAccounts}
-                    onChange={handleChange}
-                    min="0"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="investmentAccountsContribution">Annual Contribution</label>
-                  <input
-                    type="number"
-                    id="investmentAccountsContribution"
-                    name="investmentAccountsContribution"
-                    value={formData.investmentAccountsContribution}
-                    onChange={handleChange}
-                    min="0"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {formData.maritalStatus === 'married' && (
-              <>
-                <div className="subsection">
-                  <h4>Spouse (Person 2) - Traditional IRA/401(k)</h4>
-                  <div className="form-grid">
-                    <div className="form-group">
-                      <label htmlFor="spouse2TraditionalIRA">Current Balance</label>
-                      <input
-                        type="number"
-                        id="spouse2TraditionalIRA"
-                        name="spouse2TraditionalIRA"
-                        value={formData.spouse2TraditionalIRA || ''}
-                        onChange={handleChange}
-                        min="0"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="spouse2TraditionalIRAContribution">Annual Employee Contribution</label>
-                      <input
-                        type="number"
-                        id="spouse2TraditionalIRAContribution"
-                        name="spouse2TraditionalIRAContribution"
-                        value={formData.spouse2TraditionalIRAContribution || ''}
-                        onChange={handleChange}
-                        min="0"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="spouse2TraditionalIRACompanyMatch">Annual Company Match</label>
-                      <input
-                        type="number"
-                        id="spouse2TraditionalIRACompanyMatch"
-                        name="spouse2TraditionalIRACompanyMatch"
-                        value={formData.spouse2TraditionalIRACompanyMatch || ''}
-                        onChange={handleChange}
-                        min="0"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="subsection">
-                  <h4>Spouse (Person 2) - Roth IRA/401(k)</h4>
-                  <div className="form-grid">
-                    <div className="form-group">
-                      <label htmlFor="spouse2RothIRA">Current Balance</label>
-                      <input
-                        type="number"
-                        id="spouse2RothIRA"
-                        name="spouse2RothIRA"
-                        value={formData.spouse2RothIRA || ''}
-                        onChange={handleChange}
-                        min="0"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="spouse2RothIRAContribution">Annual Employee Contribution</label>
-                      <input
-                        type="number"
-                        id="spouse2RothIRAContribution"
-                        name="spouse2RothIRAContribution"
-                        value={formData.spouse2RothIRAContribution || ''}
-                        onChange={handleChange}
-                        min="0"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="spouse2RothIRACompanyMatch">Annual Company Match</label>
-                      <input
-                        type="number"
-                        id="spouse2RothIRACompanyMatch"
-                        name="spouse2RothIRACompanyMatch"
-                        value={formData.spouse2RothIRACompanyMatch || ''}
-                        onChange={handleChange}
-                        min="0"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="subsection">
-                  <h4>Spouse (Person 2) - Investment Accounts</h4>
-                  <div className="form-grid">
-                    <div className="form-group">
-                      <label htmlFor="spouse2InvestmentAccounts">Current Balance</label>
-                      <input
-                        type="number"
-                        id="spouse2InvestmentAccounts"
-                        name="spouse2InvestmentAccounts"
-                        value={formData.spouse2InvestmentAccounts || ''}
-                        onChange={handleChange}
-                        min="0"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="spouse2InvestmentAccountsContribution">Annual Contribution</label>
-                      <input
-                        type="number"
-                        id="spouse2InvestmentAccountsContribution"
-                        name="spouse2InvestmentAccountsContribution"
-                        value={formData.spouse2InvestmentAccountsContribution || ''}
-                        onChange={handleChange}
-                        min="0"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
+            <SavingsAccountList
+              accounts={savingsAccounts}
+              onEdit={handleEditAccount}
+              onDelete={handleDeleteAccount}
+              onAddAccount={handleAddAccountClick}
+            />
           </section>
         )}
 
@@ -756,6 +621,24 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
           initialData={editingAsset}
           onSubmit={handleAssetFormSubmit}
           onCancel={handleCloseAssetForm}
+        />
+      )}
+
+      {/* Savings Account Type Selector Modal */}
+      {showAccountTypeSelector && (
+        <SavingsAccountTypeSelector
+          onTypeSelect={handleAccountTypeSelect}
+          onCancel={() => setShowAccountTypeSelector(false)}
+        />
+      )}
+
+      {/* Savings Account Form Modal */}
+      {showAccountForm && selectedAccountType && (
+        <SavingsAccountForm
+          accountType={selectedAccountType}
+          editingAccount={editingAccount}
+          onSubmit={handleAccountFormSubmit}
+          onCancel={handleCloseAccountForm}
         />
       )}
     </div>

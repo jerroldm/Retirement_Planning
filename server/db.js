@@ -147,6 +147,29 @@ const initializeDatabase = () => {
     }
   });
 
+  // Savings accounts table (for managing individual savings/investment accounts)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS savings_accounts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      userId INTEGER NOT NULL,
+      accountType TEXT NOT NULL,
+      accountName TEXT NOT NULL,
+      owner TEXT NOT NULL,
+      currentBalance REAL DEFAULT 0,
+      annualContribution REAL DEFAULT 0,
+      companyMatch REAL DEFAULT 0,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (userId) REFERENCES users(id)
+    )
+  `, (err) => {
+    if (err) {
+      console.error('Error creating savings_accounts table:', err);
+    } else {
+      console.log('Savings accounts table created or already exists');
+    }
+  });
+
   // Scenarios table (for saving different scenarios)
   db.run(`
     CREATE TABLE IF NOT EXISTS scenarios (
