@@ -118,15 +118,68 @@ export const AssetForm = ({ assetType, initialData, onSubmit, onCancel }) => {
                 const isCheckbox = fieldDef.type === 'checkbox';
                 const value = formData[fieldName];
 
-                // Fields that should always be on their own line
-                const fullWidthFields = ['propertyTax', 'propertyTaxAnnualIncrease', 'insurance', 'insuranceAnnualIncrease'];
-                const isFullWidth = fullWidthFields.includes(fieldName);
+                // Skip these fields as they're handled in paired groups
+                const pairedGroupFields = ['propertyTaxAnnualIncrease', 'insuranceAnnualIncrease'];
+                if (pairedGroupFields.includes(fieldName)) {
+                  return null;
+                }
 
+                // Check if this field should be paired with the next field
+                const isPairingStart = fieldName === 'propertyTax' || fieldName === 'insurance';
+                let pairedFieldName = null;
+                if (fieldName === 'propertyTax') pairedFieldName = 'propertyTaxAnnualIncrease';
+                if (fieldName === 'insurance') pairedFieldName = 'insuranceAnnualIncrease';
+
+                const pairedFieldDef = pairedFieldName ? FIELD_DEFINITIONS[pairedFieldName] : null;
+                const pairedValue = pairedFieldName ? formData[pairedFieldName] : null;
+
+                if (isPairingStart && pairedFieldDef) {
+                  // Render paired group on one line
+                  return (
+                    <div key={fieldName} className="form-group-pair">
+                      <div className="form-group">
+                        <label htmlFor={fieldName}>
+                          {fieldDef.label}
+                        </label>
+                        <input
+                          id={fieldName}
+                          type={fieldDef.type}
+                          name={fieldName}
+                          placeholder={fieldDef.placeholder || ''}
+                          value={value}
+                          onChange={handleInputChange}
+                          step={fieldDef.step || 'any'}
+                          min={fieldDef.min}
+                          max={fieldDef.max}
+                          className={errors[fieldName] ? 'input-error' : ''}
+                        />
+                        {errors[fieldName] && <span className="error-message">{errors[fieldName]}</span>}
+                      </div>
+                      <div className="form-group">
+                        <label htmlFor={pairedFieldName}>
+                          {pairedFieldDef.label}
+                        </label>
+                        <input
+                          id={pairedFieldName}
+                          type={pairedFieldDef.type}
+                          name={pairedFieldName}
+                          placeholder={pairedFieldDef.placeholder || ''}
+                          value={pairedValue}
+                          onChange={handleInputChange}
+                          step={pairedFieldDef.step || 'any'}
+                          min={pairedFieldDef.min}
+                          max={pairedFieldDef.max}
+                          className={errors[pairedFieldName] ? 'input-error' : ''}
+                        />
+                        {errors[pairedFieldName] && <span className="error-message">{errors[pairedFieldName]}</span>}
+                      </div>
+                    </div>
+                  );
+                }
+
+                // Regular field rendering
                 return (
-                  <div
-                    key={fieldName}
-                    className={`form-group ${isFullWidth ? 'full-width' : ''}`}
-                  >
+                  <div key={fieldName} className="form-group">
                     <label htmlFor={fieldName}>
                       {fieldDef.label}
                     </label>
