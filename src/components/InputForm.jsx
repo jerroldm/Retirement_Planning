@@ -606,6 +606,21 @@ export const InputForm = ({ onInputsChange, inputs, activeTab }) => {
                 </small>
               </div>
               <div className="form-group">
+                <label htmlFor="homeMortgageExtraPrincipalPayment">Extra Principal Payment</label>
+                <input
+                  type="number"
+                  id="homeMortgageExtraPrincipalPayment"
+                  name="homeMortgageExtraPrincipalPayment"
+                  value={formData.homeMortgageExtraPrincipalPayment || ''}
+                  onChange={handleChange}
+                  min="0"
+                  step="0.01"
+                />
+                <small style={{marginTop: '4px', color: '#999', fontSize: '12px'}}>
+                  Additional monthly principal to pay down mortgage early
+                </small>
+              </div>
+              <div className="form-group">
                 <label htmlFor="otherAssets">Other Assets (vehicles, etc.)</label>
                 <input
                   type="number"

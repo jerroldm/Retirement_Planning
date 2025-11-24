@@ -70,6 +70,7 @@ function AppContent() {
             homeMortgagePayoffYear: data.homeMortgagePayoffYear,
             homeMortgagePayoffMonth: data.homeMortgagePayoffMonth,
             homePropertyTaxInsurance: data.homePropertyTaxInsurance,
+            homeMortgageExtraPrincipalPayment: data.homeMortgageExtraPrincipalPayment,
             otherAssets: data.otherAssets,
             preRetirementAnnualExpenses: data.preRetirementAnnualExpenses,
             postRetirementAnnualExpenses: data.postRetirementAnnualExpenses,

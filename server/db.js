@@ -74,6 +74,7 @@ const initializeDatabase = () => {
       homeMortgagePayoffYear INTEGER,
       homeMortgagePayoffMonth INTEGER,
       homePropertyTaxInsurance REAL,
+      homeMortgageExtraPrincipalPayment REAL,
       otherAssets REAL,
       preRetirementAnnualExpenses REAL,
       postRetirementAnnualExpenses REAL,

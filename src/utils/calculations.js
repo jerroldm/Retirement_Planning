@@ -53,6 +53,7 @@ export const generateMortgageAmortizationSchedule = (inputs) => {
     homeMortgagePayoffMonth,
     birthMonth,
     birthYear,
+    homeMortgageExtraPrincipalPayment,
   } = inputs;
 
   // Get current date information
@@ -63,6 +64,7 @@ export const generateMortgageAmortizationSchedule = (inputs) => {
   const schedule = [];
   let remainingBalance = homeMortgage;
   const monthlyRateValue = homeMortgageRate / 100 / 12;
+  const totalMonthlyPayment = (homeMortgageMonthlyPayment || 0) + (homeMortgageExtraPrincipalPayment || 0);
 
   // Start from current month
   let year = currentCalendarYear;
@@ -74,18 +76,21 @@ export const generateMortgageAmortizationSchedule = (inputs) => {
     // Calculate interest for this month
     const interestPayment = startBalance * monthlyRateValue;
 
-    // Determine principal payment
-    let principalPayment = 0;
+    // Determine principal payment (regular + extra)
+    let regularPrincipal = 0;
+    let additionalPrincipal = homeMortgageExtraPrincipalPayment || 0;
     let endBalance = 0;
 
     // Regular payment: payment amount minus interest
-    principalPayment = homeMortgageMonthlyPayment - interestPayment;
-    endBalance = startBalance - principalPayment;
+    regularPrincipal = (homeMortgageMonthlyPayment || 0) - interestPayment;
+    endBalance = startBalance - regularPrincipal - additionalPrincipal;
 
     // If balance goes negative or this is the final payment month, adjust for final payment
     if (endBalance <= 0 || (year === homeMortgagePayoffYear && month === homeMortgagePayoffMonth)) {
-      // Final payment: pay off remaining balance
-      principalPayment = startBalance;
+      // Final payment: pay off remaining balance (split between regular and additional principal)
+      const remainingToPayOff = startBalance - interestPayment;
+      regularPrincipal = Math.min(remainingToPayOff, (homeMortgageMonthlyPayment || 0) - interestPayment);
+      additionalPrincipal = Math.max(0, remainingToPayOff - regularPrincipal);
       endBalance = 0;
     }
 
@@ -101,8 +106,9 @@ export const generateMortgageAmortizationSchedule = (inputs) => {
       age,
       startBalance: Math.round(startBalance),
       interestPayment: Math.round(interestPayment),
-      principalPayment: Math.round(principalPayment),
-      totalPayment: Math.round(interestPayment + principalPayment),
+      principalPayment: Math.round(regularPrincipal),
+      additionalPrincipal: Math.round(additionalPrincipal),
+      totalPayment: Math.round(interestPayment + regularPrincipal + additionalPrincipal),
       endBalance: Math.round(endBalance),
     });
 
@@ -418,6 +424,7 @@ export const defaultInputs = {
   homeMortgagePayoffYear: 2055,
   homeMortgagePayoffMonth: 12,
   homePropertyTaxInsurance: 5000,
+  homeMortgageExtraPrincipalPayment: 0,
   otherAssets: 50000,
 
   // Expenses (separate from mortgage)

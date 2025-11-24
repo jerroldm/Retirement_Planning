@@ -123,6 +123,22 @@
   background-color: #c8e6c9;
 }
 
+.mortgage-table tbody tr.year-even {
+  background-color: #f0f4ff;
+}
+
+.mortgage-table tbody tr.year-even:hover {
+  background-color: #e0e9ff;
+}
+
+.mortgage-table tbody tr.final-payment.year-even {
+  background-color: #d4edda;
+}
+
+.mortgage-table tbody tr.final-payment.year-even:hover {
+  background-color: #b8e1c8;
+}
+
 .mortgage-table td.currency {
   color: #333;
 }
