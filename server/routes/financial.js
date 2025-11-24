@@ -189,7 +189,8 @@ router.post('/', verifyToken, (req, res) => {
           function (err) {
             if (err) {
               console.error('Failed to insert financial data:', err);
-              return res.status(500).json({ error: 'Failed to save data' });
+              console.error('Error details:', err.message);
+              return res.status(500).json({ error: 'Failed to save data', details: err.message });
             }
 
             res.status(201).json({
@@ -268,7 +269,9 @@ router.post('/scenarios', verifyToken, (req, res) => {
     ],
     function (err) {
       if (err) {
-        return res.status(500).json({ error: 'Failed to save financial data' });
+        console.error('Failed to insert financial data for scenario:', err);
+        console.error('Error details:', err.message);
+        return res.status(500).json({ error: 'Failed to save financial data', details: err.message });
       }
 
       const financialDataId = this.lastID;
