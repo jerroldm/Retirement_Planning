@@ -4,7 +4,7 @@ const API_BASE = '/api/assets';
 export const assetAPI = {
   // Get all assets for current user
   async getAssets() {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('authToken');
     console.log('getAssets - Token exists:', !!token);
     const response = await fetch(API_BASE, {
       headers: {
@@ -22,7 +22,7 @@ export const assetAPI = {
 
   // Get single asset
   async getAsset(id) {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('authToken');
     const response = await fetch(`${API_BASE}/${id}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -34,7 +34,7 @@ export const assetAPI = {
 
   // Create new asset
   async createAsset(assetData) {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('authToken');
     console.log('createAsset - Token exists:', !!token);
     console.log('createAsset - Data:', assetData);
     const response = await fetch(API_BASE, {
@@ -56,7 +56,7 @@ export const assetAPI = {
 
   // Update asset
   async updateAsset(id, assetData) {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('authToken');
     const response = await fetch(`${API_BASE}/${id}`, {
       method: 'PUT',
       headers: {
@@ -71,7 +71,7 @@ export const assetAPI = {
 
   // Delete asset
   async deleteAsset(id) {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('authToken');
     const response = await fetch(`${API_BASE}/${id}`, {
       method: 'DELETE',
       headers: {
