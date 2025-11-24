@@ -81,4 +81,23 @@ export const assetAPI = {
     if (!response.ok) throw new Error('Failed to delete asset');
     return response.json();
   },
+
+  // Migrate home data from financial_data to assets table
+  async migrateHomeData() {
+    const token = localStorage.getItem('authToken');
+    console.log('migrateHomeData - Token exists:', !!token);
+    const response = await fetch(`${API_BASE}/migrate/home-data`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    console.log('migrateHomeData - Response status:', response.status, 'ok:', response.ok);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('migrateHomeData - Error response:', errorText);
+      throw new Error(`Failed to migrate home data: ${response.status}`);
+    }
+    return response.json();
+  },
 };

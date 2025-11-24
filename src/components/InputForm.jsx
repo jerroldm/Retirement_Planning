@@ -23,6 +23,17 @@ export const InputForm = ({ onInputsChange, inputs, activeTab }) => {
   const loadAssets = async () => {
     try {
       setAssetsLoading(true);
+
+      // Attempt to migrate home data from financial_data table
+      try {
+        const migrationResult = await assetAPI.migrateHomeData();
+        if (migrationResult.migrated) {
+          console.log('Home data migrated successfully');
+        }
+      } catch (migrationError) {
+        console.log('Home data migration skipped or already migrated:', migrationError.message);
+      }
+
       const loadedAssets = await assetAPI.getAssets();
       setAssets(loadedAssets);
     } catch (error) {

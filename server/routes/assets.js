@@ -174,4 +174,83 @@ router.delete('/:id', verifyToken, (req, res) => {
   );
 });
 
+// Migrate home data from financial_data to assets table
+router.post('/migrate/home-data', verifyToken, (req, res) => {
+  console.log('POST /api/assets/migrate/home-data - Migrating home data for user:', req.userId);
+
+  // First, check if a primary-residence asset already exists
+  db.get(
+    `SELECT id FROM assets WHERE userId = ? AND assetType = 'primary-residence'`,
+    [req.userId],
+    (err, existingAsset) => {
+      if (err) {
+        return res.status(500).json({ error: 'Database error' });
+      }
+
+      // If asset already exists, migration is done
+      if (existingAsset) {
+        return res.json({ message: 'Home data already migrated', migrated: false });
+      }
+
+      // Fetch user's financial data
+      db.get(
+        `SELECT * FROM financial_data WHERE userId = ?`,
+        [req.userId],
+        (err, financialData) => {
+          if (err) {
+            console.error('Failed to fetch financial data:', err);
+            return res.status(500).json({ error: 'Database error', details: err.message });
+          }
+
+          // If no financial data or no home value, nothing to migrate
+          if (!financialData || !financialData.homeValue) {
+            return res.json({ message: 'No home data to migrate', migrated: false });
+          }
+
+          console.log('Found home data, creating primary-residence asset');
+
+          // Create asset from home data
+          db.run(
+            `INSERT INTO assets (
+              userId, assetType, assetName, currentValue,
+              loanBalance, loanRate, monthlyPayment, payoffYear, payoffMonth, extraPrincipalPayment,
+              propertyTax, propertyTaxAnnualIncrease, insurance, insuranceAnnualIncrease,
+              appreciationRate,
+              sellPlanEnabled, sellYear, sellMonth
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+              req.userId,
+              'primary-residence',
+              'Primary Residence',
+              financialData.homeValue,
+              financialData.homeMortgage,
+              financialData.homeMortgageRate,
+              financialData.homeMortgageMonthlyPayment,
+              financialData.homeMortgagePayoffYear,
+              financialData.homeMortgagePayoffMonth,
+              financialData.homeMortgageExtraPrincipalPayment,
+              financialData.homePropertyTax,
+              financialData.homePropertyTaxAnnualIncrease,
+              financialData.homeInsurance,
+              financialData.homeInsuranceAnnualIncrease,
+              0, // appreciationRate - use 0 for now, can be set separately
+              financialData.homeSalePlanEnabled ? 1 : 0,
+              financialData.homeSaleYear,
+              financialData.homeSaleMonth,
+            ],
+            function (err) {
+              if (err) {
+                console.error('Failed to create home asset:', err);
+                return res.status(500).json({ error: 'Failed to migrate home data', details: err.message });
+              }
+              console.log('Home data migrated successfully, asset ID:', this.lastID);
+              res.json({ message: 'Home data migrated successfully', migrated: true, assetId: this.lastID });
+            }
+          );
+        }
+      );
+    }
+  );
+});
+
 export default router;
