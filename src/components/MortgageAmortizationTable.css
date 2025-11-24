@@ -1,0 +1,217 @@
+.mortgage-amortization-container {
+  padding: 20px;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+
+.mortgage-header {
+  margin-bottom: 20px;
+}
+
+.mortgage-header h2 {
+  margin: 0 0 8px 0;
+  color: #333;
+  font-size: 24px;
+}
+
+.mortgage-header .subtitle {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.filter-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 12px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+.filter-controls label {
+  font-weight: 600;
+  color: #333;
+}
+
+.filter-controls select {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  background-color: white;
+}
+
+.filter-controls select:hover {
+  border-color: #999;
+}
+
+.record-count {
+  margin-left: auto;
+  color: #666;
+  font-size: 13px;
+  font-style: italic;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  margin-bottom: 20px;
+}
+
+.mortgage-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.mortgage-table thead {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.mortgage-table th {
+  padding: 12px 8px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid #555;
+  white-space: nowrap;
+}
+
+.mortgage-table th:nth-child(1),
+.mortgage-table th:nth-child(2),
+.mortgage-table th:nth-child(3) {
+  width: 80px;
+  text-align: center;
+}
+
+.mortgage-table td {
+  padding: 10px 8px;
+  text-align: center;
+  font-family: 'Courier New', monospace;
+}
+
+.mortgage-table td.month-col,
+.mortgage-table td.year-col,
+.mortgage-table td.age-col {
+  font-weight: 500;
+}
+
+.mortgage-table tbody tr {
+  border-bottom: 1px solid #eee;
+  transition: background-color 0.2s;
+}
+
+.mortgage-table tbody tr:hover {
+  background-color: #f5f5f5;
+}
+
+.mortgage-table tbody tr.final-payment {
+  background-color: #e8f5e9;
+  font-weight: 600;
+}
+
+.mortgage-table tbody tr.final-payment:hover {
+  background-color: #c8e6c9;
+}
+
+.mortgage-table td.currency {
+  color: #333;
+}
+
+.mortgage-table th {
+  text-align: center;
+}
+
+.mortgage-table td.interest {
+  color: #d32f2f;
+}
+
+.mortgage-table td.principal {
+  color: #388e3c;
+}
+
+.mortgage-table td.total {
+  font-weight: 600;
+  color: #1565c0;
+}
+
+.mortgage-summary {
+  background: white;
+  padding: 20px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+.mortgage-summary h3 {
+  margin: 0 0 16px 0;
+  color: #333;
+  font-size: 16px;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: #f9f9f9;
+  border-radius: 4px;
+  border-left: 4px solid #667eea;
+}
+
+.summary-item .label {
+  font-weight: 600;
+  color: #333;
+}
+
+.summary-item .value {
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: #667eea;
+}
+
+@media (max-width: 768px) {
+  .mortgage-amortization-container {
+    padding: 12px;
+  }
+
+  .filter-controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .record-count {
+    margin-left: 0;
+  }
+
+  .mortgage-table {
+    font-size: 12px;
+  }
+
+  .mortgage-table th {
+    padding: 8px 4px;
+  }
+
+  .mortgage-table td {
+    padding: 8px 4px;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
