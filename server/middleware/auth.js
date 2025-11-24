@@ -10,6 +10,7 @@ export const verifyToken = (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];
 
   if (!token) {
+    console.error('No token provided in Authorization header');
     return res.status(401).json({ error: 'No token provided' });
   }
 
@@ -18,6 +19,7 @@ export const verifyToken = (req, res, next) => {
     req.userId = decoded.userId;
     next();
   } catch (err) {
-    res.status(401).json({ error: 'Invalid token' });
+    console.error('Token verification failed:', err.message);
+    res.status(401).json({ error: 'Invalid token', details: err.message });
   }
 };
