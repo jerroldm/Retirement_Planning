@@ -39,7 +39,7 @@ export const FIELD_DEFINITIONS = {
 
   // Loan fields
   loanBalance: { label: 'Loan/Mortgage Balance', type: 'number', step: '0.01', min: '0' },
-  loanRate: { label: 'Loan Interest Rate (%)', type: 'number', step: '0.01', min: '0' },
+  loanRate: { label: 'Loan Interest Rate (%)', type: 'number', step: '0.001', min: '0' },
   monthlyPayment: { label: 'Monthly Payment', type: 'number', step: '0.01', min: '0' },
   payoffYear: { label: 'Payoff Year', type: 'number', min: '2024' },
   payoffMonth: { label: 'Payoff Month (1-12)', type: 'number', min: '1', max: '12' },
