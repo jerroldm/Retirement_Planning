@@ -424,6 +424,13 @@ export const defaultInputs = {
   homeMortgagePayoffYear: 2055,
   homeMortgagePayoffMonth: 12,
   homePropertyTaxInsurance: 5000,
+  homePropertyTax: 3000,
+  homePropertyTaxAnnualIncrease: 2,
+  homeInsurance: 2000,
+  homeInsuranceAnnualIncrease: 3,
+  homeSalePlanEnabled: false,
+  homeSaleYear: null,
+  homeSaleMonth: null,
   homeMortgageExtraPrincipalPayment: 0,
   otherAssets: 50000,
 
