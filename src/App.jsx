@@ -168,7 +168,9 @@ function AppContent() {
     if (user) {
       setIsSaving(true)
       try {
-        await financialAPI.saveFinancialData(newInputs)
+        // Don't save allAssets to financial_data table - assets are managed separately
+        const { allAssets, ...dataToSave } = newInputs
+        await financialAPI.saveFinancialData(dataToSave)
         setLastSaved(new Date())
       } catch (err) {
         console.error('Failed to save data:', err)
