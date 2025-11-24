@@ -45,6 +45,7 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
 
   // Sync formData when inputs prop changes (e.g., after loading from database)
   useEffect(() => {
+    console.log('InputForm syncing formData, inputs:', { birthMonth: inputs?.birthMonth, birthYear: inputs?.birthYear });
     setFormData(inputs || defaultInputs);
   }, [inputs]);
 

@@ -164,10 +164,10 @@ router.post('/', verifyToken, (req, res) => {
             spouse2RothIRAContribution, spouse2RothIRACompanyMatch,
             spouse2InvestmentAccountsContribution, spouse2ContributionStopAge,
             homeValue, homeMortgage, homeMortgageRate,
-            homeMortgageMonthlyPayment, homeMortgagePayoffYear, homeMortgagePayoffMonth, homePropertyTaxInsurance, homePropertyTax, homePropertyTaxAnnualIncrease, homeInsurance, homeInsuranceAnnualIncrease, homeMortgageExtraPrincipalPayment, otherAssets,
+            homeMortgageMonthlyPayment, homeMortgagePayoffYear, homeMortgagePayoffMonth, homePropertyTaxInsurance, homePropertyTax, homePropertyTaxAnnualIncrease, homeInsurance, homeInsuranceAnnualIncrease, homeSalePlanEnabled, homeSaleYear, homeSaleMonth, homeMortgageExtraPrincipalPayment, otherAssets,
             preRetirementAnnualExpenses, postRetirementAnnualExpenses, investmentReturn,
             inflationRate, federalTaxRate, stateTaxRate
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             req.userId, maritalStatus, currentAge, birthMonth, birthYear, retirementAge, deathAge, contributionStopAge,
             currentSalary, annualSalaryIncrease,
@@ -182,7 +182,7 @@ router.post('/', verifyToken, (req, res) => {
             spouse2RothIRAContribution, spouse2RothIRACompanyMatch,
             spouse2InvestmentAccountsContribution, spouse2ContributionStopAge,
             homeValue, homeMortgage, homeMortgageRate,
-            homeMortgageMonthlyPayment, homeMortgagePayoffYear, homeMortgagePayoffMonth, homePropertyTaxInsurance, homePropertyTax, homePropertyTaxAnnualIncrease, homeInsurance, homeInsuranceAnnualIncrease, homeMortgageExtraPrincipalPayment, otherAssets,
+            homeMortgageMonthlyPayment, homeMortgagePayoffYear, homeMortgagePayoffMonth, homePropertyTaxInsurance, homePropertyTax, homePropertyTaxAnnualIncrease, homeInsurance, homeInsuranceAnnualIncrease, homeSalePlanEnabled, homeSaleYear, homeSaleMonth, homeMortgageExtraPrincipalPayment, otherAssets,
             preRetirementAnnualExpenses, postRetirementAnnualExpenses, investmentReturn,
             inflationRate, federalTaxRate, stateTaxRate,
           ],
@@ -245,7 +245,7 @@ router.post('/scenarios', verifyToken, (req, res) => {
       homeMortgageMonthlyPayment, homeMortgagePayoffYear, homeMortgagePayoffMonth, homePropertyTaxInsurance, homePropertyTax, homePropertyTaxAnnualIncrease, homeInsurance, homeInsuranceAnnualIncrease, homeSalePlanEnabled, homeSaleYear, homeSaleMonth, homeMortgageExtraPrincipalPayment, otherAssets,
       preRetirementAnnualExpenses, postRetirementAnnualExpenses, investmentReturn,
       inflationRate, federalTaxRate, stateTaxRate
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       req.userId,
       financialData.maritalStatus,

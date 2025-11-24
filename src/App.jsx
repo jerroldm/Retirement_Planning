@@ -125,9 +125,11 @@ function AppContent() {
           try {
             const assets = await assetAPI.getAssets();
             const mergedInputs = mergeAssetDataIntoInputs(baseInputs, assets);
+            console.log('Loading data from DB with merged assets - birthMonth:', mergedInputs.birthMonth, 'birthYear:', mergedInputs.birthYear);
             setInputs(mergedInputs);
           } catch (assetError) {
             console.log('Could not load assets, using financial data:', assetError.message);
+            console.log('Loading baseInputs - birthMonth:', baseInputs.birthMonth, 'birthYear:', baseInputs.birthYear);
             setInputs(baseInputs);
           }
 
@@ -163,6 +165,7 @@ function AppContent() {
 
   const handleInputsChange = async (newInputs) => {
     setInputs(newInputs)
+    console.log('handleInputsChange called with:', { birthMonth: newInputs.birthMonth, birthYear: newInputs.birthYear })
 
     // Auto-save to server
     if (user) {
@@ -225,6 +228,7 @@ function AppContent() {
           federalTaxRate: newInputs.federalTaxRate,
           stateTaxRate: newInputs.stateTaxRate,
         }
+        console.log('dataToSave being sent:', { birthMonth: dataToSave.birthMonth, birthYear: dataToSave.birthYear })
         await financialAPI.saveFinancialData(dataToSave)
         setLastSaved(new Date())
       } catch (err) {
