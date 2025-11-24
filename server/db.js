@@ -138,7 +138,13 @@ const initializeDatabase = () => {
       updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (userId) REFERENCES users(id)
     )
-  `);
+  `, (err) => {
+    if (err) {
+      console.error('Error creating assets table:', err);
+    } else {
+      console.log('Assets table created or already exists');
+    }
+  });
 
   // Scenarios table (for saving different scenarios)
   db.run(`

@@ -6,13 +6,16 @@ const router = express.Router();
 
 // Get all assets for user
 router.get('/', verifyToken, (req, res) => {
+  console.log('GET /api/assets - Fetching assets for user:', req.userId);
   db.all(
     `SELECT * FROM assets WHERE userId = ? ORDER BY createdAt DESC`,
     [req.userId],
     (err, assets) => {
       if (err) {
-        return res.status(500).json({ error: 'Database error' });
+        console.error('Failed to fetch assets:', err);
+        return res.status(500).json({ error: 'Database error', details: err.message });
       }
+      console.log('Successfully fetched', (assets || []).length, 'assets');
       res.json(assets || []);
     }
   );
@@ -37,6 +40,9 @@ router.get('/:id', verifyToken, (req, res) => {
 
 // Create asset
 router.post('/', verifyToken, (req, res) => {
+  console.log('POST /api/assets - Creating asset for user:', req.userId);
+  console.log('Request body:', req.body);
+
   const {
     assetType,
     assetName,
@@ -83,8 +89,9 @@ router.post('/', verifyToken, (req, res) => {
     function (err) {
       if (err) {
         console.error('Failed to create asset:', err);
-        return res.status(500).json({ error: 'Failed to create asset' });
+        return res.status(500).json({ error: 'Failed to create asset', details: err.message });
       }
+      console.log('Asset created successfully with ID:', this.lastID);
       res.status(201).json({ id: this.lastID, message: 'Asset created successfully' });
     }
   );

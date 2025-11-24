@@ -5,12 +5,18 @@ export const assetAPI = {
   // Get all assets for current user
   async getAssets() {
     const token = localStorage.getItem('token');
+    console.log('getAssets - Token exists:', !!token);
     const response = await fetch(API_BASE, {
       headers: {
         'Authorization': `Bearer ${token}`,
       },
     });
-    if (!response.ok) throw new Error('Failed to fetch assets');
+    console.log('getAssets - Response status:', response.status, 'ok:', response.ok);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('getAssets - Error response:', errorText);
+      throw new Error(`Failed to fetch assets: ${response.status}`);
+    }
     return response.json();
   },
 
@@ -29,6 +35,8 @@ export const assetAPI = {
   // Create new asset
   async createAsset(assetData) {
     const token = localStorage.getItem('token');
+    console.log('createAsset - Token exists:', !!token);
+    console.log('createAsset - Data:', assetData);
     const response = await fetch(API_BASE, {
       method: 'POST',
       headers: {
@@ -37,7 +45,12 @@ export const assetAPI = {
       },
       body: JSON.stringify(assetData),
     });
-    if (!response.ok) throw new Error('Failed to create asset');
+    console.log('createAsset - Response status:', response.status, 'ok:', response.ok);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('createAsset - Error response:', errorText);
+      throw new Error(`Failed to create asset: ${response.status}`);
+    }
     return response.json();
   },
 
