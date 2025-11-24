@@ -200,7 +200,7 @@ function AppContent() {
     { id: 'income', label: '💼 Income', type: 'form' },
     { id: 'savings', label: '🏦 Savings', type: 'form' },
     { id: 'assets', label: '🏠 Assets', type: 'form' },
-    { id: 'expenses', label: '⚙️ Expense Settings', type: 'form' },
+    { id: 'expenses', label: '⚙️ Expenses', type: 'form' },
     { id: 'economic', label: '📈 Economic', type: 'form' },
     { id: 'taxes', label: '💰 Taxes', type: 'form' },
   ];
