@@ -189,8 +189,8 @@ export const AssetForm = ({ assetType, initialData, onSubmit, onCancel }) => {
                     {/* Line 4: Payoff Year, Month */}
                     {renderPair('payoffYear', 'payoffMonth')}
 
-                    {/* Line 5: Extra Principal */}
-                    {renderField('extraPrincipalPayment')}
+                    {/* Line 5: Extra Principal, Appreciation */}
+                    {renderPair('extraPrincipalPayment', 'appreciationRate')}
 
                     {/* Line 6: Property Tax, Increase */}
                     {renderPair('propertyTax', 'propertyTaxAnnualIncrease')}
@@ -201,11 +201,11 @@ export const AssetForm = ({ assetType, initialData, onSubmit, onCancel }) => {
                     {/* Line 8: Plan to Sell, Year, Month */}
                     {renderTriple('sellPlanEnabled', 'sellYear', 'sellMonth')}
 
-                    {/* Remaining fields (annual expenses, rental income, appreciation, etc.) */}
+                    {/* Remaining fields (annual expenses, rental income, etc.) */}
                     {(() => {
                       const renderedFields = new Set([
                         'currentValue', 'loanBalance', 'loanRate', 'monthlyPayment',
-                        'payoffYear', 'payoffMonth', 'extraPrincipalPayment',
+                        'payoffYear', 'payoffMonth', 'extraPrincipalPayment', 'appreciationRate',
                         'propertyTax', 'propertyTaxAnnualIncrease',
                         'insurance', 'insuranceAnnualIncrease',
                         'sellPlanEnabled', 'sellYear', 'sellMonth'

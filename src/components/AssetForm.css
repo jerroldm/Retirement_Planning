@@ -100,13 +100,32 @@ form {
 
 .form-group-triple {
   display: grid;
-  grid-template-columns: auto 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 20px;
-  align-items: flex-start;
 }
 
-.form-group-triple .checkbox-input {
-  margin-top: 32px;
+.form-group-triple .form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group-triple .form-group:first-child label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.form-group-triple .form-group:first-child .checkbox-input {
+  margin-bottom: 0;
+  width: 18px;
+  height: 18px;
+}
+
+.form-group-triple .form-group:first-child {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
 }
 
 .form-fields-remaining {
