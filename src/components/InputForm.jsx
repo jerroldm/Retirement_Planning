@@ -6,7 +6,7 @@ import { AssetForm } from './AssetForm';
 import { assetAPI } from '../api/assetClient';
 import './InputForm.css';
 
-export const InputForm = ({ onInputsChange, inputs, activeTab }) => {
+export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) => {
   const [formData, setFormData] = useState(inputs || defaultInputs);
   const [assets, setAssets] = useState([]);
   const [assetsLoading, setAssetsLoading] = useState(false);
@@ -98,6 +98,12 @@ export const InputForm = ({ onInputsChange, inputs, activeTab }) => {
         await assetAPI.createAsset(submittedData);
       }
       await loadAssets();
+
+      // Notify parent (App.jsx) that assets have been saved so calculations can be updated
+      if (onAssetsSaved) {
+        await onAssetsSaved();
+      }
+
       setShowAssetForm(false);
       setEditingAsset(null);
       setSelectedAssetType(null);
@@ -111,6 +117,11 @@ export const InputForm = ({ onInputsChange, inputs, activeTab }) => {
     try {
       await assetAPI.deleteAsset(id);
       await loadAssets();
+
+      // Notify parent (App.jsx) that assets have been updated so calculations can be refreshed
+      if (onAssetsSaved) {
+        await onAssetsSaved();
+      }
     } catch (error) {
       console.error('Failed to delete asset:', error);
       alert('Failed to delete asset. Please try again.');

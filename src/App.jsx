@@ -150,6 +150,16 @@ function AppContent() {
     return generateMortgageAmortizationSchedule(inputs)
   }, [inputs])
 
+  const reloadAssetData = async () => {
+    // Reload assets and merge them into current inputs
+    try {
+      const assets = await assetAPI.getAssets();
+      setInputs(prevInputs => mergeAssetDataIntoInputs(prevInputs, assets));
+    } catch (err) {
+      console.error('Failed to reload asset data:', err);
+    }
+  };
+
   const handleInputsChange = async (newInputs) => {
     setInputs(newInputs)
 
@@ -247,7 +257,7 @@ function AppContent() {
               {isLoadingData ? (
                 <div className="loading-spinner">Loading your data...</div>
               ) : (
-                <InputForm inputs={inputs} onInputsChange={handleInputsChange} activeTab={activeView} />
+                <InputForm inputs={inputs} onInputsChange={handleInputsChange} activeTab={activeView} onAssetsSaved={reloadAssetData} />
               )}
             </>
           )}
