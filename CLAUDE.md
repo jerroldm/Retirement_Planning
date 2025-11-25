@@ -115,6 +115,77 @@ Stored in `assets` table. Supports types: primary-residence, secondary-residence
 **Savings Accounts (flexible, one-to-many):**
 Stored in `savings_accounts` table. Supports types: 401k, traditional-ira, roth-ira, investment-account, other. Each has type-specific fields defined in config.
 
+**Persons (flexible, one-to-many):**
+Stored in `persons` table. Tracks individual people (self, spouse, future children) with their demographic and financial data. Fields include:
+- Demographics: personType (self/spouse), firstName, birthMonth, birthYear
+- Financial: current salary, salary increase, account balances, contributions
+- Inclusion: `includeInCalculations` boolean flag for flexible scenario planning
+
+## Data Loading Architecture (Critical for Correct Calculations)
+
+### Load Sequence in App.jsx
+
+The order of data loading in `App.jsx` is **critical** for correct calculations. Respect this sequence:
+
+1. **Load Financial Data** - Primary config from `financial_data` table
+2. **Load Persons Data** - Person demographic data from `persons` table (BEFORE setting inputs)
+3. **Migrate Home Assets** - Convert financial_data home fields to assets table if needed
+4. **Load/Merge Assets** - Get assets and merge home asset data into inputs
+5. **Set Inputs & Trigger Calculations** - Now all data is ready for useMemo calculations
+
+**Why this matters:**
+- `calculateRetirementProjection()` receives `inputs` and `persons` parameters
+- The function prioritizes person data from the `persons` array over input fallbacks
+- If inputs are set before persons load, useMemo will recalculate twice (once without persons, once with)
+- This causes incorrect age calculations and other timing-related bugs
+
+**Implementation pattern in App.jsx:**
+```javascript
+// 1. Load financial data
+const data = await financialAPI.getFinancialData();
+const baseInputs = { ...create inputs from data... };
+
+// 2. Load persons BEFORE setting inputs
+let personsList = [];
+try {
+  personsList = await personClient.getPersons();
+} catch (e) { /* handle error */ }
+
+// 3. Migrate home assets
+try {
+  await assetAPI.migrateHomeData();
+} catch (e) { /* already migrated */ }
+
+// 4. Load and merge assets
+const assets = await assetAPI.getAssets();
+const mergedInputs = mergeAssetDataIntoInputs(baseInputs, assets);
+setInputs(mergedInputs);
+
+// 5. Set persons (now calculation will use persons data from start)
+setPersons(personsList);
+```
+
+### Person Data Extraction in Calculations
+
+In `src/utils/calculations.js`, person data is extracted with fallbacks:
+```javascript
+// Start with inputs fallback values
+let primaryBirthMonth = birthMonth;
+let primaryBirthYear = birthYear;
+
+// Override with persons array data if available
+if (persons && persons.length > 0) {
+  const primaryPerson = persons.find(p => p.personType === 'self' || p.personType === 'primary');
+  if (primaryPerson && primaryPerson.includeInCalculations) {
+    if (primaryPerson.birthMonth) primaryBirthMonth = primaryPerson.birthMonth;
+    if (primaryPerson.birthYear) primaryBirthYear = primaryPerson.birthYear;
+    // ... extract other fields
+  }
+}
+```
+
+**Key point:** The `includeInCalculations` flag allows flexible scenario planning - you can exclude people from calculations without deleting their records.
+
 ## Critical Implementation Details
 
 ### Authentication Token Key
@@ -221,7 +292,9 @@ db.run(sql, params, function(err) {
 ## Known Issues and Gotchas
 
 1. **Token Key Mismatch:** API clients must use `'authToken'` key, not `'token'` - this caused "jwt malformed" errors in past
-2. **Column Count Mismatch:** Financial data INSERT statements must match exact column count (currently 55) or SQLite will error
-3. **Concurrent Writes:** SQLite can struggle with multiple simultaneous writes - consider PostgreSQL if multi-user access increases
-4. **No Form Validation:** Input forms don't validate before saving - garbage in = garbage in calculations
-5. **Scenario Feature:** Partially implemented - creates financial data snapshots but incomplete CRUD UI
+2. **Column Count Mismatch:** Financial data INSERT statements must match exact column count (currently 40 fields after person data moved to persons table) or SQLite will error
+3. **Data Loading Timing:** The order of data loading in App.jsx is critical - persons must load BEFORE inputs are set, otherwise age calculations use stale data. See "Data Loading Architecture" section above.
+4. **Asset Migration Timing:** Home data migration to assets table must complete BEFORE asset merge happens, otherwise mortgage amortization shows default values. Migration is now triggered in App.jsx before asset loading.
+5. **Concurrent Writes:** SQLite can struggle with multiple simultaneous writes - consider PostgreSQL if multi-user access increases
+6. **No Form Validation:** Input forms don't validate before saving - garbage in = garbage in calculations
+7. **Scenario Feature:** Partially implemented - creates financial data snapshots but incomplete CRUD UI
