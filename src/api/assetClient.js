@@ -57,6 +57,8 @@ export const assetAPI = {
   // Update asset
   async updateAsset(id, assetData) {
     const token = localStorage.getItem('authToken');
+    console.log('updateAsset - Asset ID:', id, 'Token exists:', !!token);
+    console.log('updateAsset - Data:', assetData);
     const response = await fetch(`${API_BASE}/${id}`, {
       method: 'PUT',
       headers: {
@@ -65,7 +67,12 @@ export const assetAPI = {
       },
       body: JSON.stringify(assetData),
     });
-    if (!response.ok) throw new Error('Failed to update asset');
+    console.log('updateAsset - Response status:', response.status, 'ok:', response.ok);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('updateAsset - Error response:', errorText);
+      throw new Error(`Failed to update asset: ${response.status}`);
+    }
     return response.json();
   },
 

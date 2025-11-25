@@ -139,9 +139,14 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
 
   const handleAssetFormSubmit = async (submittedData) => {
     try {
+      console.log('handleAssetFormSubmit - editingAsset:', editingAsset ? { id: editingAsset.id, assetName: editingAsset.assetName } : null);
+      console.log('handleAssetFormSubmit - submittedData:', submittedData);
+
       if (editingAsset) {
+        console.log('Calling updateAsset with ID:', editingAsset.id);
         await assetAPI.updateAsset(editingAsset.id, submittedData);
       } else {
+        console.log('Calling createAsset');
         await assetAPI.createAsset(submittedData);
       }
       await loadAssets();
