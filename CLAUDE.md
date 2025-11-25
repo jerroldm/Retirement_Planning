@@ -295,6 +295,7 @@ db.run(sql, params, function(err) {
 2. **Column Count Mismatch:** Financial data INSERT statements must match exact column count (currently 40 fields after person data moved to persons table) or SQLite will error
 3. **Data Loading Timing:** The order of data loading in App.jsx is critical - persons must load BEFORE inputs are set, otherwise age calculations use stale data. See "Data Loading Architecture" section above.
 4. **Asset Migration Timing:** Home data migration to assets table must complete BEFORE asset merge happens, otherwise mortgage amortization shows default values. Migration is now triggered in App.jsx before asset loading.
-5. **Concurrent Writes:** SQLite can struggle with multiple simultaneous writes - consider PostgreSQL if multi-user access increases
-6. **No Form Validation:** Input forms don't validate before saving - garbage in = garbage in calculations
-7. **Scenario Feature:** Partially implemented - creates financial data snapshots but incomplete CRUD UI
+5. **Person Data Syncing:** When a user edits their person record and changes fields like retirement age, those values must be synced back to the form inputs so they get auto-saved to financial_data table. Example: `handlePersonFormSubmit` in InputForm.jsx syncs birthMonth/birthYear/retirementAge back to formData. If adding new person fields, ensure they're synced here.
+6. **Concurrent Writes:** SQLite can struggle with multiple simultaneous writes - consider PostgreSQL if multi-user access increases
+7. **No Form Validation:** Input forms don't validate before saving - garbage in = garbage in calculations
+8. **Scenario Feature:** Partially implemented - creates financial data snapshots but incomplete CRUD UI
