@@ -27,31 +27,16 @@ router.post('/signup', async (req, res) => {
           return res.status(500).json({ error: 'Database error' });
         }
 
-        const userId = this.lastID;
-
-        // Auto-create a "Self" person for the new user
-        db.run(
-          `INSERT INTO persons (userId, personType, firstName, birthMonth, birthYear, includeInCalculations)
-           VALUES (?, ?, ?, ?, ?, ?)`,
-          [userId, 'self', firstName || 'Self', 1, 1970, 1],
-          function (personErr) {
-            if (personErr) {
-              console.error('Failed to create self person:', personErr);
-              // Don't fail the signup if person creation fails
-            }
-
-            const token = generateToken(userId);
-            res.status(201).json({
-              token,
-              user: {
-                id: userId,
-                email,
-                firstName: firstName || '',
-                lastName: lastName || '',
-              },
-            });
-          }
-        );
+        const token = generateToken(this.lastID);
+        res.status(201).json({
+          token,
+          user: {
+            id: this.lastID,
+            email,
+            firstName: firstName || '',
+            lastName: lastName || '',
+          },
+        });
       }
     );
   } catch (err) {
