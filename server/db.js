@@ -36,6 +36,8 @@ const initializeDatabase = () => {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       userId INTEGER NOT NULL,
       maritalStatus TEXT DEFAULT 'single',
+      birthMonth INTEGER,
+      birthYear INTEGER,
       retirementAge INTEGER,
       deathAge INTEGER,
       contributionStopAge INTEGER,

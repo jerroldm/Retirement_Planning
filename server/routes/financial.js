@@ -35,6 +35,8 @@ router.post('/', verifyToken, (req, res) => {
   console.log('  dataKeys:', Object.keys(req.body));
   const {
     maritalStatus,
+    birthMonth,
+    birthYear,
     retirementAge,
     deathAge,
     contributionStopAge,
@@ -86,6 +88,7 @@ router.post('/', verifyToken, (req, res) => {
         db.run(
           `UPDATE financial_data SET
             maritalStatus = ?,
+            birthMonth = ?, birthYear = ?,
             retirementAge = ?, deathAge = ?, contributionStopAge = ?,
             currentSalary = ?, annualSalaryIncrease = ?,
             traditionalIRA = ?, rothIRA = ?, investmentAccounts = ?,
@@ -100,6 +103,7 @@ router.post('/', verifyToken, (req, res) => {
             WHERE userId = ?`,
           [
             maritalStatus,
+            birthMonth, birthYear,
             retirementAge, deathAge, contributionStopAge,
             currentSalary, annualSalaryIncrease,
             traditionalIRA, rothIRA, investmentAccounts,
@@ -128,7 +132,7 @@ router.post('/', verifyToken, (req, res) => {
         // Insert new
         db.run(
           `INSERT INTO financial_data (
-            userId, maritalStatus, retirementAge, deathAge, contributionStopAge,
+            userId, maritalStatus, birthMonth, birthYear, retirementAge, deathAge, contributionStopAge,
             currentSalary, annualSalaryIncrease,
             traditionalIRA, rothIRA, investmentAccounts,
             traditionalIRAContribution, traditionIRACompanyMatch,
@@ -138,9 +142,9 @@ router.post('/', verifyToken, (req, res) => {
             homeMortgageMonthlyPayment, homeMortgagePayoffYear, homeMortgagePayoffMonth, homePropertyTaxInsurance, homePropertyTax, homePropertyTaxAnnualIncrease, homeInsurance, homeInsuranceAnnualIncrease, homeSalePlanEnabled, homeSaleYear, homeSaleMonth, homeMortgageExtraPrincipalPayment, otherAssets,
             preRetirementAnnualExpenses, postRetirementAnnualExpenses, investmentReturn,
             inflationRate, federalTaxRate, stateTaxRate
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
-            req.userId, maritalStatus, retirementAge, deathAge, contributionStopAge,
+            req.userId, maritalStatus, birthMonth, birthYear, retirementAge, deathAge, contributionStopAge,
             currentSalary, annualSalaryIncrease,
             traditionalIRA, rothIRA, investmentAccounts,
             traditionalIRAContribution, traditionIRACompanyMatch,
