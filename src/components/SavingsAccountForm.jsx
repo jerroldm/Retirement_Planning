@@ -42,12 +42,12 @@ export const SavingsAccountForm = ({ accountType, editingAccount, onSubmit, onCa
   const buildOwnerOptions = () => {
     const options = [];
 
-    // Add each person who is included in calculations
-    persons
-      .filter(p => p.includeInCalculations)
-      .forEach(person => {
+    // Add each person
+    if (persons && Array.isArray(persons)) {
+      persons.forEach(person => {
         options.push({ value: person.id, label: `${person.firstName} (${person.personType})` });
       });
+    }
 
     return options;
   };

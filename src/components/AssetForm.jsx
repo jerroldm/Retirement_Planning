@@ -130,13 +130,15 @@ export const AssetForm = ({ assetType, initialData, onSubmit, onCancel, persons 
                 required
               >
                 <option value="">-- Select owner --</option>
-                {persons
-                  .filter(p => p.includeInCalculations)
-                  .map(person => (
+                {persons && Array.isArray(persons) && persons.length > 0 ? (
+                  persons.map(person => (
                     <option key={person.id} value={person.id}>
                       {person.firstName} ({person.personType})
                     </option>
-                  ))}
+                  ))
+                ) : (
+                  <option disabled>No persons available</option>
+                )}
               </select>
               {errors.personId && <span className="error-message">{errors.personId}</span>}
             </div>
