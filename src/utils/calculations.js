@@ -294,7 +294,7 @@ export const calculateRetirementProjection = (inputs) => {
     // Add spouse 2 income
     let spouse2Income = 0;
     if (isMarried && !spouse2IsRetired) {
-      const spouse2YearIndex = year - spouse2CurrentAge;
+      const spouse2YearIndex = age - spouse2CurrentAge;
       if (spouse2YearIndex >= 0) {
         spouse2SalaryValue = spouse2CurrentSalary * Math.pow(1 + spouse2AnnualSalaryIncrease / 100, spouse2YearIndex);
         spouse2Income = spouse2SalaryValue;
