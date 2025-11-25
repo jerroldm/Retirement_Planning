@@ -97,60 +97,13 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
     setFormData(inputs || defaultInputs);
   }, [inputs]);
 
-  // Sync person data into form data whenever persons load
-  // This ensures birth data, retirement age, and death age from persons are available to calculations
-  // IMPORTANT: Only sync person data to formData state; don't propagate to parent if nothing else changed
-  // The parent will receive person updates via handleChange when user edits form fields
+  // NOTE: Person syncing is disabled because birth data is stored in financial_data table and already synced via inputs prop.
+  // The persons table is not being used for primary financial calculations at this time.
+  // Persons are loaded for the UI (PersonList display), but data sync is intentionally skipped
+  // to avoid overwriting the correctly-loaded financial_data values.
   useEffect(() => {
-    if (persons.length > 0) {
-      const primaryPerson = persons.find(p => p.personType === 'primary') || persons[0];
-      const spouse = persons.find(p => p.personType === 'spouse');
-
-      setFormData(prev => {
-        const updated = { ...prev };
-
-        // Merge primary person data
-        if (primaryPerson) {
-          if (primaryPerson.birthMonth !== undefined && primaryPerson.birthMonth !== null) {
-            updated.birthMonth = primaryPerson.birthMonth;
-          }
-          if (primaryPerson.birthYear !== undefined && primaryPerson.birthYear !== null) {
-            updated.birthYear = primaryPerson.birthYear;
-          }
-          // Auto-calculate age based on merged birth data
-          const newAge = calculateAge(updated.birthMonth, updated.birthYear);
-          updated.currentAge = newAge;
-
-          // Merge retirement age and death age from primary person
-          if (primaryPerson.retirementAge !== undefined && primaryPerson.retirementAge !== null) {
-            updated.retirementAge = primaryPerson.retirementAge;
-          }
-          if (primaryPerson.deathAge !== undefined && primaryPerson.deathAge !== null) {
-            updated.deathAge = primaryPerson.deathAge;
-          }
-        }
-
-        // Merge spouse data if married
-        if (spouse && updated.maritalStatus === 'married') {
-          if (spouse.birthMonth !== undefined && spouse.birthMonth !== null) {
-            updated.spouse2BirthMonth = spouse.birthMonth;
-          }
-          if (spouse.birthYear !== undefined && spouse.birthYear !== null) {
-            updated.spouse2BirthYear = spouse.birthYear;
-          }
-          // Auto-calculate spouse age based on merged birth data
-          const newSpouseAge = calculateAge(updated.spouse2BirthMonth, updated.spouse2BirthYear);
-          updated.spouse2CurrentAge = newSpouseAge;
-
-          // Merge spouse retirement age and death age
-          if (spouse.retirementAge !== undefined && spouse.retirementAge !== null) {
-            updated.spouse2RetirementAge = spouse.retirementAge;
-          }
-        }
-
-        return updated;
-      });
-    }
+    // Just load persons for display in PersonList, no data sync
+    // (data syncing removed to prevent overwriting financial_data)
   }, [persons]);
 
   const handleChange = (e) => {
