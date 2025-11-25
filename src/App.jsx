@@ -132,6 +132,9 @@ function AppContent() {
             console.log('Home data migration skipped or already migrated:', migrationError.message);
           }
 
+          // Set persons first (before setting inputs) so calculations have all data
+          setPersons(personsList);
+
           // Try to load and merge assets if available
           try {
             const assets = await assetAPI.getAssets();
@@ -143,9 +146,6 @@ function AppContent() {
             console.log('Loading baseInputs - birthMonth:', baseInputs.birthMonth, 'birthYear:', baseInputs.birthYear);
             setInputs(baseInputs);
           }
-
-          // Set persons after loading (now that inputs are set)
-          setPersons(personsList);
 
 
           setLastSaved(new Date(data.updatedAt))
@@ -312,15 +312,15 @@ function AppContent() {
         </nav>
 
         <div className="main-content">
-          {activeView === 'dashboard' && <Dashboard data={projectionData} />}
-          {activeView === 'table' && <DataTable data={projectionData} />}
-          {activeView === 'expenses-breakdown' && <ExpensesTable data={projectionData} />}
-          {activeView === 'mortgage-schedule' && <MortgageAmortizationTable schedule={mortgageSchedule} />}
-          {isFormTab(activeView) && (
+          {isLoadingData ? (
+            <div className="loading-spinner">Loading your data...</div>
+          ) : (
             <>
-              {isLoadingData ? (
-                <div className="loading-spinner">Loading your data...</div>
-              ) : (
+              {activeView === 'dashboard' && <Dashboard data={projectionData} />}
+              {activeView === 'table' && <DataTable data={projectionData} />}
+              {activeView === 'expenses-breakdown' && <ExpensesTable data={projectionData} />}
+              {activeView === 'mortgage-schedule' && <MortgageAmortizationTable schedule={mortgageSchedule} />}
+              {isFormTab(activeView) && (
                 <InputForm inputs={inputs} onInputsChange={handleInputsChange} activeTab={activeView} onAssetsSaved={reloadAssetData} />
               )}
             </>
