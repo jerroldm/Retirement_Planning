@@ -272,6 +272,28 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
       setShowPersonForm(false);
       setEditingPerson(null);
       setSelectedPersonType(null);
+
+      // After saving person data, reload persons and sync birth data to formData
+      const updatedPersons = await personClient.getPersons();
+      const primaryPerson = updatedPersons.find(p => p.personType === 'primary') || updatedPersons[0];
+
+      if (primaryPerson) {
+        const updatedFormData = { ...formData };
+        if (primaryPerson.birthMonth !== undefined) updatedFormData.birthMonth = primaryPerson.birthMonth;
+        if (primaryPerson.birthYear !== undefined) updatedFormData.birthYear = primaryPerson.birthYear;
+
+        // Recalculate age with the new birth data
+        updatedFormData.currentAge = calculateAge(updatedFormData.birthMonth, updatedFormData.birthYear);
+
+        console.log('Person saved - syncing to formData:', {
+          birthMonth: updatedFormData.birthMonth,
+          birthYear: updatedFormData.birthYear,
+          currentAge: updatedFormData.currentAge
+        });
+
+        setFormData(updatedFormData);
+        onInputsChange(updatedFormData);
+      }
     } catch (error) {
       console.error('Failed to save person:', error);
       alert('Failed to save person. Please try again.');

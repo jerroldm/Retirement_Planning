@@ -66,6 +66,7 @@ function AppContent() {
       setIsLoadingData(true)
       try {
         const data = await financialAPI.getFinancialData()
+        console.log('App.jsx - Financial data loaded from API:', { birthMonth: data?.birthMonth, birthYear: data?.birthYear, data });
         if (data) {
           const calculatedAge = calculateAge(data.birthMonth, data.birthYear);
           const calculatedSpouse2Age = calculateAge(data.spouse2BirthMonth, data.spouse2BirthYear);
@@ -171,12 +172,15 @@ function AppContent() {
   };
 
   const handleInputsChange = async (newInputs) => {
+    console.log('=== handleInputsChange CALLED ===');
+    console.log('newInputs.birthYear:', newInputs.birthYear);
+    console.log('newInputs.birthMonth:', newInputs.birthMonth);
     setInputs(newInputs)
-    console.log('handleInputsChange called with:', { birthMonth: newInputs.birthMonth, birthYear: newInputs.birthYear })
 
     // Auto-save to server
     if (user) {
       setIsSaving(true)
+      console.log('Starting auto-save...');
       try {
         // Only send fields that exist in the database schema
         const dataToSave = {

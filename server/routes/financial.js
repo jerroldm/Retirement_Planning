@@ -6,18 +6,22 @@ const router = express.Router();
 
 // Get user's financial data
 router.get('/', verifyToken, (req, res) => {
+  console.log('GET /financial - Looking for userId:', req.userId);
   db.get(
     `SELECT * FROM financial_data WHERE userId = ? ORDER BY updatedAt DESC LIMIT 1`,
     [req.userId],
     (err, data) => {
       if (err) {
+        console.error('Database error querying financial_data:', err);
         return res.status(500).json({ error: 'Database error' });
       }
 
+      console.log('Query result:', { found: !!data, userId: req.userId });
       if (!data) {
         return res.json(null);
       }
 
+      console.log('Returning financial data for userId:', req.userId, 'birthYear:', data.birthYear);
       res.json(data);
     }
   );
@@ -25,7 +29,12 @@ router.get('/', verifyToken, (req, res) => {
 
 // Save or update financial data
 router.post('/', verifyToken, (req, res) => {
-  console.log('Received POST request for financial data:', { userId: req.userId, dataKeys: Object.keys(req.body) });
+  console.log('=== FINANCIAL DATA POST ===');
+  console.log('Received POST request for financial data:');
+  console.log('  userId:', req.userId);
+  console.log('  birthYear:', req.body.birthYear);
+  console.log('  birthMonth:', req.body.birthMonth);
+  console.log('  dataKeys:', Object.keys(req.body));
   const {
     maritalStatus,
     firstName,
