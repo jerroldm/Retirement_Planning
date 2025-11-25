@@ -8,6 +8,10 @@ import { SavingsAccountList } from './SavingsAccountList';
 import { SavingsAccountTypeSelector } from './SavingsAccountTypeSelector';
 import { SavingsAccountForm } from './SavingsAccountForm';
 import { savingsAccountAPI } from '../api/savingsAccountClient';
+import { PersonList } from './PersonList';
+import PersonTypeSelector from './PersonTypeSelector';
+import PersonForm from './PersonForm';
+import { personClient } from '../api/personClient';
 import './InputForm.css';
 
 export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) => {
@@ -26,10 +30,18 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
   const [selectedAccountType, setSelectedAccountType] = useState(null);
   const [editingAccount, setEditingAccount] = useState(null);
 
-  // Load assets and savings accounts when component mounts
+  const [persons, setPersons] = useState([]);
+  const [personsLoading, setPersonsLoading] = useState(false);
+  const [showPersonTypeSelector, setShowPersonTypeSelector] = useState(false);
+  const [showPersonForm, setShowPersonForm] = useState(false);
+  const [selectedPersonType, setSelectedPersonType] = useState(null);
+  const [editingPerson, setEditingPerson] = useState(null);
+
+  // Load assets, savings accounts, and persons when component mounts
   useEffect(() => {
     loadAssets();
     loadSavingsAccounts();
+    loadPersons();
   }, []);
 
   const loadSavingsAccounts = async () => {
@@ -41,6 +53,18 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
       console.error('Failed to load savings accounts:', error);
     } finally {
       setSavingsAccountsLoading(false);
+    }
+  };
+
+  const loadPersons = async () => {
+    try {
+      setPersonsLoading(true);
+      const loadedPersons = await personClient.getPersons();
+      setPersons(loadedPersons);
+    } catch (error) {
+      console.error('Failed to load persons:', error);
+    } finally {
+      setPersonsLoading(false);
     }
   };
 
@@ -72,6 +96,83 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
     console.log('InputForm syncing formData, inputs:', { birthMonth: inputs?.birthMonth, birthYear: inputs?.birthYear });
     setFormData(inputs || defaultInputs);
   }, [inputs]);
+
+  // Sync person data into form data whenever persons load
+  // This ensures birth data, retirement age, and death age from persons are available to calculations
+  useEffect(() => {
+    if (persons.length > 0) {
+      const primaryPerson = persons.find(p => p.personType === 'primary') || persons[0];
+      const spouse = persons.find(p => p.personType === 'spouse');
+
+      setFormData(prev => {
+        const updated = { ...prev };
+        let changed = false;
+
+        // Merge primary person data
+        if (primaryPerson) {
+          if (primaryPerson.birthMonth !== undefined && primaryPerson.birthMonth !== null && updated.birthMonth !== primaryPerson.birthMonth) {
+            updated.birthMonth = primaryPerson.birthMonth;
+            changed = true;
+          }
+          if (primaryPerson.birthYear !== undefined && primaryPerson.birthYear !== null && updated.birthYear !== primaryPerson.birthYear) {
+            updated.birthYear = primaryPerson.birthYear;
+            changed = true;
+          }
+          if (primaryPerson.birthMonth !== undefined || primaryPerson.birthYear !== undefined) {
+            const newAge = calculateAge(updated.birthMonth, updated.birthYear);
+            if (newAge !== updated.currentAge) {
+              updated.currentAge = newAge;
+              changed = true;
+            }
+          }
+          // Merge retirement age and death age from primary person
+          if (primaryPerson.retirementAge !== undefined && primaryPerson.retirementAge !== null && updated.retirementAge !== primaryPerson.retirementAge) {
+            updated.retirementAge = primaryPerson.retirementAge;
+            changed = true;
+          }
+          if (primaryPerson.deathAge !== undefined && primaryPerson.deathAge !== null && updated.deathAge !== primaryPerson.deathAge) {
+            updated.deathAge = primaryPerson.deathAge;
+            changed = true;
+          }
+        }
+
+        // Merge spouse data if married
+        if (spouse && updated.maritalStatus === 'married') {
+          if (spouse.birthMonth !== undefined && spouse.birthMonth !== null && updated.spouse2BirthMonth !== spouse.birthMonth) {
+            updated.spouse2BirthMonth = spouse.birthMonth;
+            changed = true;
+          }
+          if (spouse.birthYear !== undefined && spouse.birthYear !== null && updated.spouse2BirthYear !== spouse.birthYear) {
+            updated.spouse2BirthYear = spouse.birthYear;
+            changed = true;
+          }
+          if (spouse.birthMonth !== undefined || spouse.birthYear !== undefined) {
+            const newSpouseAge = calculateAge(updated.spouse2BirthMonth, updated.spouse2BirthYear);
+            if (newSpouseAge !== updated.spouse2CurrentAge) {
+              updated.spouse2CurrentAge = newSpouseAge;
+              changed = true;
+            }
+          }
+          // Merge spouse retirement age and death age
+          if (spouse.retirementAge !== undefined && spouse.retirementAge !== null && updated.spouse2RetirementAge !== spouse.retirementAge) {
+            updated.spouse2RetirementAge = spouse.retirementAge;
+            changed = true;
+          }
+          if (spouse.deathAge !== undefined && spouse.deathAge !== null) {
+            // Note: there's no spouse2DeathAge field in the schema, but we keep for completeness
+            changed = true;
+          }
+        }
+
+        // Propagate changes to parent component
+        if (changed) {
+          onInputsChange(updated);
+        }
+
+        return updated;
+      });
+    }
+  }, [persons, onInputsChange]);
 
   const handleChange = (e) => {
     const { name, value, type } = e.target;
@@ -210,6 +311,57 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
     setSelectedAccountType(null);
   };
 
+  // Person management handlers
+  const handleAddPersonClick = () => {
+    setEditingPerson(null);
+    setShowPersonTypeSelector(true);
+  };
+
+  const handlePersonTypeSelect = (personType) => {
+    setSelectedPersonType(personType);
+    setShowPersonTypeSelector(false);
+    setShowPersonForm(true);
+  };
+
+  const handleEditPerson = (person) => {
+    setEditingPerson(person);
+    setSelectedPersonType(person.personType);
+    setShowPersonForm(true);
+  };
+
+  const handlePersonFormSubmit = async (submittedData) => {
+    try {
+      if (editingPerson) {
+        await personClient.updatePerson(editingPerson.id, submittedData);
+      } else {
+        await personClient.createPerson(submittedData);
+      }
+      await loadPersons();
+      setShowPersonForm(false);
+      setEditingPerson(null);
+      setSelectedPersonType(null);
+    } catch (error) {
+      console.error('Failed to save person:', error);
+      alert('Failed to save person. Please try again.');
+    }
+  };
+
+  const handleDeletePerson = async (id) => {
+    try {
+      await personClient.deletePerson(id);
+      await loadPersons();
+    } catch (error) {
+      console.error('Failed to delete person:', error);
+      alert('Failed to delete person. Please try again.');
+    }
+  };
+
+  const handleClosePersonForm = () => {
+    setShowPersonForm(false);
+    setEditingPerson(null);
+    setSelectedPersonType(null);
+  };
+
   return (
     <div className="input-form">
       <div className="form-header">
@@ -242,162 +394,34 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
             </div>
 
             <div className="subsection">
-              <h4>You (Person 1)</h4>
-              <div className="form-grid">
-                <div className="form-group">
-                  <label htmlFor="birthMonth">Birth Month</label>
-                  <select
-                    id="birthMonth"
-                    name="birthMonth"
-                    value={formData.birthMonth || ''}
-                    onChange={handleChange}
-                  >
-                    <option value="">Select Month</option>
-                    <option value="1">January</option>
-                    <option value="2">February</option>
-                    <option value="3">March</option>
-                    <option value="4">April</option>
-                    <option value="5">May</option>
-                    <option value="6">June</option>
-                    <option value="7">July</option>
-                    <option value="8">August</option>
-                    <option value="9">September</option>
-                    <option value="10">October</option>
-                    <option value="11">November</option>
-                    <option value="12">December</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label htmlFor="birthYear">Birth Year</label>
-                  <input
-                    type="number"
-                    id="birthYear"
-                    name="birthYear"
-                    value={formData.birthYear || ''}
-                    onChange={handleChange}
-                    min="1900"
-                    max={new Date().getFullYear()}
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Current Age</label>
-                  <div style={{padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '4px', fontSize: '16px', fontWeight: 'bold'}}>
-                    {calculateAge(formData.birthMonth, formData.birthYear)}
-                  </div>
-                </div>
-                <div className="form-group">
-                  <label htmlFor="retirementAge">Retirement Age</label>
-                  <input
-                    type="number"
-                    id="retirementAge"
-                    name="retirementAge"
-                    value={formData.retirementAge}
-                    onChange={handleChange}
-                    min="1"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="contributionStopAge">Contribution Stop Age</label>
-                  <input
-                    type="number"
-                    id="contributionStopAge"
-                    name="contributionStopAge"
-                    value={formData.contributionStopAge}
-                    onChange={handleChange}
-                    min="1"
-                  />
-                  <small style={{marginTop: '4px', color: '#999', fontSize: '12px'}}>
-                    Age when contributions stop
-                  </small>
-                </div>
-                <div className="form-group">
-                  <label htmlFor="deathAge">Planning Until Age</label>
-                  <input
-                    type="number"
-                    id="deathAge"
-                    name="deathAge"
-                    value={formData.deathAge}
-                    onChange={handleChange}
-                    min="1"
-                  />
-                </div>
-              </div>
+              <h4>Persons</h4>
+              <PersonList
+                persons={persons}
+                onEdit={handleEditPerson}
+                onDelete={handleDeletePerson}
+                onAddPerson={handleAddPersonClick}
+              />
             </div>
-
-            {formData.maritalStatus === 'married' && (
-              <div className="subsection">
-                <h4>Spouse (Person 2)</h4>
-                <div className="form-grid">
-                  <div className="form-group">
-                    <label htmlFor="spouse2BirthMonth">Birth Month</label>
-                    <select
-                      id="spouse2BirthMonth"
-                      name="spouse2BirthMonth"
-                      value={formData.spouse2BirthMonth || ''}
-                      onChange={handleChange}
-                    >
-                      <option value="">Select Month</option>
-                      <option value="1">January</option>
-                      <option value="2">February</option>
-                      <option value="3">March</option>
-                      <option value="4">April</option>
-                      <option value="5">May</option>
-                      <option value="6">June</option>
-                      <option value="7">July</option>
-                      <option value="8">August</option>
-                      <option value="9">September</option>
-                      <option value="10">October</option>
-                      <option value="11">November</option>
-                      <option value="12">December</option>
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="spouse2BirthYear">Birth Year</label>
-                    <input
-                      type="number"
-                      id="spouse2BirthYear"
-                      name="spouse2BirthYear"
-                      value={formData.spouse2BirthYear || ''}
-                      onChange={handleChange}
-                      min="1900"
-                      max={new Date().getFullYear()}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Current Age</label>
-                    <div style={{padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '4px', fontSize: '16px', fontWeight: 'bold'}}>
-                      {calculateAge(formData.spouse2BirthMonth, formData.spouse2BirthYear)}
-                    </div>
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="spouse2RetirementAge">Retirement Age</label>
-                    <input
-                      type="number"
-                      id="spouse2RetirementAge"
-                      name="spouse2RetirementAge"
-                      value={formData.spouse2RetirementAge || ''}
-                      onChange={handleChange}
-                      min="1"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="spouse2ContributionStopAge">Contribution Stop Age</label>
-                    <input
-                      type="number"
-                      id="spouse2ContributionStopAge"
-                      name="spouse2ContributionStopAge"
-                      value={formData.spouse2ContributionStopAge || ''}
-                      onChange={handleChange}
-                      min="1"
-                    />
-                    <small style={{marginTop: '4px', color: '#999', fontSize: '12px'}}>
-                      Age when contributions stop
-                    </small>
-                  </div>
-                </div>
-              </div>
-            )}
           </section>
+        )}
+
+        {/* Person Type Selector Modal */}
+        {showPersonTypeSelector && (
+          <PersonTypeSelector
+            onSelect={handlePersonTypeSelect}
+            onCancel={() => setShowPersonTypeSelector(false)}
+            existingTypes={persons.map(p => p.personType)}
+          />
+        )}
+
+        {/* Person Form Modal */}
+        {showPersonForm && (
+          <PersonForm
+            person={editingPerson}
+            personType={selectedPersonType}
+            onSave={handlePersonFormSubmit}
+            onCancel={handleClosePersonForm}
+          />
         )}
 
         {/* Income & Salary */}
@@ -639,6 +663,7 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
           editingAccount={editingAccount}
           onSubmit={handleAccountFormSubmit}
           onCancel={handleCloseAccountForm}
+          persons={persons}
         />
       )}
     </div>

@@ -28,6 +28,7 @@ router.post('/', verifyToken, (req, res) => {
   console.log('Received POST request for financial data:', { userId: req.userId, dataKeys: Object.keys(req.body) });
   const {
     maritalStatus,
+    firstName,
     currentAge,
     birthMonth,
     birthYear,
@@ -44,6 +45,7 @@ router.post('/', verifyToken, (req, res) => {
     rothIRAContribution,
     rothIRACompanyMatch,
     investmentAccountsContribution,
+    spouse2FirstName,
     spouse2CurrentAge,
     spouse2BirthMonth,
     spouse2BirthYear,
@@ -97,12 +99,14 @@ router.post('/', verifyToken, (req, res) => {
         db.run(
           `UPDATE financial_data SET
             maritalStatus = ?,
+            firstName = ?,
             currentAge = ?, birthMonth = ?, birthYear = ?, retirementAge = ?, deathAge = ?, contributionStopAge = ?,
             currentSalary = ?, annualSalaryIncrease = ?,
             traditionalIRA = ?, rothIRA = ?, investmentAccounts = ?,
             traditionalIRAContribution = ?, traditionIRACompanyMatch = ?,
             rothIRAContribution = ?, rothIRACompanyMatch = ?,
             investmentAccountsContribution = ?,
+            spouse2FirstName = ?,
             spouse2CurrentAge = ?, spouse2BirthMonth = ?, spouse2BirthYear = ?, spouse2RetirementAge = ?,
             spouse2CurrentSalary = ?, spouse2AnnualSalaryIncrease = ?,
             spouse2TraditionalIRA = ?, spouse2RothIRA = ?, spouse2InvestmentAccounts = ?,
@@ -117,12 +121,14 @@ router.post('/', verifyToken, (req, res) => {
             WHERE userId = ?`,
           [
             maritalStatus,
+            firstName,
             currentAge, birthMonth, birthYear, retirementAge, deathAge, contributionStopAge,
             currentSalary, annualSalaryIncrease,
             traditionalIRA, rothIRA, investmentAccounts,
             traditionalIRAContribution, traditionIRACompanyMatch,
             rothIRAContribution, rothIRACompanyMatch,
             investmentAccountsContribution,
+            spouse2FirstName,
             spouse2CurrentAge, spouse2BirthMonth, spouse2BirthYear, spouse2RetirementAge,
             spouse2CurrentSalary, spouse2AnnualSalaryIncrease,
             spouse2TraditionalIRA, spouse2RothIRA, spouse2InvestmentAccounts,
@@ -151,13 +157,13 @@ router.post('/', verifyToken, (req, res) => {
         // Insert new
         db.run(
           `INSERT INTO financial_data (
-            userId, maritalStatus, currentAge, birthMonth, birthYear, retirementAge, deathAge, contributionStopAge,
+            userId, maritalStatus, firstName, currentAge, birthMonth, birthYear, retirementAge, deathAge, contributionStopAge,
             currentSalary, annualSalaryIncrease,
             traditionalIRA, rothIRA, investmentAccounts,
             traditionalIRAContribution, traditionIRACompanyMatch,
             rothIRAContribution, rothIRACompanyMatch,
             investmentAccountsContribution,
-            spouse2CurrentAge, spouse2BirthMonth, spouse2BirthYear, spouse2RetirementAge,
+            spouse2FirstName, spouse2CurrentAge, spouse2BirthMonth, spouse2BirthYear, spouse2RetirementAge,
             spouse2CurrentSalary, spouse2AnnualSalaryIncrease,
             spouse2TraditionalIRA, spouse2RothIRA, spouse2InvestmentAccounts,
             spouse2TraditionalIRAContribution, spouse2TraditionalIRACompanyMatch,
@@ -167,15 +173,15 @@ router.post('/', verifyToken, (req, res) => {
             homeMortgageMonthlyPayment, homeMortgagePayoffYear, homeMortgagePayoffMonth, homePropertyTaxInsurance, homePropertyTax, homePropertyTaxAnnualIncrease, homeInsurance, homeInsuranceAnnualIncrease, homeSalePlanEnabled, homeSaleYear, homeSaleMonth, homeMortgageExtraPrincipalPayment, otherAssets,
             preRetirementAnnualExpenses, postRetirementAnnualExpenses, investmentReturn,
             inflationRate, federalTaxRate, stateTaxRate
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
-            req.userId, maritalStatus, currentAge, birthMonth, birthYear, retirementAge, deathAge, contributionStopAge,
+            req.userId, maritalStatus, firstName, currentAge, birthMonth, birthYear, retirementAge, deathAge, contributionStopAge,
             currentSalary, annualSalaryIncrease,
             traditionalIRA, rothIRA, investmentAccounts,
             traditionalIRAContribution, traditionIRACompanyMatch,
             rothIRAContribution, rothIRACompanyMatch,
             investmentAccountsContribution,
-            spouse2CurrentAge, spouse2BirthMonth, spouse2BirthYear, spouse2RetirementAge,
+            spouse2FirstName, spouse2CurrentAge, spouse2BirthMonth, spouse2BirthYear, spouse2RetirementAge,
             spouse2CurrentSalary, spouse2AnnualSalaryIncrease,
             spouse2TraditionalIRA, spouse2RothIRA, spouse2InvestmentAccounts,
             spouse2TraditionalIRAContribution, spouse2TraditionalIRACompanyMatch,
@@ -230,13 +236,13 @@ router.post('/scenarios', verifyToken, (req, res) => {
   // First save the financial data
   db.run(
     `INSERT INTO financial_data (
-      userId, maritalStatus, currentAge, birthMonth, birthYear, retirementAge, deathAge, contributionStopAge,
+      userId, maritalStatus, firstName, currentAge, birthMonth, birthYear, retirementAge, deathAge, contributionStopAge,
       currentSalary, annualSalaryIncrease,
       traditionalIRA, rothIRA, investmentAccounts,
       traditionalIRAContribution, traditionIRACompanyMatch,
       rothIRAContribution, rothIRACompanyMatch,
       investmentAccountsContribution,
-      spouse2CurrentAge, spouse2BirthMonth, spouse2BirthYear, spouse2RetirementAge,
+      spouse2FirstName, spouse2CurrentAge, spouse2BirthMonth, spouse2BirthYear, spouse2RetirementAge,
       spouse2CurrentSalary, spouse2AnnualSalaryIncrease,
       spouse2TraditionalIRA, spouse2RothIRA, spouse2InvestmentAccounts,
       spouse2TraditionalIRAContribution, spouse2TraditionalIRACompanyMatch,
@@ -250,13 +256,14 @@ router.post('/scenarios', verifyToken, (req, res) => {
     [
       req.userId,
       financialData.maritalStatus,
+      financialData.firstName,
       financialData.currentAge, financialData.birthMonth, financialData.birthYear, financialData.retirementAge, financialData.deathAge, financialData.contributionStopAge,
       financialData.currentSalary, financialData.annualSalaryIncrease,
       financialData.traditionalIRA, financialData.rothIRA, financialData.investmentAccounts,
       financialData.traditionalIRAContribution, financialData.traditionIRACompanyMatch,
       financialData.rothIRAContribution, financialData.rothIRACompanyMatch,
       financialData.investmentAccountsContribution,
-      financialData.spouse2CurrentAge, financialData.spouse2BirthMonth, financialData.spouse2BirthYear, financialData.spouse2RetirementAge,
+      financialData.spouse2FirstName, financialData.spouse2CurrentAge, financialData.spouse2BirthMonth, financialData.spouse2BirthYear, financialData.spouse2RetirementAge,
       financialData.spouse2CurrentSalary, financialData.spouse2AnnualSalaryIncrease,
       financialData.spouse2TraditionalIRA, financialData.spouse2RothIRA, financialData.spouse2InvestmentAccounts,
       financialData.spouse2TraditionalIRAContribution, financialData.spouse2TraditionalIRACompanyMatch,

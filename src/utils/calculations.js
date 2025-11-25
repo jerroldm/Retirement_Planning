@@ -95,9 +95,13 @@ export const generateMortgageAmortizationSchedule = (inputs) => {
     }
 
     // Calculate exact age for this payment month/year
-    let age = year - birthYear;
-    if (month < birthMonth) {
-      age--;
+    // Must recalculate from birthMonth/birthYear, not from pre-calculated currentAge
+    let age = 0;
+    if (birthMonth && birthYear) {
+      age = year - birthYear;
+      if (month < birthMonth) {
+        age--;
+      }
     }
 
     schedule.push({
@@ -182,6 +186,13 @@ export const calculateRetirementProjection = (inputs) => {
 
   const isMarried = maritalStatus === 'married';
 
+  // Recalculate current age from birth month/year for accuracy
+  // If birthMonth/birthYear are not provided in inputs, they might be in the defaultInputs
+  const actualBirthMonth = birthMonth !== undefined && birthMonth !== null ? birthMonth : 6;
+  const actualBirthYear = birthYear !== undefined && birthYear !== null ? birthYear : 1989;
+
+  const recalculatedCurrentAge = calculateAge(actualBirthMonth, actualBirthYear);
+
   // Generate amortization schedule to get exact mortgage payments
   const amortizationSchedule = generateMortgageAmortizationSchedule(inputs);
 
@@ -237,33 +248,33 @@ export const calculateRetirementProjection = (inputs) => {
 
   let currentMortgage = homeMortgage;
 
-  for (let year = currentAge; year <= deathAge; year++) {
-    const yearIndex = year - currentAge;
-    const isRetired = year >= retirementAge;
+  for (let age = recalculatedCurrentAge; age <= deathAge; age++) {
+    const yearIndex = age - recalculatedCurrentAge;
+    const projectedCalendarYear = currentCalendarYear + yearIndex;
+    const isRetired = age >= retirementAge;
 
     // For married couples, check if spouse is retired based on their age
     let spouse2IsRetired = false;
     if (isMarried) {
-      const spouse2YearIndex = year - spouse2CurrentAge;
-      spouse2IsRetired = spouse2YearIndex >= 0 && year >= spouse2RetirementAge;
+      const spouse2YearIndex = age - spouse2CurrentAge;
+      spouse2IsRetired = spouse2YearIndex >= 0 && age >= spouse2RetirementAge;
     }
 
     // Get mortgage payment and balance from the amortization schedule
-    const projectedCalendarYear = currentCalendarYear + yearIndex;
     let annualMortgagePayment = mortgagePaymentsByYear[projectedCalendarYear] || 0;
     let remainingMortgage = mortgagePaymentsByYear[`${projectedCalendarYear}_balance`] || 0;
 
     // Check for asset sales and deposit proceeds
     if (allAssets && allAssets.length > 0) {
       for (const asset of allAssets) {
-        if (asset.sellPlanEnabled && asset.sellYear === year && asset.expectedSaleProceeds) {
+        if (asset.sellPlanEnabled && asset.sellYear === projectedCalendarYear && asset.expectedSaleProceeds) {
           currentSaleProceeds += asset.expectedSaleProceeds;
         }
       }
     }
 
     // Also check for primary residence sale (legacy home asset)
-    if (homeSalePlanEnabled && homeSaleYear === year) {
+    if (homeSalePlanEnabled && homeSaleYear === projectedCalendarYear) {
       // Check if there are expected proceeds in the home asset from allAssets
       if (allAssets && allAssets.length > 0) {
         const homeAsset = allAssets.find(a => a.assetType === 'primary-residence');
@@ -316,8 +327,8 @@ export const calculateRetirementProjection = (inputs) => {
     let spouse2RothContribution = 0;
     let spouse2InvestmentContribution = 0;
 
-    const shouldMakeContributions = year < contributionStopAge;
-    const spouse2ShouldMakeContributions = isMarried && year < spouse2ContributionStopAge;
+    const shouldMakeContributions = age < contributionStopAge;
+    const spouse2ShouldMakeContributions = isMarried && age < spouse2ContributionStopAge;
 
     if (shouldMakeContributions) {
       traditionalContribution = (traditionalIRAContribution || 0) + (traditionIRACompanyMatch || 0);
@@ -377,8 +388,8 @@ export const calculateRetirementProjection = (inputs) => {
       (isMarried ? spouse2TraditionalContribution + spouse2RothContribution + spouse2InvestmentContribution : 0);
 
     years.push({
-      age: year,
-      year: yearIndex,
+      age: age,
+      year: projectedCalendarYear,
       isRetired,
       salary: Math.round(grossIncome),
       spouse2Salary: isMarried ? Math.round(spouse2Income) : 0,
@@ -413,6 +424,7 @@ export const defaultInputs = {
   maritalStatus: 'single',
 
   // Person 1 Information
+  firstName: '',
   birthMonth: 6,
   birthYear: 1989,
   currentAge: calculateAge(6, 1989),
@@ -431,6 +443,7 @@ export const defaultInputs = {
   investmentAccountsContribution: 5000,
 
   // Person 2 Information (for married couples)
+  spouse2FirstName: '',
   spouse2BirthMonth: 6,
   spouse2BirthYear: 1989,
   spouse2CurrentAge: calculateAge(6, 1989),

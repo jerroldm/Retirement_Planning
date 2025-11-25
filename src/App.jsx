@@ -51,6 +51,13 @@ function AppContent() {
     };
   };
 
+  // Helper function to extract person data and merge into inputs
+  const mergePersonDataIntoInputs = (baseInputs) => {
+    // This will be called after persons are loaded in InputForm
+    // For now, we'll need to ensure persons are loaded in App and merged here
+    return baseInputs;
+  };
+
   // Load user's financial data on mount
   useEffect(() => {
     const loadFinancialData = async () => {
