@@ -100,4 +100,25 @@ export const assetAPI = {
     }
     return response.json();
   },
+
+  // Migrate person ownership - assign unassigned assets/accounts to 'Self' person
+  async migratePersonOwnership() {
+    const token = localStorage.getItem('authToken');
+    console.log('migratePersonOwnership - Token exists:', !!token);
+    const response = await fetch(`${API_BASE}/migrate/assign-person-ownership`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    console.log('migratePersonOwnership - Response status:', response.status, 'ok:', response.ok);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('migratePersonOwnership - Error response:', errorText);
+      // Don't throw - migration is optional on first load
+      return null;
+    }
+    return response.json();
+  },
 };

@@ -4,38 +4,38 @@ export const ACCOUNT_TYPES = {
     label: 'Traditional IRA/401(k)',
     description: 'Tax-deferred retirement account',
     icon: '🏦',
-    fields: ['accountName', 'owner', 'currentBalance', 'annualContribution', 'companyMatch', 'stopContributingMode', 'stopContributingAge', 'stopContributingMonth', 'stopContributingYear'],
+    fields: ['accountName', 'personId', 'currentBalance', 'annualContribution', 'companyMatch', 'stopContributingMode', 'stopContributingAge', 'stopContributingMonth', 'stopContributingYear'],
   },
   'roth-ira': {
     label: 'Roth IRA/401(k)',
     description: 'Tax-free retirement account',
     icon: '💰',
-    fields: ['accountName', 'owner', 'currentBalance', 'annualContribution', 'companyMatch', 'stopContributingMode', 'stopContributingAge', 'stopContributingMonth', 'stopContributingYear'],
+    fields: ['accountName', 'personId', 'currentBalance', 'annualContribution', 'companyMatch', 'stopContributingMode', 'stopContributingAge', 'stopContributingMonth', 'stopContributingYear'],
   },
   'investment-account': {
     label: 'Investment/Brokerage Account',
     description: 'Taxable investment account',
     icon: '📈',
-    fields: ['accountName', 'owner', 'currentBalance', 'annualContribution', 'stopContributingMode', 'stopContributingAge', 'stopContributingMonth', 'stopContributingYear'],
+    fields: ['accountName', 'personId', 'currentBalance', 'annualContribution', 'stopContributingMode', 'stopContributingAge', 'stopContributingMonth', 'stopContributingYear'],
   },
   'savings-account': {
     label: 'Savings/Money Market Account',
     description: 'Liquid savings account',
     icon: '🏧',
-    fields: ['accountName', 'owner', 'currentBalance', 'annualContribution', 'stopContributingMode', 'stopContributingAge', 'stopContributingMonth', 'stopContributingYear'],
+    fields: ['accountName', 'personId', 'currentBalance', 'annualContribution', 'stopContributingMode', 'stopContributingAge', 'stopContributingMonth', 'stopContributingYear'],
   },
   'other-account': {
     label: 'Other Retirement Account',
     description: 'Other types of savings/investment accounts',
     icon: '💳',
-    fields: ['accountName', 'owner', 'currentBalance', 'annualContribution', 'stopContributingMode', 'stopContributingAge', 'stopContributingMonth', 'stopContributingYear'],
+    fields: ['accountName', 'personId', 'currentBalance', 'annualContribution', 'stopContributingMode', 'stopContributingAge', 'stopContributingMonth', 'stopContributingYear'],
   },
 };
 
 // Field definitions for all possible account fields
 export const FIELD_DEFINITIONS = {
   accountName: { label: 'Account Name', type: 'text', placeholder: 'e.g., Main 401(k), Emergency Fund' },
-  owner: { label: 'Account Owner', type: 'select', placeholder: 'Select owner' },
+  personId: { label: 'Account Owner', type: 'select', placeholder: 'Select owner' },
   currentBalance: { label: 'Current Balance', type: 'number', step: '0.01', min: '0' },
   annualContribution: { label: 'Annual Contribution', type: 'number', step: '0.01', min: '0' },
   companyMatch: { label: 'Annual Company Match', type: 'number', step: '0.01', min: '0' },

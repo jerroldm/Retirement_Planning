@@ -44,6 +44,7 @@ router.post('/', verifyToken, (req, res) => {
   console.log('Request body:', req.body);
 
   const {
+    personId,
     assetType,
     assetName,
     currentValue,
@@ -69,16 +70,16 @@ router.post('/', verifyToken, (req, res) => {
 
   db.run(
     `INSERT INTO assets (
-      userId, assetType, assetName, currentValue,
+      userId, personId, assetType, assetName, currentValue,
       loanBalance, loanRate, monthlyPayment, payoffYear, payoffMonth, extraPrincipalPayment,
       propertyTax, propertyTaxAnnualIncrease, insurance, insuranceAnnualIncrease,
       annualExpenses, annualExpensesAnnualIncrease,
       rentalIncome, rentalIncomeAnnualIncrease,
       appreciationRate,
       sellPlanEnabled, sellYear, sellMonth
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
-      req.userId, assetType, assetName, currentValue || 0,
+      req.userId, personId || null, assetType, assetName, currentValue || 0,
       loanBalance, loanRate, monthlyPayment, payoffYear, payoffMonth, extraPrincipalPayment || 0,
       propertyTax, propertyTaxAnnualIncrease, insurance, insuranceAnnualIncrease,
       annualExpenses, annualExpensesAnnualIncrease,
@@ -100,6 +101,7 @@ router.post('/', verifyToken, (req, res) => {
 // Update asset
 router.put('/:id', verifyToken, (req, res) => {
   const {
+    personId,
     assetName,
     currentValue,
     loanBalance,
@@ -124,7 +126,7 @@ router.put('/:id', verifyToken, (req, res) => {
 
   db.run(
     `UPDATE assets SET
-      assetName = ?, currentValue = ?,
+      personId = ?, assetName = ?, currentValue = ?,
       loanBalance = ?, loanRate = ?, monthlyPayment = ?, payoffYear = ?, payoffMonth = ?, extraPrincipalPayment = ?,
       propertyTax = ?, propertyTaxAnnualIncrease = ?, insurance = ?, insuranceAnnualIncrease = ?,
       annualExpenses = ?, annualExpensesAnnualIncrease = ?,
@@ -134,7 +136,7 @@ router.put('/:id', verifyToken, (req, res) => {
       updatedAt = CURRENT_TIMESTAMP
       WHERE id = ? AND userId = ?`,
     [
-      assetName, currentValue || 0,
+      personId || null, assetName, currentValue || 0,
       loanBalance, loanRate, monthlyPayment, payoffYear, payoffMonth, extraPrincipalPayment || 0,
       propertyTax, propertyTaxAnnualIncrease, insurance, insuranceAnnualIncrease,
       annualExpenses, annualExpensesAnnualIncrease,
@@ -245,6 +247,56 @@ router.post('/migrate/home-data', verifyToken, (req, res) => {
               }
               console.log('Home data migrated successfully, asset ID:', this.lastID);
               res.json({ message: 'Home data migrated successfully', migrated: true, assetId: this.lastID });
+            }
+          );
+        }
+      );
+    }
+  );
+});
+
+// Migrate person ownership - assign unassigned assets/accounts to 'Self' person
+router.post('/migrate/assign-person-ownership', verifyToken, (req, res) => {
+  console.log('POST /api/assets/migrate/assign-person-ownership - Migrating ownership for user:', req.userId);
+
+  // Find user's 'self' person
+  db.get(
+    `SELECT id FROM persons WHERE userId = ? AND personType = 'self' LIMIT 1`,
+    [req.userId],
+    (err, person) => {
+      if (err) {
+        return res.status(500).json({ error: 'Database error' });
+      }
+
+      if (!person) {
+        return res.status(400).json({ error: 'No self person found. Please create your person profile first.' });
+      }
+
+      // Update all assets without personId
+      db.run(
+        `UPDATE assets SET personId = ? WHERE userId = ? AND personId IS NULL`,
+        [person.id, req.userId],
+        function (err) {
+          if (err) {
+            return res.status(500).json({ error: 'Failed to update assets' });
+          }
+
+          const assetsUpdated = this.changes;
+
+          // Update all savings accounts without personId
+          db.run(
+            `UPDATE savings_accounts SET personId = ? WHERE userId = ? AND personId IS NULL`,
+            [person.id, req.userId],
+            function (err) {
+              if (err) {
+                return res.status(500).json({ error: 'Failed to update savings accounts' });
+              }
+
+              res.json({
+                message: 'Person ownership assigned successfully',
+                assetsUpdated,
+                accountsUpdated: this.changes
+              });
             }
           );
         }

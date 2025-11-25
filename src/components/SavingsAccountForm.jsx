@@ -5,7 +5,7 @@ import './SavingsAccountForm.css';
 export const SavingsAccountForm = ({ accountType, editingAccount, onSubmit, onCancel, persons = [] }) => {
   const [formData, setFormData] = useState({
     accountName: '',
-    owner: '',
+    personId: '',
     currentBalance: 0,
     annualContribution: 0,
     companyMatch: 0,
@@ -42,13 +42,12 @@ export const SavingsAccountForm = ({ accountType, editingAccount, onSubmit, onCa
   const buildOwnerOptions = () => {
     const options = [];
 
-    // Add each person
-    persons.forEach(person => {
-      options.push({ value: person.firstName, label: person.firstName });
-    });
-
-    // Add Joint option
-    options.push({ value: 'Joint', label: 'Joint' });
+    // Add each person who is included in calculations
+    persons
+      .filter(p => p.includeInCalculations)
+      .forEach(person => {
+        options.push({ value: person.id, label: `${person.firstName} (${person.personType})` });
+      });
 
     return options;
   };
@@ -117,8 +116,8 @@ export const SavingsAccountForm = ({ accountType, editingAccount, onSubmit, onCa
             }
 
             if (fieldConfig.type === 'select') {
-              // Special handling for owner field
-              const ownerOptions = fieldName === 'owner' ? buildOwnerOptions() : fieldConfig.options;
+              // Special handling for personId field
+              const personOptions = fieldName === 'personId' ? buildOwnerOptions() : fieldConfig.options;
 
               return (
                 <div key={fieldName} className="form-group">
@@ -130,8 +129,8 @@ export const SavingsAccountForm = ({ accountType, editingAccount, onSubmit, onCa
                     onChange={handleChange}
                     required
                   >
-                    <option value="">-- Select {fieldName === 'owner' ? 'owner' : 'option'} --</option>
-                    {ownerOptions.map(option => (
+                    <option value="">-- Select {fieldName === 'personId' ? 'owner' : 'option'} --</option>
+                    {personOptions.map(option => (
                       <option key={option.value} value={option.value}>{option.label}</option>
                     ))}
                   </select>

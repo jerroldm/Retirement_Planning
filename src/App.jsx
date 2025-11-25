@@ -132,6 +132,14 @@ function AppContent() {
             console.log('Home data migration skipped or already migrated:', migrationError.message);
           }
 
+          // Migrate person ownership - assign unassigned assets/accounts to 'Self' person
+          try {
+            const ownershipResult = await assetAPI.migratePersonOwnership();
+            console.log('Person ownership migration result:', ownershipResult);
+          } catch (ownershipError) {
+            console.log('Person ownership migration skipped:', ownershipError.message);
+          }
+
           // Set persons first (before setting inputs) so calculations have all data
           setPersons(personsList);
 

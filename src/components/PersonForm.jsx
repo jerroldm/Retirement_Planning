@@ -3,8 +3,9 @@ import { PERSON_TYPES, PERSON_FIELD_DEFINITIONS } from '../config/personConfig';
 
 export default function PersonForm({ person, personType, onSave, onCancel }) {
   // Normalize 'primary' to 'self' for backward compatibility with old database records
-  const normalizedPersonType = personType === 'primary' ? 'self' : personType;
-  const typeConfig = PERSON_TYPES[normalizedPersonType];
+  const initialPersonType = personType === 'primary' ? 'self' : personType;
+  const [selectedPersonType, setSelectedPersonType] = React.useState(initialPersonType);
+  const typeConfig = PERSON_TYPES[selectedPersonType];
   const [formData, setFormData] = React.useState(person || {});
 
   const handleChange = (e) => {
@@ -17,7 +18,7 @@ export default function PersonForm({ person, personType, onSave, onCancel }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave({ ...formData, personType: normalizedPersonType });
+    onSave({ ...formData, personType: selectedPersonType });
   };
 
   const renderField = (fieldName) => {
@@ -74,6 +75,21 @@ export default function PersonForm({ person, personType, onSave, onCancel }) {
             {typeConfig.fields.map((fieldName) =>
               renderField(fieldName)
             )}
+            {/* Person Type Selector - on same row as last field */}
+            <div key="personType" className="form-group">
+              <label htmlFor="personType">Household Role</label>
+              <select
+                id="personType"
+                value={selectedPersonType}
+                onChange={(e) => setSelectedPersonType(e.target.value)}
+              >
+                {Object.entries(PERSON_TYPES).map(([key, config]) => (
+                  <option key={key} value={key}>
+                    {config.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* Include in Calculations Checkbox */}

@@ -84,6 +84,7 @@ const initializeDatabase = () => {
     CREATE TABLE IF NOT EXISTS assets (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       userId INTEGER NOT NULL,
+      personId INTEGER,
       assetType TEXT NOT NULL,
       assetName TEXT NOT NULL,
       currentValue REAL DEFAULT 0,
@@ -121,7 +122,8 @@ const initializeDatabase = () => {
 
       createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
       updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (userId) REFERENCES users(id)
+      FOREIGN KEY (userId) REFERENCES users(id),
+      FOREIGN KEY (personId) REFERENCES persons(id)
     )
   `, (err) => {
     if (err) {
@@ -136,6 +138,7 @@ const initializeDatabase = () => {
     CREATE TABLE IF NOT EXISTS savings_accounts (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       userId INTEGER NOT NULL,
+      personId INTEGER,
       accountType TEXT NOT NULL,
       accountName TEXT NOT NULL,
       owner TEXT NOT NULL,
@@ -148,7 +151,8 @@ const initializeDatabase = () => {
       stopContributingYear INTEGER DEFAULT 0,
       createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
       updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (userId) REFERENCES users(id)
+      FOREIGN KEY (userId) REFERENCES users(id),
+      FOREIGN KEY (personId) REFERENCES persons(id)
     )
   `, (err) => {
     if (err) {
