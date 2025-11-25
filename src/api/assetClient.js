@@ -57,9 +57,13 @@ export const assetAPI = {
   // Update asset
   async updateAsset(id, assetData) {
     const token = localStorage.getItem('authToken');
+    console.log('updateAsset - STARTING UPDATE');
     console.log('updateAsset - Asset ID:', id, 'Token exists:', !!token);
-    console.log('updateAsset - Data:', assetData);
-    const response = await fetch(`${API_BASE}/${id}`, {
+    console.log('updateAsset - Data being sent:', assetData);
+    const url = `${API_BASE}/${id}`;
+    console.log('updateAsset - URL:', url);
+    console.log('updateAsset - About to send PUT request');
+    const response = await fetch(url, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -67,13 +71,16 @@ export const assetAPI = {
       },
       body: JSON.stringify(assetData),
     });
+    console.log('updateAsset - Response received');
     console.log('updateAsset - Response status:', response.status, 'ok:', response.ok);
     if (!response.ok) {
       const errorText = await response.text();
       console.error('updateAsset - Error response:', errorText);
       throw new Error(`Failed to update asset: ${response.status}`);
     }
-    return response.json();
+    const result = await response.json();
+    console.log('updateAsset - COMPLETED SUCCESSFULLY, result:', result);
+    return result;
   },
 
   // Delete asset

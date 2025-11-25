@@ -64,6 +64,7 @@ export const AssetForm = ({ assetType, initialData, onSubmit, onCancel, persons 
       newErrors.currentValue = 'Current value is required and must be non-negative';
     }
 
+    console.log('AssetForm.validateForm - newErrors:', newErrors);
     return newErrors;
   };
 
