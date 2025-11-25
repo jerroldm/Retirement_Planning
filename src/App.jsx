@@ -181,6 +181,7 @@ function AppContent() {
         // Only send fields that exist in the database schema
         const dataToSave = {
           maritalStatus: newInputs.maritalStatus,
+          firstName: newInputs.firstName || '',
           birthMonth: newInputs.birthMonth,
           birthYear: newInputs.birthYear,
           currentAge: newInputs.currentAge,
@@ -197,6 +198,7 @@ function AppContent() {
           rothIRAContribution: newInputs.rothIRAContribution,
           rothIRACompanyMatch: newInputs.rothIRACompanyMatch,
           investmentAccountsContribution: newInputs.investmentAccountsContribution,
+          spouse2FirstName: newInputs.spouse2FirstName || '',
           spouse2BirthMonth: newInputs.spouse2BirthMonth,
           spouse2BirthYear: newInputs.spouse2BirthYear,
           spouse2CurrentAge: newInputs.spouse2CurrentAge,
