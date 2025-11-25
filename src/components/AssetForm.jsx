@@ -100,6 +100,10 @@ export const AssetForm = ({ assetType, initialData, onSubmit, onCancel, persons 
       }, {})
     };
 
+    console.log('AssetForm.handleSubmit - FINAL submittedData keys:', Object.keys(submittedData));
+    console.log('AssetForm.handleSubmit - sellPlanEnabled in submittedData:', submittedData.sellPlanEnabled);
+    console.log('AssetForm.handleSubmit - expectedSaleProceeds in submittedData:', submittedData.expectedSaleProceeds);
+
     onSubmit(submittedData);
   };
 
