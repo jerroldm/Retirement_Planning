@@ -572,6 +572,7 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
           initialData={editingAsset}
           onSubmit={handleAssetFormSubmit}
           onCancel={handleCloseAssetForm}
+          persons={persons}
         />
       )}
 

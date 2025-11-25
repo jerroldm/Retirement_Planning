@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { ASSET_TYPES, FIELD_DEFINITIONS } from '../config/assetConfig';
 import './AssetForm.css';
 
-export const AssetForm = ({ assetType, initialData, onSubmit, onCancel }) => {
+export const AssetForm = ({ assetType, initialData, onSubmit, onCancel, persons = [] }) => {
   const [formData, setFormData] = useState({
     assetName: '',
+    personId: '',
     ...Object.fromEntries(ASSET_TYPES[assetType].fields.map(field => [field, '']))
   });
 
@@ -40,6 +41,11 @@ export const AssetForm = ({ assetType, initialData, onSubmit, onCancel }) => {
     // Validate asset name
     if (!formData.assetName.trim()) {
       newErrors.assetName = 'Asset name is required';
+    }
+
+    // Validate owner
+    if (!formData.personId) {
+      newErrors.personId = 'Owner is required';
     }
 
     // Validate required numeric fields
@@ -107,6 +113,32 @@ export const AssetForm = ({ assetType, initialData, onSubmit, onCancel }) => {
                 className={errors.assetName ? 'input-error' : ''}
               />
               {errors.assetName && <span className="error-message">{errors.assetName}</span>}
+            </div>
+
+            {/* Person/Owner Selector */}
+            <div className="form-group">
+              <label htmlFor="personId">
+                Owner
+                <span className="required">*</span>
+              </label>
+              <select
+                id="personId"
+                name="personId"
+                value={formData.personId}
+                onChange={handleInputChange}
+                className={errors.personId ? 'input-error' : ''}
+                required
+              >
+                <option value="">-- Select owner --</option>
+                {persons
+                  .filter(p => p.includeInCalculations)
+                  .map(person => (
+                    <option key={person.id} value={person.id}>
+                      {person.firstName} ({person.personType})
+                    </option>
+                  ))}
+              </select>
+              {errors.personId && <span className="error-message">{errors.personId}</span>}
             </div>
 
             {/* Dynamic Fields based on Asset Type - Structured Layout */}
