@@ -186,12 +186,9 @@ export const calculateRetirementProjection = (inputs) => {
 
   const isMarried = maritalStatus === 'married';
 
-  // Recalculate current age from birth month/year for accuracy
-  // If birthMonth/birthYear are not provided in inputs, they might be in the defaultInputs
-  const actualBirthMonth = birthMonth !== undefined && birthMonth !== null ? birthMonth : 6;
-  const actualBirthYear = birthYear !== undefined && birthYear !== null ? birthYear : 1989;
-
-  const recalculatedCurrentAge = calculateAge(actualBirthMonth, actualBirthYear);
+  // Use the birthMonth and birthYear from inputs directly (should always be defined from loaded data or defaults)
+  const recalculatedCurrentAge = calculateAge(birthMonth, birthYear);
+  console.log('calculateRetirementProjection - birthMonth:', birthMonth, 'birthYear:', birthYear, 'recalculatedCurrentAge:', recalculatedCurrentAge);
 
   // Generate amortization schedule to get exact mortgage payments
   const amortizationSchedule = generateMortgageAmortizationSchedule(inputs);
