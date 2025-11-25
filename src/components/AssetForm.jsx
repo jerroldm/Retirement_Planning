@@ -74,6 +74,9 @@ export const AssetForm = ({ assetType, initialData, onSubmit, onCancel, persons 
           acc[key] = value === true ? 1 : 0;
         } else if (fieldDef && (fieldDef.type === 'number' || fieldDef.type.includes('number'))) {
           acc[key] = value === '' ? null : parseFloat(value);
+        } else if (key === 'personId') {
+          // Convert personId to integer
+          acc[key] = value ? parseInt(value, 10) : null;
         } else {
           acc[key] = value || null;
         }

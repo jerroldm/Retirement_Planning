@@ -29,10 +29,21 @@ export const SavingsAccountForm = ({ accountType, editingAccount, onSubmit, onCa
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit({
+
+    // Validate that personId is selected
+    if (!formData.personId) {
+      alert('Please select an account owner');
+      return;
+    }
+
+    // Convert personId to number if it's a string
+    const submittedData = {
       ...formData,
+      personId: parseInt(formData.personId, 10),
       accountType
-    });
+    };
+
+    onSubmit(submittedData);
   };
 
   const accountConfig = ACCOUNT_TYPES[accountType];
