@@ -2,7 +2,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 16px;
-  margin: 24px 0;
+  margin: 24px;
 }
 
 .account-type-card {
