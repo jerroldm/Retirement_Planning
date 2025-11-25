@@ -146,7 +146,6 @@ export const generateMortgageAmortizationSchedule = (inputs, persons = []) => {
 
 export const calculateRetirementProjection = (inputs, persons = []) => {
   const {
-    maritalStatus,
     currentAge,
     retirementAge,
     deathAge,
@@ -183,7 +182,8 @@ export const calculateRetirementProjection = (inputs, persons = []) => {
     homeSaleMonth,
   } = inputs;
 
-  const isMarried = maritalStatus === 'married';
+  // Determine if there's a spouse based on persons list
+  const isMarried = persons && persons.some(p => p.personType === 'spouse' && p.includeInCalculations);
 
   // Extract person data from persons array
   let primaryBirthMonth = birthMonth;
@@ -493,9 +493,6 @@ export const calculateRetirementProjection = (inputs, persons = []) => {
 };
 
 export const defaultInputs = {
-  // Marital Status
-  maritalStatus: 'single',
-
   // Person 1 Information
   firstName: '',
   birthMonth: 6,

@@ -1,8 +1,8 @@
 // Person type definitions with their fields
 export const PERSON_TYPES = {
-  'primary': {
-    label: 'Primary Person',
-    description: 'Main household member',
+  'self': {
+    label: 'Self',
+    description: 'Primary household member',
     icon: '👤',
     fields: ['firstName', 'birthMonth', 'birthYear', 'retirementAge', 'deathAge'],
   },
@@ -11,6 +11,12 @@ export const PERSON_TYPES = {
     description: 'Spouse or domestic partner',
     icon: '💑',
     fields: ['firstName', 'birthMonth', 'birthYear', 'retirementAge', 'deathAge'],
+  },
+  'dependent': {
+    label: 'Dependent',
+    description: 'Child, parent, or other dependent',
+    icon: '👨‍👩‍👧',
+    fields: ['firstName', 'birthMonth', 'birthYear', 'deathAge'],
   },
 };
 

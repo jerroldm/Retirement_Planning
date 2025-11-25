@@ -2,7 +2,9 @@ import React from 'react';
 import { PERSON_TYPES, PERSON_FIELD_DEFINITIONS } from '../config/personConfig';
 
 export default function PersonForm({ person, personType, onSave, onCancel }) {
-  const typeConfig = PERSON_TYPES[personType];
+  // Normalize 'primary' to 'self' for backward compatibility with old database records
+  const normalizedPersonType = personType === 'primary' ? 'self' : personType;
+  const typeConfig = PERSON_TYPES[normalizedPersonType];
   const [formData, setFormData] = React.useState(person || {});
 
   const handleChange = (e) => {
@@ -15,7 +17,7 @@ export default function PersonForm({ person, personType, onSave, onCancel }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave({ ...formData, personType });
+    onSave({ ...formData, personType: normalizedPersonType });
   };
 
   const renderField = (fieldName) => {

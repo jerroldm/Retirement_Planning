@@ -321,24 +321,6 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
             <h3>Personal Information</h3>
 
             <div className="subsection">
-              <h4>Marital Status</h4>
-              <div className="form-grid">
-                <div className="form-group">
-                  <label htmlFor="maritalStatus">Status</label>
-                  <select
-                    id="maritalStatus"
-                    name="maritalStatus"
-                    value={formData.maritalStatus || 'single'}
-                    onChange={handleChange}
-                  >
-                    <option value="single">Single</option>
-                    <option value="married">Married</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <div className="subsection">
               <h4>Persons</h4>
               <PersonList
                 persons={persons}
@@ -403,9 +385,9 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
               </div>
             </div>
 
-            {formData.maritalStatus === 'married' && (
+            {persons.some(p => p.personType === 'spouse') && (
               <div className="subsection">
-                <h4>Spouse (Person 2)</h4>
+                <h4>Spouse</h4>
                 <div className="form-grid">
                   <div className="form-group">
                     <label htmlFor="spouse2CurrentSalary">Current Annual Salary</label>
