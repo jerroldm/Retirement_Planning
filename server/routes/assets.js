@@ -101,6 +101,9 @@ router.post('/', verifyToken, (req, res) => {
 
 // Update asset
 router.put('/:id', verifyToken, (req, res) => {
+  console.log('PUT /api/assets/:id - Updating asset:', req.params.id, 'for user:', req.userId);
+  console.log('Request body:', req.body);
+
   const {
     personId,
     assetName,
@@ -220,8 +223,8 @@ router.post('/migrate/home-data', verifyToken, (req, res) => {
               loanBalance, loanRate, monthlyPayment, payoffYear, payoffMonth, extraPrincipalPayment,
               propertyTax, propertyTaxAnnualIncrease, insurance, insuranceAnnualIncrease,
               appreciationRate,
-              sellPlanEnabled, sellYear, sellMonth
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              sellPlanEnabled, sellYear, sellMonth, expectedSaleProceeds
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
               req.userId,
               'primary-residence',
@@ -241,6 +244,7 @@ router.post('/migrate/home-data', verifyToken, (req, res) => {
               financialData.homeSalePlanEnabled ? 1 : 0,
               financialData.homeSaleYear,
               financialData.homeSaleMonth,
+              financialData.homeSaleProceeds || 0,
             ],
             function (err) {
               if (err) {
