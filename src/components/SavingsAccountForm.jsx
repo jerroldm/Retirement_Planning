@@ -30,8 +30,12 @@ export const SavingsAccountForm = ({ accountType, editingAccount, onSubmit, onCa
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    console.log('SavingsAccountForm - formData before validation:', formData);
+    console.log('SavingsAccountForm - persons available:', persons);
+
     // Validate that personId is selected
     if (!formData.personId) {
+      console.log('SavingsAccountForm - personId validation failed, personId is:', formData.personId);
       alert('Please select an account owner');
       return;
     }
@@ -43,6 +47,7 @@ export const SavingsAccountForm = ({ accountType, editingAccount, onSubmit, onCa
       accountType
     };
 
+    console.log('SavingsAccountForm - submittedData:', submittedData);
     onSubmit(submittedData);
   };
 

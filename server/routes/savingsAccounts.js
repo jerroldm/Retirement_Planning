@@ -34,7 +34,11 @@ router.post('/', verifyToken, (req, res) => {
     stopContributingYear
   } = req.body;
 
+  console.log('savingsAccounts POST - received req.body:', req.body);
+  console.log('savingsAccounts POST - extracted values:', { accountType, accountName, personId, owner });
+
   if (!accountType || !accountName || !personId) {
+    console.log('savingsAccounts POST - validation failed:', { accountType, accountName, personId });
     return res.status(400).json({ error: 'Account type, name, and owner are required' });
   }
 
