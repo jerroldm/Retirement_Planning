@@ -115,6 +115,15 @@ function AppContent() {
             stateTaxRate: data.stateTaxRate || 5,
           };
 
+          // Load persons data first (before setting inputs)
+          let personsList = [];
+          try {
+            personsList = await personClient.getPersons();
+            console.log('Persons loaded:', personsList);
+          } catch (personError) {
+            console.log('Could not load persons:', personError.message);
+          }
+
           // Migrate home data from financial_data to assets table if needed
           try {
             const migrationResult = await assetAPI.migrateHomeData();
@@ -135,14 +144,9 @@ function AppContent() {
             setInputs(baseInputs);
           }
 
-          // Load persons data independently
-          try {
-            const personsList = await personClient.getPersons();
-            setPersons(personsList || []);
-          } catch (personError) {
-            console.log('Could not load persons:', personError.message);
-            setPersons([]);
-          }
+          // Set persons after loading (now that inputs are set)
+          setPersons(personsList);
+
 
           setLastSaved(new Date(data.updatedAt))
         }
