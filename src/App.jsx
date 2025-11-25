@@ -78,19 +78,19 @@ function AppContent() {
             currentAge: calculatedAge,
             birthMonth: data.birthMonth,
             birthYear: data.birthYear,
-            retirementAge: data.retirementAge,
-            deathAge: data.deathAge,
-            contributionStopAge: data.contributionStopAge,
-            currentSalary: data.currentSalary,
-            annualSalaryIncrease: data.annualSalaryIncrease,
-            traditionalIRA: data.traditionalIRA,
-            rothIRA: data.rothIRA,
-            investmentAccounts: data.investmentAccounts,
-            traditionalIRAContribution: data.traditionalIRAContribution,
-            traditionIRACompanyMatch: data.traditionIRACompanyMatch,
-            rothIRAContribution: data.rothIRAContribution,
-            rothIRACompanyMatch: data.rothIRACompanyMatch,
-            investmentAccountsContribution: data.investmentAccountsContribution,
+            retirementAge: data.retirementAge || 65,
+            deathAge: data.deathAge || 95,
+            contributionStopAge: data.contributionStopAge || 65,
+            currentSalary: data.currentSalary || 100000,
+            annualSalaryIncrease: data.annualSalaryIncrease || 3,
+            traditionalIRA: data.traditionalIRA || 50000,
+            rothIRA: data.rothIRA || 25000,
+            investmentAccounts: data.investmentAccounts || 100000,
+            traditionalIRAContribution: data.traditionalIRAContribution || 10000,
+            traditionIRACompanyMatch: data.traditionIRACompanyMatch || 5000,
+            rothIRAContribution: data.rothIRAContribution || 5000,
+            rothIRACompanyMatch: data.rothIRACompanyMatch || 0,
+            investmentAccountsContribution: data.investmentAccountsContribution || 5000,
             homeValue: data.homeValue,
             homeMortgage: data.homeMortgage,
             homeMortgageRate: data.homeMortgageRate,
@@ -106,14 +106,22 @@ function AppContent() {
             homeSaleYear: data.homeSaleYear,
             homeSaleMonth: data.homeSaleMonth,
             homeMortgageExtraPrincipalPayment: data.homeMortgageExtraPrincipalPayment,
-            otherAssets: data.otherAssets,
-            preRetirementAnnualExpenses: data.preRetirementAnnualExpenses,
-            postRetirementAnnualExpenses: data.postRetirementAnnualExpenses,
-            investmentReturn: data.investmentReturn,
-            inflationRate: data.inflationRate,
-            federalTaxRate: data.federalTaxRate,
-            stateTaxRate: data.stateTaxRate,
+            otherAssets: data.otherAssets || 50000,
+            preRetirementAnnualExpenses: data.preRetirementAnnualExpenses || 60000,
+            postRetirementAnnualExpenses: data.postRetirementAnnualExpenses || 45000,
+            investmentReturn: data.investmentReturn || 7,
+            inflationRate: data.inflationRate || 3,
+            federalTaxRate: data.federalTaxRate || 22,
+            stateTaxRate: data.stateTaxRate || 5,
           };
+
+          // Migrate home data from financial_data to assets table if needed
+          try {
+            const migrationResult = await assetAPI.migrateHomeData();
+            console.log('Home data migration result:', migrationResult);
+          } catch (migrationError) {
+            console.log('Home data migration skipped or already migrated:', migrationError.message);
+          }
 
           // Try to load and merge assets if available
           try {
