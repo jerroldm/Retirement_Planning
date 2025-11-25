@@ -21,7 +21,7 @@ router.get('/', verifyToken, (req, res) => {
         return res.json(null);
       }
 
-      console.log('Returning financial data for userId:', req.userId, 'birthYear:', data.birthYear);
+      console.log('Returning financial data for userId:', req.userId);
       res.json(data);
     }
   );
@@ -32,15 +32,9 @@ router.post('/', verifyToken, (req, res) => {
   console.log('=== FINANCIAL DATA POST ===');
   console.log('Received POST request for financial data:');
   console.log('  userId:', req.userId);
-  console.log('  birthYear:', req.body.birthYear);
-  console.log('  birthMonth:', req.body.birthMonth);
   console.log('  dataKeys:', Object.keys(req.body));
   const {
     maritalStatus,
-    firstName,
-    currentAge,
-    birthMonth,
-    birthYear,
     retirementAge,
     deathAge,
     contributionStopAge,
@@ -54,22 +48,6 @@ router.post('/', verifyToken, (req, res) => {
     rothIRAContribution,
     rothIRACompanyMatch,
     investmentAccountsContribution,
-    spouse2FirstName,
-    spouse2CurrentAge,
-    spouse2BirthMonth,
-    spouse2BirthYear,
-    spouse2RetirementAge,
-    spouse2CurrentSalary,
-    spouse2AnnualSalaryIncrease,
-    spouse2TraditionalIRA,
-    spouse2RothIRA,
-    spouse2InvestmentAccounts,
-    spouse2TraditionalIRAContribution,
-    spouse2TraditionalIRACompanyMatch,
-    spouse2RothIRAContribution,
-    spouse2RothIRACompanyMatch,
-    spouse2InvestmentAccountsContribution,
-    spouse2ContributionStopAge,
     homeValue,
     homeMortgage,
     homeMortgageRate,
@@ -108,20 +86,12 @@ router.post('/', verifyToken, (req, res) => {
         db.run(
           `UPDATE financial_data SET
             maritalStatus = ?,
-            firstName = ?,
-            currentAge = ?, birthMonth = ?, birthYear = ?, retirementAge = ?, deathAge = ?, contributionStopAge = ?,
+            retirementAge = ?, deathAge = ?, contributionStopAge = ?,
             currentSalary = ?, annualSalaryIncrease = ?,
             traditionalIRA = ?, rothIRA = ?, investmentAccounts = ?,
             traditionalIRAContribution = ?, traditionIRACompanyMatch = ?,
             rothIRAContribution = ?, rothIRACompanyMatch = ?,
             investmentAccountsContribution = ?,
-            spouse2FirstName = ?,
-            spouse2CurrentAge = ?, spouse2BirthMonth = ?, spouse2BirthYear = ?, spouse2RetirementAge = ?,
-            spouse2CurrentSalary = ?, spouse2AnnualSalaryIncrease = ?,
-            spouse2TraditionalIRA = ?, spouse2RothIRA = ?, spouse2InvestmentAccounts = ?,
-            spouse2TraditionalIRAContribution = ?, spouse2TraditionalIRACompanyMatch = ?,
-            spouse2RothIRAContribution = ?, spouse2RothIRACompanyMatch = ?,
-            spouse2InvestmentAccountsContribution = ?, spouse2ContributionStopAge = ?,
             homeValue = ?, homeMortgage = ?, homeMortgageRate = ?,
             homeMortgageMonthlyPayment = ?, homeMortgagePayoffYear = ?, homeMortgagePayoffMonth = ?, homePropertyTaxInsurance = ?, homePropertyTax = ?, homePropertyTaxAnnualIncrease = ?, homeInsurance = ?, homeInsuranceAnnualIncrease = ?, homeSalePlanEnabled = ?, homeSaleYear = ?, homeSaleMonth = ?, homeMortgageExtraPrincipalPayment = ?, otherAssets = ?,
             preRetirementAnnualExpenses = ?, postRetirementAnnualExpenses = ?, investmentReturn = ?,
@@ -130,20 +100,12 @@ router.post('/', verifyToken, (req, res) => {
             WHERE userId = ?`,
           [
             maritalStatus,
-            firstName,
-            currentAge, birthMonth, birthYear, retirementAge, deathAge, contributionStopAge,
+            retirementAge, deathAge, contributionStopAge,
             currentSalary, annualSalaryIncrease,
             traditionalIRA, rothIRA, investmentAccounts,
             traditionalIRAContribution, traditionIRACompanyMatch,
             rothIRAContribution, rothIRACompanyMatch,
             investmentAccountsContribution,
-            spouse2FirstName,
-            spouse2CurrentAge, spouse2BirthMonth, spouse2BirthYear, spouse2RetirementAge,
-            spouse2CurrentSalary, spouse2AnnualSalaryIncrease,
-            spouse2TraditionalIRA, spouse2RothIRA, spouse2InvestmentAccounts,
-            spouse2TraditionalIRAContribution, spouse2TraditionalIRACompanyMatch,
-            spouse2RothIRAContribution, spouse2RothIRACompanyMatch,
-            spouse2InvestmentAccountsContribution, spouse2ContributionStopAge,
             homeValue, homeMortgage, homeMortgageRate,
             homeMortgageMonthlyPayment, homeMortgagePayoffYear, homeMortgagePayoffMonth, homePropertyTaxInsurance, homePropertyTax, homePropertyTaxAnnualIncrease, homeInsurance, homeInsuranceAnnualIncrease, homeSalePlanEnabled, homeSaleYear, homeSaleMonth, homeMortgageExtraPrincipalPayment, otherAssets,
             preRetirementAnnualExpenses, postRetirementAnnualExpenses, investmentReturn,
@@ -166,36 +128,24 @@ router.post('/', verifyToken, (req, res) => {
         // Insert new
         db.run(
           `INSERT INTO financial_data (
-            userId, maritalStatus, firstName, currentAge, birthMonth, birthYear, retirementAge, deathAge, contributionStopAge,
+            userId, maritalStatus, retirementAge, deathAge, contributionStopAge,
             currentSalary, annualSalaryIncrease,
             traditionalIRA, rothIRA, investmentAccounts,
             traditionalIRAContribution, traditionIRACompanyMatch,
             rothIRAContribution, rothIRACompanyMatch,
             investmentAccountsContribution,
-            spouse2FirstName, spouse2CurrentAge, spouse2BirthMonth, spouse2BirthYear, spouse2RetirementAge,
-            spouse2CurrentSalary, spouse2AnnualSalaryIncrease,
-            spouse2TraditionalIRA, spouse2RothIRA, spouse2InvestmentAccounts,
-            spouse2TraditionalIRAContribution, spouse2TraditionalIRACompanyMatch,
-            spouse2RothIRAContribution, spouse2RothIRACompanyMatch,
-            spouse2InvestmentAccountsContribution, spouse2ContributionStopAge,
             homeValue, homeMortgage, homeMortgageRate,
             homeMortgageMonthlyPayment, homeMortgagePayoffYear, homeMortgagePayoffMonth, homePropertyTaxInsurance, homePropertyTax, homePropertyTaxAnnualIncrease, homeInsurance, homeInsuranceAnnualIncrease, homeSalePlanEnabled, homeSaleYear, homeSaleMonth, homeMortgageExtraPrincipalPayment, otherAssets,
             preRetirementAnnualExpenses, postRetirementAnnualExpenses, investmentReturn,
             inflationRate, federalTaxRate, stateTaxRate
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
-            req.userId, maritalStatus, firstName, currentAge, birthMonth, birthYear, retirementAge, deathAge, contributionStopAge,
+            req.userId, maritalStatus, retirementAge, deathAge, contributionStopAge,
             currentSalary, annualSalaryIncrease,
             traditionalIRA, rothIRA, investmentAccounts,
             traditionalIRAContribution, traditionIRACompanyMatch,
             rothIRAContribution, rothIRACompanyMatch,
             investmentAccountsContribution,
-            spouse2FirstName, spouse2CurrentAge, spouse2BirthMonth, spouse2BirthYear, spouse2RetirementAge,
-            spouse2CurrentSalary, spouse2AnnualSalaryIncrease,
-            spouse2TraditionalIRA, spouse2RothIRA, spouse2InvestmentAccounts,
-            spouse2TraditionalIRAContribution, spouse2TraditionalIRACompanyMatch,
-            spouse2RothIRAContribution, spouse2RothIRACompanyMatch,
-            spouse2InvestmentAccountsContribution, spouse2ContributionStopAge,
             homeValue, homeMortgage, homeMortgageRate,
             homeMortgageMonthlyPayment, homeMortgagePayoffYear, homeMortgagePayoffMonth, homePropertyTaxInsurance, homePropertyTax, homePropertyTaxAnnualIncrease, homeInsurance, homeInsuranceAnnualIncrease, homeSalePlanEnabled, homeSaleYear, homeSaleMonth, homeMortgageExtraPrincipalPayment, otherAssets,
             preRetirementAnnualExpenses, postRetirementAnnualExpenses, investmentReturn,
@@ -245,39 +195,26 @@ router.post('/scenarios', verifyToken, (req, res) => {
   // First save the financial data
   db.run(
     `INSERT INTO financial_data (
-      userId, maritalStatus, firstName, currentAge, birthMonth, birthYear, retirementAge, deathAge, contributionStopAge,
+      userId, maritalStatus, retirementAge, deathAge, contributionStopAge,
       currentSalary, annualSalaryIncrease,
       traditionalIRA, rothIRA, investmentAccounts,
       traditionalIRAContribution, traditionIRACompanyMatch,
       rothIRAContribution, rothIRACompanyMatch,
       investmentAccountsContribution,
-      spouse2FirstName, spouse2CurrentAge, spouse2BirthMonth, spouse2BirthYear, spouse2RetirementAge,
-      spouse2CurrentSalary, spouse2AnnualSalaryIncrease,
-      spouse2TraditionalIRA, spouse2RothIRA, spouse2InvestmentAccounts,
-      spouse2TraditionalIRAContribution, spouse2TraditionalIRACompanyMatch,
-      spouse2RothIRAContribution, spouse2RothIRACompanyMatch,
-      spouse2InvestmentAccountsContribution, spouse2ContributionStopAge,
       homeValue, homeMortgage, homeMortgageRate,
       homeMortgageMonthlyPayment, homeMortgagePayoffYear, homeMortgagePayoffMonth, homePropertyTaxInsurance, homePropertyTax, homePropertyTaxAnnualIncrease, homeInsurance, homeInsuranceAnnualIncrease, homeSalePlanEnabled, homeSaleYear, homeSaleMonth, homeMortgageExtraPrincipalPayment, otherAssets,
       preRetirementAnnualExpenses, postRetirementAnnualExpenses, investmentReturn,
       inflationRate, federalTaxRate, stateTaxRate
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       req.userId,
       financialData.maritalStatus,
-      financialData.firstName,
-      financialData.currentAge, financialData.birthMonth, financialData.birthYear, financialData.retirementAge, financialData.deathAge, financialData.contributionStopAge,
+      financialData.retirementAge, financialData.deathAge, financialData.contributionStopAge,
       financialData.currentSalary, financialData.annualSalaryIncrease,
       financialData.traditionalIRA, financialData.rothIRA, financialData.investmentAccounts,
       financialData.traditionalIRAContribution, financialData.traditionIRACompanyMatch,
       financialData.rothIRAContribution, financialData.rothIRACompanyMatch,
       financialData.investmentAccountsContribution,
-      financialData.spouse2FirstName, financialData.spouse2CurrentAge, financialData.spouse2BirthMonth, financialData.spouse2BirthYear, financialData.spouse2RetirementAge,
-      financialData.spouse2CurrentSalary, financialData.spouse2AnnualSalaryIncrease,
-      financialData.spouse2TraditionalIRA, financialData.spouse2RothIRA, financialData.spouse2InvestmentAccounts,
-      financialData.spouse2TraditionalIRAContribution, financialData.spouse2TraditionalIRACompanyMatch,
-      financialData.spouse2RothIRAContribution, financialData.spouse2RothIRACompanyMatch,
-      financialData.spouse2InvestmentAccountsContribution, financialData.spouse2ContributionStopAge,
       financialData.homeValue, financialData.homeMortgage, financialData.homeMortgageRate,
       financialData.homeMortgageMonthlyPayment, financialData.homeMortgagePayoffYear, financialData.homeMortgagePayoffMonth, financialData.homePropertyTaxInsurance, financialData.homePropertyTax, financialData.homePropertyTaxAnnualIncrease, financialData.homeInsurance, financialData.homeInsuranceAnnualIncrease, financialData.homeSalePlanEnabled, financialData.homeSaleYear, financialData.homeSaleMonth, financialData.homeMortgageExtraPrincipalPayment, financialData.otherAssets,
       financialData.preRetirementAnnualExpenses, financialData.postRetirementAnnualExpenses, financialData.investmentReturn,

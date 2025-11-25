@@ -6,10 +6,10 @@ export default function PersonForm({ person, personType, onSave, onCancel }) {
   const [formData, setFormData] = React.useState(person || {});
 
   const handleChange = (e) => {
-    const { name, value, type } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData({
       ...formData,
-      [name]: type === 'number' ? (value ? parseFloat(value) : '') : value,
+      [name]: type === 'checkbox' ? checked : (type === 'number' ? (value ? parseFloat(value) : '') : value),
     });
   };
 
@@ -73,6 +73,21 @@ export default function PersonForm({ person, personType, onSave, onCancel }) {
               renderField(fieldName)
             )}
           </div>
+
+          {/* Include in Calculations Checkbox */}
+          <div className="form-group" style={{ marginBottom: '16px' }}>
+            <label htmlFor="includeInCalculations" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <input
+                id="includeInCalculations"
+                name="includeInCalculations"
+                type="checkbox"
+                checked={formData.includeInCalculations !== false}
+                onChange={handleChange}
+              />
+              Include in Retirement Calculations
+            </label>
+          </div>
+
           <div className="form-actions">
             <button type="submit" className="btn btn-primary">
               {person ? 'Update' : 'Add'} Person

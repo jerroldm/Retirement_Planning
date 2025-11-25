@@ -44,7 +44,7 @@ const calculateMonthsOfMortgagePayment = (yearIndex, currentMonth, payoffYear, p
 };
 
 // Generate full month-by-month mortgage amortization schedule
-export const generateMortgageAmortizationSchedule = (inputs) => {
+export const generateMortgageAmortizationSchedule = (inputs, persons = []) => {
   const {
     homeMortgage,
     homeMortgageRate,
@@ -55,6 +55,18 @@ export const generateMortgageAmortizationSchedule = (inputs) => {
     birthYear,
     homeMortgageExtraPrincipalPayment,
   } = inputs;
+
+  // Extract primary person's birth data from persons array if available
+  let primaryBirthMonth = birthMonth;
+  let primaryBirthYear = birthYear;
+
+  if (persons && persons.length > 0) {
+    const primaryPerson = persons.find(p => p.personType === 'self' || p.personType === 'primary') || persons[0];
+    if (primaryPerson && primaryPerson.includeInCalculations) {
+      primaryBirthMonth = primaryPerson.birthMonth || birthMonth;
+      primaryBirthYear = primaryPerson.birthYear || birthYear;
+    }
+  }
 
   // Get current date information
   const today = new Date();
@@ -97,9 +109,9 @@ export const generateMortgageAmortizationSchedule = (inputs) => {
     // Calculate exact age for this payment month/year
     // Must recalculate from birthMonth/birthYear, not from pre-calculated currentAge
     let age = 0;
-    if (birthMonth && birthYear) {
-      age = year - birthYear;
-      if (month < birthMonth) {
+    if (primaryBirthMonth && primaryBirthYear) {
+      age = year - primaryBirthYear;
+      if (month < primaryBirthMonth) {
         age--;
       }
     }
@@ -132,7 +144,7 @@ export const generateMortgageAmortizationSchedule = (inputs) => {
   return schedule;
 };
 
-export const calculateRetirementProjection = (inputs) => {
+export const calculateRetirementProjection = (inputs, persons = []) => {
   const {
     maritalStatus,
     currentAge,
@@ -149,19 +161,6 @@ export const calculateRetirementProjection = (inputs) => {
     rothIRAContribution,
     rothIRACompanyMatch,
     investmentAccountsContribution,
-    spouse2CurrentAge,
-    spouse2RetirementAge,
-    spouse2CurrentSalary,
-    spouse2AnnualSalaryIncrease,
-    spouse2TraditionalIRA,
-    spouse2RothIRA,
-    spouse2InvestmentAccounts,
-    spouse2TraditionalIRAContribution,
-    spouse2TraditionalIRACompanyMatch,
-    spouse2RothIRAContribution,
-    spouse2RothIRACompanyMatch,
-    spouse2InvestmentAccountsContribution,
-    spouse2ContributionStopAge,
     homeValue,
     homeMortgage,
     homeMortgageRate,
@@ -186,12 +185,89 @@ export const calculateRetirementProjection = (inputs) => {
 
   const isMarried = maritalStatus === 'married';
 
-  // Use the birthMonth and birthYear from inputs directly (should always be defined from loaded data or defaults)
-  const recalculatedCurrentAge = calculateAge(birthMonth, birthYear);
-  console.log('calculateRetirementProjection - birthMonth:', birthMonth, 'birthYear:', birthYear, 'recalculatedCurrentAge:', recalculatedCurrentAge);
+  // Extract person data from persons array
+  let primaryBirthMonth = birthMonth;
+  let primaryBirthYear = birthYear;
+  let primaryRetirementAge = retirementAge;
+  let primaryCurrentSalary = currentSalary;
+  let primaryAnnualSalaryIncrease = annualSalaryIncrease;
+  let primaryTraditionalIRA = traditionalIRA;
+  let primaryRothIRA = rothIRA;
+  let primaryInvestmentAccounts = investmentAccounts;
+  let primaryTraditionalIRAContribution = traditionalIRAContribution;
+  let primaryTraditionalIRACompanyMatch = traditionIRACompanyMatch;
+  let primaryRothIRAContribution = rothIRAContribution;
+  let primaryRothIRACompanyMatch = rothIRACompanyMatch;
+  let primaryInvestmentAccountsContribution = investmentAccountsContribution;
+  let primaryContributionStopAge = contributionStopAge;
+  let primaryCurrentAge = calculateAge(birthMonth, birthYear);
+
+  let spouse2BirthMonth = null;
+  let spouse2BirthYear = null;
+  let spouse2CurrentAge = 0;
+  let spouse2RetirementAge = retirementAge;
+  let spouse2CurrentSalary = 0;
+  let spouse2AnnualSalaryIncrease = 0;
+  let spouse2TraditionalIRA = 0;
+  let spouse2RothIRA = 0;
+  let spouse2InvestmentAccounts = 0;
+  let spouse2TraditionalIRAContribution = 0;
+  let spouse2TraditionalIRACompanyMatch = 0;
+  let spouse2RothIRAContribution = 0;
+  let spouse2RothIRACompanyMatch = 0;
+  let spouse2InvestmentAccountsContribution = 0;
+  let spouse2ContributionStopAge = retirementAge;
+
+  // Extract data from persons array if available
+  if (persons && persons.length > 0) {
+    // Find primary person (self/primary)
+    const primaryPerson = persons.find(p => p.personType === 'self' || p.personType === 'primary');
+    if (primaryPerson && primaryPerson.includeInCalculations) {
+      if (primaryPerson.birthMonth) primaryBirthMonth = primaryPerson.birthMonth;
+      if (primaryPerson.birthYear) primaryBirthYear = primaryPerson.birthYear;
+      if (primaryPerson.retirementAge) primaryRetirementAge = primaryPerson.retirementAge;
+      if (primaryPerson.currentSalary) primaryCurrentSalary = primaryPerson.currentSalary;
+      if (primaryPerson.annualSalaryIncrease) primaryAnnualSalaryIncrease = primaryPerson.annualSalaryIncrease;
+      if (primaryPerson.traditionalIRA) primaryTraditionalIRA = primaryPerson.traditionalIRA;
+      if (primaryPerson.rothIRA) primaryRothIRA = primaryPerson.rothIRA;
+      if (primaryPerson.investmentAccounts) primaryInvestmentAccounts = primaryPerson.investmentAccounts;
+      if (primaryPerson.traditionalIRAContribution) primaryTraditionalIRAContribution = primaryPerson.traditionalIRAContribution;
+      if (primaryPerson.traditionIRACompanyMatch) primaryTraditionalIRACompanyMatch = primaryPerson.traditionIRACompanyMatch;
+      if (primaryPerson.rothIRAContribution) primaryRothIRAContribution = primaryPerson.rothIRAContribution;
+      if (primaryPerson.rothIRACompanyMatch) primaryRothIRACompanyMatch = primaryPerson.rothIRACompanyMatch;
+      if (primaryPerson.investmentAccountsContribution) primaryInvestmentAccountsContribution = primaryPerson.investmentAccountsContribution;
+      if (primaryPerson.contributionStopAge) primaryContributionStopAge = primaryPerson.contributionStopAge;
+      primaryCurrentAge = calculateAge(primaryBirthMonth, primaryBirthYear);
+    }
+
+    // Find spouse (if married and spouse exists)
+    if (isMarried) {
+      const spousePerson = persons.find(p => p.personType === 'spouse');
+      if (spousePerson && spousePerson.includeInCalculations) {
+        spouse2BirthMonth = spousePerson.birthMonth;
+        spouse2BirthYear = spousePerson.birthYear;
+        spouse2CurrentAge = calculateAge(spouse2BirthMonth, spouse2BirthYear);
+        if (spousePerson.retirementAge) spouse2RetirementAge = spousePerson.retirementAge;
+        if (spousePerson.currentSalary) spouse2CurrentSalary = spousePerson.currentSalary;
+        if (spousePerson.annualSalaryIncrease) spouse2AnnualSalaryIncrease = spousePerson.annualSalaryIncrease;
+        if (spousePerson.traditionalIRA) spouse2TraditionalIRA = spousePerson.traditionalIRA;
+        if (spousePerson.rothIRA) spouse2RothIRA = spousePerson.rothIRA;
+        if (spousePerson.investmentAccounts) spouse2InvestmentAccounts = spousePerson.investmentAccounts;
+        if (spousePerson.traditionalIRAContribution) spouse2TraditionalIRAContribution = spousePerson.traditionalIRAContribution;
+        if (spousePerson.traditionIRACompanyMatch) spouse2TraditionalIRACompanyMatch = spousePerson.traditionIRACompanyMatch;
+        if (spousePerson.rothIRAContribution) spouse2RothIRAContribution = spousePerson.rothIRAContribution;
+        if (spousePerson.rothIRACompanyMatch) spouse2RothIRACompanyMatch = spousePerson.rothIRACompanyMatch;
+        if (spousePerson.investmentAccountsContribution) spouse2InvestmentAccountsContribution = spousePerson.investmentAccountsContribution;
+        if (spousePerson.contributionStopAge) spouse2ContributionStopAge = spousePerson.contributionStopAge;
+      }
+    }
+  }
+
+  const recalculatedCurrentAge = primaryCurrentAge;
+  console.log('calculateRetirementProjection - birthMonth:', primaryBirthMonth, 'birthYear:', primaryBirthYear, 'recalculatedCurrentAge:', recalculatedCurrentAge);
 
   // Generate amortization schedule to get exact mortgage payments
-  const amortizationSchedule = generateMortgageAmortizationSchedule(inputs);
+  const amortizationSchedule = generateMortgageAmortizationSchedule(inputs, persons);
 
   // Create a map of year/month -> annual payment for easy lookup
   const mortgagePaymentsByYearMonth = {};
@@ -231,11 +307,11 @@ export const calculateRetirementProjection = (inputs) => {
   const years = [];
 
   // Person 1 variables
-  let currentTraditionalIRA = traditionalIRA;
-  let currentRothIRA = rothIRA;
-  let currentInvestmentAccounts = investmentAccounts;
+  let currentTraditionalIRA = primaryTraditionalIRA;
+  let currentRothIRA = primaryRothIRA;
+  let currentInvestmentAccounts = primaryInvestmentAccounts;
   let currentSaleProceeds = 0;
-  let currentSalaryValue = currentSalary;
+  let currentSalaryValue = primaryCurrentSalary;
 
   // Person 2 variables (spouse)
   let currentSpouse2TraditionalIRA = spouse2TraditionalIRA || 0;
@@ -248,7 +324,7 @@ export const calculateRetirementProjection = (inputs) => {
   for (let age = recalculatedCurrentAge; age <= deathAge; age++) {
     const yearIndex = age - recalculatedCurrentAge;
     const projectedCalendarYear = currentCalendarYear + yearIndex;
-    const isRetired = age >= retirementAge;
+    const isRetired = age >= primaryRetirementAge;
 
     // For married couples, check if spouse is retired based on their age
     let spouse2IsRetired = false;
@@ -284,7 +360,7 @@ export const calculateRetirementProjection = (inputs) => {
     // Calculate income for both people
     let grossIncome = 0;
     if (!isRetired) {
-      currentSalaryValue = currentSalary * Math.pow(1 + annualSalaryIncrease / 100, yearIndex);
+      currentSalaryValue = primaryCurrentSalary * Math.pow(1 + primaryAnnualSalaryIncrease / 100, yearIndex);
       grossIncome = currentSalaryValue;
     }
 
@@ -324,13 +400,13 @@ export const calculateRetirementProjection = (inputs) => {
     let spouse2RothContribution = 0;
     let spouse2InvestmentContribution = 0;
 
-    const shouldMakeContributions = age < contributionStopAge;
+    const shouldMakeContributions = age < primaryContributionStopAge;
     const spouse2ShouldMakeContributions = isMarried && age < spouse2ContributionStopAge;
 
     if (shouldMakeContributions) {
-      traditionalContribution = (traditionalIRAContribution || 0) + (traditionIRACompanyMatch || 0);
-      rothContribution = (rothIRAContribution || 0) + (rothIRACompanyMatch || 0);
-      investmentContribution = investmentAccountsContribution || 0;
+      traditionalContribution = (primaryTraditionalIRAContribution || 0) + (primaryTraditionalIRACompanyMatch || 0);
+      rothContribution = (primaryRothIRAContribution || 0) + (primaryRothIRACompanyMatch || 0);
+      investmentContribution = primaryInvestmentAccountsContribution || 0;
     }
 
     if (spouse2ShouldMakeContributions) {

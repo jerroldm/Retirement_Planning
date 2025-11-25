@@ -9,11 +9,13 @@ import { MortgageAmortizationTable } from './components/MortgageAmortizationTabl
 import { calculateRetirementProjection, generateMortgageAmortizationSchedule, defaultInputs, calculateAge } from './utils/calculations'
 import { financialAPI } from './api/client'
 import { assetAPI } from './api/assetClient'
+import { personClient } from './api/personClient'
 import './App.css'
 
 function AppContent() {
   const { user, isLoading: authLoading, logout } = useAuth()
   const [inputs, setInputs] = useState(defaultInputs)
+  const [persons, setPersons] = useState([])
   const [activeView, setActiveView] = useState('personal')
   const [isSaving, setIsSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState(null)
@@ -69,9 +71,8 @@ function AppContent() {
         console.log('App.jsx - Financial data loaded from API:', { birthMonth: data?.birthMonth, birthYear: data?.birthYear, data });
         if (data) {
           const calculatedAge = calculateAge(data.birthMonth, data.birthYear);
-          const calculatedSpouse2Age = calculateAge(data.spouse2BirthMonth, data.spouse2BirthYear);
 
-          // Create base inputs from financial data
+          // Create base inputs from financial data (person demographic data comes from persons table)
           const baseInputs = {
             maritalStatus: data.maritalStatus || 'single',
             currentAge: calculatedAge,
@@ -90,21 +91,6 @@ function AppContent() {
             rothIRAContribution: data.rothIRAContribution,
             rothIRACompanyMatch: data.rothIRACompanyMatch,
             investmentAccountsContribution: data.investmentAccountsContribution,
-            spouse2CurrentAge: calculatedSpouse2Age,
-            spouse2BirthMonth: data.spouse2BirthMonth,
-            spouse2BirthYear: data.spouse2BirthYear,
-            spouse2RetirementAge: data.spouse2RetirementAge,
-            spouse2CurrentSalary: data.spouse2CurrentSalary,
-            spouse2AnnualSalaryIncrease: data.spouse2AnnualSalaryIncrease,
-            spouse2TraditionalIRA: data.spouse2TraditionalIRA,
-            spouse2RothIRA: data.spouse2RothIRA,
-            spouse2InvestmentAccounts: data.spouse2InvestmentAccounts,
-            spouse2TraditionalIRAContribution: data.spouse2TraditionalIRAContribution,
-            spouse2TraditionalIRACompanyMatch: data.spouse2TraditionalIRACompanyMatch,
-            spouse2RothIRAContribution: data.spouse2RothIRAContribution,
-            spouse2RothIRACompanyMatch: data.spouse2RothIRACompanyMatch,
-            spouse2InvestmentAccountsContribution: data.spouse2InvestmentAccountsContribution,
-            spouse2ContributionStopAge: data.spouse2ContributionStopAge,
             homeValue: data.homeValue,
             homeMortgage: data.homeMortgage,
             homeMortgageRate: data.homeMortgageRate,
@@ -141,6 +127,15 @@ function AppContent() {
             setInputs(baseInputs);
           }
 
+          // Load persons data independently
+          try {
+            const personsList = await personClient.getPersons();
+            setPersons(personsList || []);
+          } catch (personError) {
+            console.log('Could not load persons:', personError.message);
+            setPersons([]);
+          }
+
           setLastSaved(new Date(data.updatedAt))
         }
       } catch (err) {
@@ -154,12 +149,12 @@ function AppContent() {
   }, [user])
 
   const projectionData = useMemo(() => {
-    return calculateRetirementProjection(inputs)
-  }, [inputs])
+    return calculateRetirementProjection(inputs, persons)
+  }, [inputs, persons])
 
   const mortgageSchedule = useMemo(() => {
-    return generateMortgageAmortizationSchedule(inputs)
-  }, [inputs])
+    return generateMortgageAmortizationSchedule(inputs, persons)
+  }, [inputs, persons])
 
   const reloadAssetData = async () => {
     // Reload assets and merge them into current inputs
@@ -185,10 +180,8 @@ function AppContent() {
         // Only send fields that exist in the database schema
         const dataToSave = {
           maritalStatus: newInputs.maritalStatus,
-          firstName: newInputs.firstName || '',
           birthMonth: newInputs.birthMonth,
           birthYear: newInputs.birthYear,
-          currentAge: newInputs.currentAge,
           retirementAge: newInputs.retirementAge,
           deathAge: newInputs.deathAge,
           contributionStopAge: newInputs.contributionStopAge,
@@ -202,22 +195,6 @@ function AppContent() {
           rothIRAContribution: newInputs.rothIRAContribution,
           rothIRACompanyMatch: newInputs.rothIRACompanyMatch,
           investmentAccountsContribution: newInputs.investmentAccountsContribution,
-          spouse2FirstName: newInputs.spouse2FirstName || '',
-          spouse2BirthMonth: newInputs.spouse2BirthMonth,
-          spouse2BirthYear: newInputs.spouse2BirthYear,
-          spouse2CurrentAge: newInputs.spouse2CurrentAge,
-          spouse2RetirementAge: newInputs.spouse2RetirementAge,
-          spouse2CurrentSalary: newInputs.spouse2CurrentSalary,
-          spouse2AnnualSalaryIncrease: newInputs.spouse2AnnualSalaryIncrease,
-          spouse2TraditionalIRA: newInputs.spouse2TraditionalIRA,
-          spouse2RothIRA: newInputs.spouse2RothIRA,
-          spouse2InvestmentAccounts: newInputs.spouse2InvestmentAccounts,
-          spouse2TraditionalIRAContribution: newInputs.spouse2TraditionalIRAContribution,
-          spouse2TraditionalIRACompanyMatch: newInputs.spouse2TraditionalIRACompanyMatch,
-          spouse2RothIRAContribution: newInputs.spouse2RothIRAContribution,
-          spouse2RothIRACompanyMatch: newInputs.spouse2RothIRACompanyMatch,
-          spouse2InvestmentAccountsContribution: newInputs.spouse2InvestmentAccountsContribution,
-          spouse2ContributionStopAge: newInputs.spouse2ContributionStopAge,
           homeValue: newInputs.homeValue,
           homeMortgage: newInputs.homeMortgage,
           homeMortgageRate: newInputs.homeMortgageRate,
