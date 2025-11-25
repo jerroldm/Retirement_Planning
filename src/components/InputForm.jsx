@@ -270,6 +270,7 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
         const updatedFormData = { ...formData };
         if (primaryPerson.birthMonth !== undefined) updatedFormData.birthMonth = primaryPerson.birthMonth;
         if (primaryPerson.birthYear !== undefined) updatedFormData.birthYear = primaryPerson.birthYear;
+        if (primaryPerson.retirementAge !== undefined) updatedFormData.retirementAge = primaryPerson.retirementAge;
 
         // Recalculate age with the new birth data
         updatedFormData.currentAge = calculateAge(updatedFormData.birthMonth, updatedFormData.birthYear);
@@ -277,7 +278,8 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
         console.log('Person saved - syncing to formData:', {
           birthMonth: updatedFormData.birthMonth,
           birthYear: updatedFormData.birthYear,
-          currentAge: updatedFormData.currentAge
+          currentAge: updatedFormData.currentAge,
+          retirementAge: updatedFormData.retirementAge
         });
 
         setFormData(updatedFormData);
