@@ -66,6 +66,7 @@ router.post('/', verifyToken, (req, res) => {
     sellPlanEnabled,
     sellYear,
     sellMonth,
+    expectedSaleProceeds,
   } = req.body;
 
   db.run(
@@ -76,8 +77,8 @@ router.post('/', verifyToken, (req, res) => {
       annualExpenses, annualExpensesAnnualIncrease,
       rentalIncome, rentalIncomeAnnualIncrease,
       appreciationRate,
-      sellPlanEnabled, sellYear, sellMonth
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      sellPlanEnabled, sellYear, sellMonth, expectedSaleProceeds
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       req.userId, personId || null, assetType, assetName, currentValue || 0,
       loanBalance, loanRate, monthlyPayment, payoffYear, payoffMonth, extraPrincipalPayment || 0,
@@ -85,7 +86,7 @@ router.post('/', verifyToken, (req, res) => {
       annualExpenses, annualExpensesAnnualIncrease,
       rentalIncome, rentalIncomeAnnualIncrease,
       appreciationRate || 0,
-      sellPlanEnabled ? 1 : 0, sellYear, sellMonth,
+      sellPlanEnabled ? 1 : 0, sellYear, sellMonth, expectedSaleProceeds || 0,
     ],
     function (err) {
       if (err) {
@@ -122,6 +123,7 @@ router.put('/:id', verifyToken, (req, res) => {
     sellPlanEnabled,
     sellYear,
     sellMonth,
+    expectedSaleProceeds,
   } = req.body;
 
   db.run(
@@ -132,7 +134,7 @@ router.put('/:id', verifyToken, (req, res) => {
       annualExpenses = ?, annualExpensesAnnualIncrease = ?,
       rentalIncome = ?, rentalIncomeAnnualIncrease = ?,
       appreciationRate = ?,
-      sellPlanEnabled = ?, sellYear = ?, sellMonth = ?,
+      sellPlanEnabled = ?, sellYear = ?, sellMonth = ?, expectedSaleProceeds = ?,
       updatedAt = CURRENT_TIMESTAMP
       WHERE id = ? AND userId = ?`,
     [
@@ -142,7 +144,7 @@ router.put('/:id', verifyToken, (req, res) => {
       annualExpenses, annualExpensesAnnualIncrease,
       rentalIncome, rentalIncomeAnnualIncrease,
       appreciationRate || 0,
-      sellPlanEnabled ? 1 : 0, sellYear, sellMonth,
+      sellPlanEnabled ? 1 : 0, sellYear, sellMonth, expectedSaleProceeds || 0,
       req.params.id, req.userId,
     ],
     function (err) {
