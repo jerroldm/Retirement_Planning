@@ -12,7 +12,6 @@ export const savingsAccountAPI = {
   },
 
   async createAccount(accountData) {
-    console.log('createAccount - sending data:', accountData);
     const response = await fetch(`${API_BASE}/savings-accounts`, {
       method: 'POST',
       headers: {
