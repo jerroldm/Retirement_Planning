@@ -76,6 +76,11 @@ export const AssetForm = ({ assetType, initialData, onSubmit, onCancel, persons 
       return;
     }
 
+    console.log('AssetForm.handleSubmit - formData keys:', Object.keys(formData));
+    console.log('AssetForm.handleSubmit - formData:', formData);
+    console.log('AssetForm.handleSubmit - sellPlanEnabled in formData:', formData.sellPlanEnabled);
+    console.log('AssetForm.handleSubmit - expectedSaleProceeds in formData:', formData.expectedSaleProceeds);
+
     // Convert string values to appropriate types
     const submittedData = {
       assetType,
