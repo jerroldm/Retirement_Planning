@@ -17,7 +17,18 @@ export const SavingsAccountForm = ({ accountType, editingAccount, onSubmit, onCa
 
   useEffect(() => {
     if (editingAccount) {
-      setFormData(editingAccount);
+      // Sanitize editingAccount to convert null values to appropriate defaults
+      const sanitizedData = Object.entries(editingAccount).reduce((acc, [key, value]) => {
+        const fieldDef = FIELD_DEFINITIONS[key];
+        if (value === null || value === undefined) {
+          // For checkboxes and selects, use empty string; for numbers use 0
+          acc[key] = fieldDef && fieldDef.type === 'number' ? 0 : '';
+        } else {
+          acc[key] = value;
+        }
+        return acc;
+      }, {});
+      setFormData(sanitizedData);
     }
   }, [editingAccount]);
 

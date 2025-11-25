@@ -13,7 +13,18 @@ export const AssetForm = ({ assetType, initialData, onSubmit, onCancel, persons 
 
   useEffect(() => {
     if (initialData) {
-      setFormData(initialData);
+      // Sanitize initialData to convert null values to appropriate defaults
+      const sanitizedData = Object.entries(initialData).reduce((acc, [key, value]) => {
+        const fieldDef = FIELD_DEFINITIONS[key];
+        if (value === null || value === undefined) {
+          // For checkboxes, use false; for others use empty string
+          acc[key] = fieldDef && fieldDef.type === 'checkbox' ? false : '';
+        } else {
+          acc[key] = value;
+        }
+        return acc;
+      }, {});
+      setFormData(sanitizedData);
     }
   }, [initialData]);
 
