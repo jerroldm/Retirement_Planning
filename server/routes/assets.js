@@ -259,7 +259,7 @@ router.post('/migrate/home-data', verifyToken, (req, res) => {
 router.post('/migrate/assign-person-ownership', verifyToken, (req, res) => {
   console.log('POST /api/assets/migrate/assign-person-ownership - Migrating ownership for user:', req.userId);
 
-  // Find user's 'self' person
+  // Find user's 'self' person, or create one if it doesn't exist
   db.get(
     `SELECT id FROM persons WHERE userId = ? AND personType = 'self' LIMIT 1`,
     [req.userId],
@@ -268,41 +268,63 @@ router.post('/migrate/assign-person-ownership', verifyToken, (req, res) => {
         return res.status(500).json({ error: 'Database error' });
       }
 
+      // If self person doesn't exist, create one
       if (!person) {
-        return res.status(400).json({ error: 'No self person found. Please create your person profile first.' });
+        db.run(
+          `INSERT INTO persons (userId, personType, firstName, birthMonth, birthYear, includeInCalculations)
+           VALUES (?, ?, ?, ?, ?, ?)`,
+          [req.userId, 'self', 'Self', 1, 1970, 1],
+          function (createErr) {
+            if (createErr) {
+              console.error('Failed to create self person:', createErr);
+              return res.status(500).json({ error: 'Failed to create person' });
+            }
+
+            // Continue with assignment using the newly created person
+            const personId = this.lastID;
+            assignPersonOwnership(personId, req.userId, res);
+          }
+        );
+        return;
       }
 
-      // Update all assets without personId
-      db.run(
-        `UPDATE assets SET personId = ? WHERE userId = ? AND personId IS NULL`,
-        [person.id, req.userId],
-        function (err) {
-          if (err) {
-            return res.status(500).json({ error: 'Failed to update assets' });
-          }
-
-          const assetsUpdated = this.changes;
-
-          // Update all savings accounts without personId
-          db.run(
-            `UPDATE savings_accounts SET personId = ? WHERE userId = ? AND personId IS NULL`,
-            [person.id, req.userId],
-            function (err) {
-              if (err) {
-                return res.status(500).json({ error: 'Failed to update savings accounts' });
-              }
-
-              res.json({
-                message: 'Person ownership assigned successfully',
-                assetsUpdated,
-                accountsUpdated: this.changes
-              });
-            }
-          );
-        }
-      );
+      // Person exists, continue with assignment
+      assignPersonOwnership(person.id, req.userId, res);
     }
   );
+
+  // Helper function to assign ownership
+  function assignPersonOwnership(personId, userId, res) {
+    // Update all assets without personId
+    db.run(
+      `UPDATE assets SET personId = ? WHERE userId = ? AND personId IS NULL`,
+      [personId, userId],
+      function (err) {
+        if (err) {
+          return res.status(500).json({ error: 'Failed to update assets' });
+        }
+
+        const assetsUpdated = this.changes;
+
+        // Update all savings accounts without personId
+        db.run(
+          `UPDATE savings_accounts SET personId = ? WHERE userId = ? AND personId IS NULL`,
+          [personId, userId],
+          function (err) {
+            if (err) {
+              return res.status(500).json({ error: 'Failed to update savings accounts' });
+            }
+
+            res.json({
+              message: 'Person ownership assigned successfully',
+              assetsUpdated,
+              accountsUpdated: this.changes
+            });
+          }
+        );
+      }
+    );
+  }
 });
 
 export default router;
