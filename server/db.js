@@ -30,17 +30,12 @@ const initializeDatabase = () => {
     )
   `);
 
-  // Financial data table
+  // Financial data table (person data moved to persons table)
   db.run(`
     CREATE TABLE IF NOT EXISTS financial_data (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       userId INTEGER NOT NULL,
       maritalStatus TEXT DEFAULT 'single',
-      firstName TEXT,
-      spouse2FirstName TEXT,
-      currentAge INTEGER,
-      birthMonth INTEGER,
-      birthYear INTEGER,
       retirementAge INTEGER,
       deathAge INTEGER,
       contributionStopAge INTEGER,
@@ -54,21 +49,6 @@ const initializeDatabase = () => {
       rothIRAContribution REAL,
       rothIRACompanyMatch REAL,
       investmentAccountsContribution REAL,
-      spouse2CurrentAge INTEGER,
-      spouse2BirthMonth INTEGER,
-      spouse2BirthYear INTEGER,
-      spouse2RetirementAge INTEGER,
-      spouse2CurrentSalary REAL,
-      spouse2AnnualSalaryIncrease REAL,
-      spouse2TraditionalIRA REAL,
-      spouse2RothIRA REAL,
-      spouse2InvestmentAccounts REAL,
-      spouse2TraditionalIRAContribution REAL,
-      spouse2TraditionalIRACompanyMatch REAL,
-      spouse2RothIRAContribution REAL,
-      spouse2RothIRACompanyMatch REAL,
-      spouse2InvestmentAccountsContribution REAL,
-      spouse2ContributionStopAge INTEGER,
       homeValue REAL,
       homeMortgage REAL,
       homeMortgageRate REAL,
@@ -198,6 +178,7 @@ const initializeDatabase = () => {
       rothIRAContribution REAL DEFAULT 0,
       rothIRACompanyMatch REAL DEFAULT 0,
       investmentAccountsContribution REAL DEFAULT 0,
+      includeInCalculations BOOLEAN DEFAULT 1,
       createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
       updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (userId) REFERENCES users(id)
