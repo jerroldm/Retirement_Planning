@@ -30,6 +30,12 @@
   gap: 6px;
 }
 
+.account-form .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
 .account-form label {
   font-weight: 500;
   font-size: 14px;

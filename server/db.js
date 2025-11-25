@@ -36,6 +36,8 @@ const initializeDatabase = () => {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       userId INTEGER NOT NULL,
       maritalStatus TEXT DEFAULT 'single',
+      firstName TEXT,
+      spouse2FirstName TEXT,
       currentAge INTEGER,
       birthMonth INTEGER,
       birthYear INTEGER,
@@ -158,6 +160,10 @@ const initializeDatabase = () => {
       currentBalance REAL DEFAULT 0,
       annualContribution REAL DEFAULT 0,
       companyMatch REAL DEFAULT 0,
+      stopContributingMode TEXT DEFAULT 'retirement',
+      stopContributingAge INTEGER DEFAULT 0,
+      stopContributingMonth INTEGER DEFAULT 0,
+      stopContributingYear INTEGER DEFAULT 0,
       createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
       updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (userId) REFERENCES users(id)
@@ -167,6 +173,40 @@ const initializeDatabase = () => {
       console.error('Error creating savings_accounts table:', err);
     } else {
       console.log('Savings accounts table created or already exists');
+    }
+  });
+
+  // Persons table (for managing individual persons with their financial details)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS persons (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      userId INTEGER NOT NULL,
+      personType TEXT NOT NULL,
+      firstName TEXT NOT NULL,
+      birthMonth INTEGER,
+      birthYear INTEGER,
+      retirementAge INTEGER,
+      deathAge INTEGER,
+      contributionStopAge INTEGER,
+      currentSalary REAL DEFAULT 0,
+      annualSalaryIncrease REAL DEFAULT 0,
+      traditionalIRA REAL DEFAULT 0,
+      rothIRA REAL DEFAULT 0,
+      investmentAccounts REAL DEFAULT 0,
+      traditionalIRAContribution REAL DEFAULT 0,
+      traditionIRACompanyMatch REAL DEFAULT 0,
+      rothIRAContribution REAL DEFAULT 0,
+      rothIRACompanyMatch REAL DEFAULT 0,
+      investmentAccountsContribution REAL DEFAULT 0,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (userId) REFERENCES users(id)
+    )
+  `, (err) => {
+    if (err) {
+      console.error('Error creating persons table:', err);
+    } else {
+      console.log('Persons table created or already exists');
     }
   });
 

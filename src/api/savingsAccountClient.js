@@ -4,7 +4,7 @@ export const savingsAccountAPI = {
   async getAccounts() {
     const response = await fetch(`${API_BASE}/savings-accounts`, {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
       }
     });
     if (!response.ok) throw new Error('Failed to fetch savings accounts');
@@ -16,7 +16,7 @@ export const savingsAccountAPI = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
       },
       body: JSON.stringify(accountData)
     });
@@ -32,7 +32,7 @@ export const savingsAccountAPI = {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
       },
       body: JSON.stringify(accountData)
     });
@@ -44,7 +44,7 @@ export const savingsAccountAPI = {
     const response = await fetch(`${API_BASE}/savings-accounts/${accountId}`, {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
       }
     });
     if (!response.ok) throw new Error('Failed to delete account');

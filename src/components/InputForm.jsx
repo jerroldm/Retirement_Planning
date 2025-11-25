@@ -99,6 +99,8 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
 
   // Sync person data into form data whenever persons load
   // This ensures birth data, retirement age, and death age from persons are available to calculations
+  // IMPORTANT: Only sync person data to formData state; don't propagate to parent if nothing else changed
+  // The parent will receive person updates via handleChange when user edits form fields
   useEffect(() => {
     if (persons.length > 0) {
       const primaryPerson = persons.find(p => p.personType === 'primary') || persons[0];
@@ -106,73 +108,50 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
 
       setFormData(prev => {
         const updated = { ...prev };
-        let changed = false;
 
         // Merge primary person data
         if (primaryPerson) {
-          if (primaryPerson.birthMonth !== undefined && primaryPerson.birthMonth !== null && updated.birthMonth !== primaryPerson.birthMonth) {
+          if (primaryPerson.birthMonth !== undefined && primaryPerson.birthMonth !== null) {
             updated.birthMonth = primaryPerson.birthMonth;
-            changed = true;
           }
-          if (primaryPerson.birthYear !== undefined && primaryPerson.birthYear !== null && updated.birthYear !== primaryPerson.birthYear) {
+          if (primaryPerson.birthYear !== undefined && primaryPerson.birthYear !== null) {
             updated.birthYear = primaryPerson.birthYear;
-            changed = true;
           }
-          if (primaryPerson.birthMonth !== undefined || primaryPerson.birthYear !== undefined) {
-            const newAge = calculateAge(updated.birthMonth, updated.birthYear);
-            if (newAge !== updated.currentAge) {
-              updated.currentAge = newAge;
-              changed = true;
-            }
-          }
+          // Auto-calculate age based on merged birth data
+          const newAge = calculateAge(updated.birthMonth, updated.birthYear);
+          updated.currentAge = newAge;
+
           // Merge retirement age and death age from primary person
-          if (primaryPerson.retirementAge !== undefined && primaryPerson.retirementAge !== null && updated.retirementAge !== primaryPerson.retirementAge) {
+          if (primaryPerson.retirementAge !== undefined && primaryPerson.retirementAge !== null) {
             updated.retirementAge = primaryPerson.retirementAge;
-            changed = true;
           }
-          if (primaryPerson.deathAge !== undefined && primaryPerson.deathAge !== null && updated.deathAge !== primaryPerson.deathAge) {
+          if (primaryPerson.deathAge !== undefined && primaryPerson.deathAge !== null) {
             updated.deathAge = primaryPerson.deathAge;
-            changed = true;
           }
         }
 
         // Merge spouse data if married
         if (spouse && updated.maritalStatus === 'married') {
-          if (spouse.birthMonth !== undefined && spouse.birthMonth !== null && updated.spouse2BirthMonth !== spouse.birthMonth) {
+          if (spouse.birthMonth !== undefined && spouse.birthMonth !== null) {
             updated.spouse2BirthMonth = spouse.birthMonth;
-            changed = true;
           }
-          if (spouse.birthYear !== undefined && spouse.birthYear !== null && updated.spouse2BirthYear !== spouse.birthYear) {
+          if (spouse.birthYear !== undefined && spouse.birthYear !== null) {
             updated.spouse2BirthYear = spouse.birthYear;
-            changed = true;
           }
-          if (spouse.birthMonth !== undefined || spouse.birthYear !== undefined) {
-            const newSpouseAge = calculateAge(updated.spouse2BirthMonth, updated.spouse2BirthYear);
-            if (newSpouseAge !== updated.spouse2CurrentAge) {
-              updated.spouse2CurrentAge = newSpouseAge;
-              changed = true;
-            }
-          }
-          // Merge spouse retirement age and death age
-          if (spouse.retirementAge !== undefined && spouse.retirementAge !== null && updated.spouse2RetirementAge !== spouse.retirementAge) {
-            updated.spouse2RetirementAge = spouse.retirementAge;
-            changed = true;
-          }
-          if (spouse.deathAge !== undefined && spouse.deathAge !== null) {
-            // Note: there's no spouse2DeathAge field in the schema, but we keep for completeness
-            changed = true;
-          }
-        }
+          // Auto-calculate spouse age based on merged birth data
+          const newSpouseAge = calculateAge(updated.spouse2BirthMonth, updated.spouse2BirthYear);
+          updated.spouse2CurrentAge = newSpouseAge;
 
-        // Propagate changes to parent component
-        if (changed) {
-          onInputsChange(updated);
+          // Merge spouse retirement age and death age
+          if (spouse.retirementAge !== undefined && spouse.retirementAge !== null) {
+            updated.spouse2RetirementAge = spouse.retirementAge;
+          }
         }
 
         return updated;
       });
     }
-  }, [persons, onInputsChange]);
+  }, [persons]);
 
   const handleChange = (e) => {
     const { name, value, type } = e.target;

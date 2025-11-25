@@ -4,10 +4,21 @@ import './SavingsAccountList.css';
 
 export const SavingsAccountList = ({ accounts, onEdit, onDelete, onAddAccount }) => {
   // Group accounts by owner
-  const accountsByOwner = {
-    'Person 1': accounts.filter(a => a.owner === 'Person 1'),
-    'Person 2': accounts.filter(a => a.owner === 'Person 2'),
-  };
+  const groupedByOwner = {};
+  accounts.forEach(account => {
+    const owner = account.owner || 'Unassigned';
+    if (!groupedByOwner[owner]) {
+      groupedByOwner[owner] = [];
+    }
+    groupedByOwner[owner].push(account);
+  });
+
+  // Sort owners: Joint first, then others alphabetically
+  const sortedOwners = Object.keys(groupedByOwner).sort((a, b) => {
+    if (a === 'Joint') return -1;
+    if (b === 'Joint') return 1;
+    return a.localeCompare(b);
+  });
 
   const renderAccountsForOwner = (owner, ownerAccounts) => {
     if (ownerAccounts.length === 0) {
@@ -16,7 +27,7 @@ export const SavingsAccountList = ({ accounts, onEdit, onDelete, onAddAccount })
 
     return (
       <div key={owner} className="owner-section">
-        <h4>{owner}</h4>
+        <h4>{owner === 'Unassigned' ? 'Unassigned' : owner}</h4>
         <div className="accounts-grid">
           {ownerAccounts.map(account => {
             const accountConfig = ACCOUNT_TYPES[account.accountType];
@@ -65,6 +76,20 @@ export const SavingsAccountList = ({ accounts, onEdit, onDelete, onAddAccount })
                       <span className="value">${account.companyMatch.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
                   )}
+                  {account.stopContributingMode && (
+                    <div className="detail-row">
+                      <span className="label">Stop Contributing:</span>
+                      <span className="value">
+                        {account.stopContributingMode === 'retirement' && 'At Retirement'}
+                        {account.stopContributingMode === 'specific-age' && `Age ${account.stopContributingAge}`}
+                        {account.stopContributingMode === 'specific-date' && account.stopContributingMonth && account.stopContributingYear && (
+                          <>
+                            {new Date(account.stopContributingYear, account.stopContributingMonth - 1).toLocaleString('en-US', { month: 'long', year: 'numeric' })}
+                          </>
+                        )}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             );
@@ -86,8 +111,7 @@ export const SavingsAccountList = ({ accounts, onEdit, onDelete, onAddAccount })
 
       {hasAccounts && (
         <div className="accounts-container">
-          {renderAccountsForOwner('Person 1', accountsByOwner['Person 1'])}
-          {renderAccountsForOwner('Person 2', accountsByOwner['Person 2'])}
+          {sortedOwners.map(owner => renderAccountsForOwner(owner, groupedByOwner[owner]))}
         </div>
       )}
 

@@ -2,13 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { ACCOUNT_TYPES, FIELD_DEFINITIONS } from '../config/savingsAccountConfig';
 import './SavingsAccountForm.css';
 
-export const SavingsAccountForm = ({ accountType, editingAccount, onSubmit, onCancel }) => {
+export const SavingsAccountForm = ({ accountType, editingAccount, onSubmit, onCancel, persons = [] }) => {
   const [formData, setFormData] = useState({
     accountName: '',
-    owner: 'Person 1',
+    owner: '',
     currentBalance: 0,
     annualContribution: 0,
     companyMatch: 0,
+    stopContributingMode: 'retirement',
+    stopContributingAge: 0,
+    stopContributingMonth: 0,
+    stopContributingYear: 0,
   });
 
   useEffect(() => {
@@ -34,6 +38,21 @@ export const SavingsAccountForm = ({ accountType, editingAccount, onSubmit, onCa
   const accountConfig = ACCOUNT_TYPES[accountType];
   const fieldsToShow = accountConfig.fields.filter(f => f !== 'accountType');
 
+  // Build owner options from persons list
+  const buildOwnerOptions = () => {
+    const options = [];
+
+    // Add each person
+    persons.forEach(person => {
+      options.push({ value: person.firstName, label: person.firstName });
+    });
+
+    // Add Joint option
+    options.push({ value: 'Joint', label: 'Joint' });
+
+    return options;
+  };
+
   return (
     <div className="modal-overlay">
       <div className="modal-content account-form">
@@ -41,10 +60,66 @@ export const SavingsAccountForm = ({ accountType, editingAccount, onSubmit, onCa
         <p className="account-type-label">{accountConfig.label}</p>
 
         <form onSubmit={handleSubmit}>
-          {fieldsToShow.map(fieldName => {
+          {fieldsToShow.map((fieldName, index) => {
             const fieldConfig = FIELD_DEFINITIONS[fieldName];
 
+            // Skip stopContributingAge if mode is not 'specific-age'
+            if (fieldName === 'stopContributingAge' && formData.stopContributingMode !== 'specific-age') {
+              return null;
+            }
+
+            // Render month and year together on one row
+            if (fieldName === 'stopContributingMonth' && formData.stopContributingMode === 'specific-date') {
+              return (
+                <div key="date-row" className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="stopContributingMonth">{FIELD_DEFINITIONS['stopContributingMonth'].label}</label>
+                    <select
+                      id="stopContributingMonth"
+                      name="stopContributingMonth"
+                      value={formData['stopContributingMonth'] || ''}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value="">-- Select month --</option>
+                      {FIELD_DEFINITIONS['stopContributingMonth'].options.map(option => (
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="stopContributingYear">{FIELD_DEFINITIONS['stopContributingYear'].label}</label>
+                    <select
+                      id="stopContributingYear"
+                      name="stopContributingYear"
+                      value={formData['stopContributingYear'] || ''}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value="">-- Select year --</option>
+                      {FIELD_DEFINITIONS['stopContributingYear'].options.map(option => (
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              );
+            }
+
+            // Skip stopContributingYear since we handle it with month
+            if (fieldName === 'stopContributingYear') {
+              return null;
+            }
+
+            // Skip stopContributingMonth if mode is not 'specific-date'
+            if (fieldName === 'stopContributingMonth' && formData.stopContributingMode !== 'specific-date') {
+              return null;
+            }
+
             if (fieldConfig.type === 'select') {
+              // Special handling for owner field
+              const ownerOptions = fieldName === 'owner' ? buildOwnerOptions() : fieldConfig.options;
+
               return (
                 <div key={fieldName} className="form-group">
                   <label htmlFor={fieldName}>{fieldConfig.label}</label>
@@ -55,8 +130,9 @@ export const SavingsAccountForm = ({ accountType, editingAccount, onSubmit, onCa
                     onChange={handleChange}
                     required
                   >
-                    {fieldConfig.options.map(option => (
-                      <option key={option} value={option}>{option}</option>
+                    <option value="">-- Select {fieldName === 'owner' ? 'owner' : 'option'} --</option>
+                    {ownerOptions.map(option => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
                     ))}
                   </select>
                 </div>
