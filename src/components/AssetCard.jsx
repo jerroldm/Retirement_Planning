@@ -90,7 +90,7 @@ export const AssetCard = ({ asset, onEdit, onDelete }) => {
         )}
       </div>
 
-      {asset.sellPlanEnabled && (
+      {(asset.sellPlanEnabled === true || asset.sellPlanEnabled === 1) && (
         <div className="asset-card-footer">
           <span className="sell-plan-badge">
             📅 Sale planned for {asset.sellMonth}/{asset.sellYear}
