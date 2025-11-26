@@ -50,16 +50,18 @@ SQLite database is stored at `/data/retirement.db`. The database is auto-initial
 - All API calls use `localStorage.getItem('authToken')` for JWT token (stored under key `'authToken'`, not `'token'`)
 
 **Key Pattern - API Clients:**
-Each entity type (financial, assets, savings accounts) has its own API client:
+Each entity type (financial, assets, savings accounts, income, expenses) has its own API client:
 - `src/api/client.js` - Main API client for financial data & auth (defines `apiCall()` helper)
 - `src/api/assetClient.js` - Asset CRUD operations
 - `src/api/savingsAccountClient.js` - Savings account CRUD operations
+- `src/api/incomeClient.js` - Income sources CRUD operations
+- `src/api/expensesClient.js` - Expenses CRUD operations
 
 ### Backend Structure
 
 **Server Setup (`server/index.js`):**
 - Express app with CORS enabled
-- Routes mounted at `/api/{auth,financial,assets,savings-accounts}`
+- Routes mounted at `/api/{auth,financial,assets,savings-accounts,persons,income,expenses}`
 - Health check endpoint at `/api/health`
 
 **Route Files (`server/routes/`):**
@@ -67,6 +69,9 @@ Each entity type (financial, assets, savings accounts) has its own API client:
 - `financial.js` - Financial data CRUD and scenario management
 - `assets.js` - Asset management with type-specific fields
 - `savingsAccounts.js` - Savings account CRUD operations
+- `persons.js` - Individual person demographic and financial data
+- `income.js` - Income sources CRUD operations
+- `expenses.js` - Expenses CRUD operations
 
 **Authentication:**
 - Middleware in `server/middleware/auth.js` exports `verifyToken()` middleware
@@ -77,7 +82,7 @@ Each entity type (financial, assets, savings accounts) has its own API client:
 **Database (`server/db.js`):**
 - SQLite3 wrapper with promisified callback API
 - Auto-creates all tables on server startup
-- Tables: `users`, `financial_data`, `assets`, `savings_accounts`, `scenarios`
+- Tables: `users`, `financial_data`, `assets`, `savings_accounts`, `persons`, `income_sources`, `expenses`, `scenarios`
 - No migrations framework; schema updates happen in this file
 
 ### Frontend Structure
@@ -91,6 +96,9 @@ Each entity type (financial, assets, savings accounts) has its own API client:
 **Components by Feature:**
 - **Assets:** `AssetList.jsx`, `AssetForm.jsx`, `AssetTypeSelector.jsx` - Generic asset management (supports multiple asset types)
 - **Savings Accounts:** `SavingsAccountList.jsx`, `SavingsAccountForm.jsx`, `SavingsAccountTypeSelector.jsx` - Savings account management
+- **Persons:** `PersonList.jsx`, `PersonForm.jsx`, `PersonTypeSelector.jsx` - Individual person management with demographic and financial data
+- **Income:** `IncomeList.jsx`, `IncomeForm.jsx` - Income sources management (one or more income sources per user)
+- **Expenses:** `ExpensesList.jsx`, `ExpensesForm.jsx` - Expenses management (persistent, with monthly amounts and phase tracking)
 - **Views:** `Dashboard.jsx`, `DataTable.jsx`, `ExpensesTable.jsx`, `MortgageAmortizationTable.jsx`
 - **Auth:** `AuthPage.jsx` - Login/signup page
 
@@ -120,6 +128,20 @@ Stored in `persons` table. Tracks individual people (self, spouse, future childr
 - Demographics: personType (self/spouse), firstName, birthMonth, birthYear
 - Financial: current salary, salary increase, account balances, contributions
 - Inclusion: `includeInCalculations` boolean flag for flexible scenario planning
+
+**Income Sources (flexible, one-to-many):**
+Stored in `income_sources` table. Tracks multiple income sources per user with:
+- sourceName: Name of the income source
+- annualSalary: Annual salary amount
+- annualSalaryIncrease: Annual percentage increase for this income source
+
+**Expenses (flexible, one-to-many):**
+Stored in `expenses` table. Tracks custom expenses per user with:
+- expenseName: Name of the expense
+- monthlyAmount: Monthly amount in dollars (not annual)
+- preRetirement: Boolean flag for whether this expense applies before retirement
+- postRetirement: Boolean flag for whether this expense applies after retirement
+- notes: Optional notes about the expense
 
 ## Data Loading Architecture (Critical for Correct Calculations)
 
@@ -298,4 +320,5 @@ db.run(sql, params, function(err) {
 5. **Person Data Syncing:** When a user edits their person record and changes fields like retirement age, those values must be synced back to the form inputs so they get auto-saved to financial_data table. Example: `handlePersonFormSubmit` in InputForm.jsx syncs birthMonth/birthYear/retirementAge back to formData. If adding new person fields, ensure they're synced here.
 6. **Concurrent Writes:** SQLite can struggle with multiple simultaneous writes - consider PostgreSQL if multi-user access increases
 7. **No Form Validation:** Input forms don't validate before saving - garbage in = garbage in calculations
-8. **Scenario Feature:** Partially implemented - creates financial data snapshots but incomplete CRUD UI
+8. **SQLite Boolean Handling:** SQLite returns `0` and `1` for boolean columns instead of `true` and `false`. When comparing booleans from the database, use the `!!` operator to convert: `const bool = !!dbValue`. Example: In ExpensesList, phase conversion uses `const pre = !!expense.preRetirement` to properly handle SQLite's 0/1 values.
+9. **Scenario Feature:** Partially implemented - creates financial data snapshots but incomplete CRUD UI

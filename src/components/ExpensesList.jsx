@@ -26,48 +26,60 @@ export const ExpensesList = ({ expenses, onEdit, onDelete, onAddExpense }) => {
         </button>
       </div>
       <div className="expenses-container">
-        {expenses.map(expense => (
-          <div key={expense.id} className="expense-card">
-            <div className="expense-header">
-              <div className="expense-info">
-                <span className="expense-icon">{expense.icon}</span>
-                <div>
-                  <h5>{expense.name}</h5>
-                  <p className="expense-type">{expense.description}</p>
+        {expenses.map(expense => {
+          // Compute phase from preRetirement/postRetirement booleans
+          // Note: SQLite returns 0/1, so we use !! to convert to boolean
+          const pre = !!expense.preRetirement;
+          const post = !!expense.postRetirement;
+          let phaseDisplay = 'Pre & Post-Retirement';
+          if (pre && !post) {
+            phaseDisplay = 'Pre-Retirement Only';
+          } else if (!pre && post) {
+            phaseDisplay = 'Post-Retirement Only';
+          }
+
+          return (
+            <div key={expense.id} className="expense-card">
+              <div className="expense-header">
+                <div className="expense-info">
+                  <div>
+                    <h5>{expense.expenseName}</h5>
+                    {expense.notes && <p className="expense-type">{expense.notes}</p>}
+                  </div>
+                </div>
+                <div className="expense-actions">
+                  <button
+                    className="btn-icon edit"
+                    onClick={() => onEdit(expense)}
+                    title="Edit expense"
+                  >
+                    ✏️
+                  </button>
+                  <button
+                    className="btn-icon delete"
+                    onClick={() => onDelete(expense.id)}
+                    title="Delete expense"
+                  >
+                    🗑️
+                  </button>
                 </div>
               </div>
-              <div className="expense-actions">
-                <button
-                  className="btn-icon edit"
-                  onClick={() => onEdit(expense)}
-                  title="Edit expense"
-                >
-                  ✏️
-                </button>
-                <button
-                  className="btn-icon delete"
-                  onClick={() => onDelete(expense.id)}
-                  title="Delete expense"
-                >
-                  🗑️
-                </button>
-              </div>
-            </div>
 
-            <div className="expense-details">
-              <div className="detail-row">
-                <span className="label">Annual Amount:</span>
-                <span className="value">${expense.annualAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-              </div>
-              {expense.phase && (
+              <div className="expense-details">
+                <div className="detail-row">
+                  <span className="label">Monthly Amount:</span>
+                  <span className="value">
+                    ${(expense.monthlyAmount || expense.annualAmount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
                 <div className="detail-row">
                   <span className="label">Phase:</span>
-                  <span className="value">{expense.phase}</span>
+                  <span className="value">{phaseDisplay}</span>
                 </div>
-              )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

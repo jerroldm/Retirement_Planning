@@ -217,6 +217,28 @@ const initializeDatabase = () => {
     }
   });
 
+  // Expenses table (for managing individual expenses)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS expenses (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      userId INTEGER NOT NULL,
+      expenseName TEXT NOT NULL,
+      monthlyAmount REAL DEFAULT 0,
+      preRetirement BOOLEAN DEFAULT 1,
+      postRetirement BOOLEAN DEFAULT 1,
+      notes TEXT,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (userId) REFERENCES users(id)
+    )
+  `, (err) => {
+    if (err) {
+      console.error('Error creating expenses table:', err);
+    } else {
+      console.log('Expenses table created or already exists');
+    }
+  });
+
   // Scenarios table (for saving different scenarios)
   db.run(`
     CREATE TABLE IF NOT EXISTS scenarios (

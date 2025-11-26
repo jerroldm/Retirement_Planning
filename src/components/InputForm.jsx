@@ -17,6 +17,7 @@ import { IncomeForm } from './IncomeForm';
 import { incomeAPI } from '../api/incomeClient';
 import { ExpensesList } from './ExpensesList';
 import { ExpensesForm } from './ExpensesForm';
+import { expensesClient } from '../api/expensesClient';
 import './InputForm.css';
 
 export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) => {
@@ -48,15 +49,17 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
   const [editingIncomeSource, setEditingIncomeSource] = useState(null);
 
   const [expenses, setExpenses] = useState([]);
+  const [expensesLoading, setExpensesLoading] = useState(false);
   const [showExpensesForm, setShowExpensesForm] = useState(false);
   const [editingExpense, setEditingExpense] = useState(null);
 
-  // Load assets, savings accounts, persons, and income sources when component mounts
+  // Load assets, savings accounts, persons, income sources, and expenses when component mounts
   useEffect(() => {
     loadAssets();
     loadSavingsAccounts();
     loadPersons();
     loadIncomeSources();
+    loadExpenses();
   }, []);
 
   const loadSavingsAccounts = async () => {
@@ -92,6 +95,18 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
       console.error('Failed to load income sources:', error);
     } finally {
       setIncomeSourcesLoading(false);
+    }
+  };
+
+  const loadExpenses = async () => {
+    try {
+      setExpensesLoading(true);
+      const loadedExpenses = await expensesClient.getExpenses();
+      setExpenses(loadedExpenses);
+    } catch (error) {
+      console.error('Failed to load expenses:', error);
+    } finally {
+      setExpensesLoading(false);
     }
   };
 
@@ -375,6 +390,49 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
     setEditingIncomeSource(null);
   };
 
+  const handleAddExpenseClick = () => {
+    setEditingExpense(null);
+    setShowExpensesForm(true);
+  };
+
+  const handleEditExpense = (expense) => {
+    setEditingExpense(expense);
+    setShowExpensesForm(true);
+  };
+
+  const handleExpenseFormSubmit = async (submittedData) => {
+    try {
+      if (editingExpense) {
+        console.log('Updating expense:', editingExpense.id, submittedData);
+        await expensesClient.updateExpense(editingExpense.id, submittedData);
+      } else {
+        console.log('Creating expense:', submittedData);
+        await expensesClient.createExpense(submittedData);
+      }
+      await loadExpenses();
+      setShowExpensesForm(false);
+      setEditingExpense(null);
+    } catch (error) {
+      console.error('Failed to save expense:', error);
+      alert('Failed to save expense. Please try again.');
+    }
+  };
+
+  const handleDeleteExpense = async (id) => {
+    try {
+      await expensesClient.deleteExpense(id);
+      await loadExpenses();
+    } catch (error) {
+      console.error('Failed to delete expense:', error);
+      alert('Failed to delete expense. Please try again.');
+    }
+  };
+
+  const handleCloseExpensesForm = () => {
+    setShowExpensesForm(false);
+    setEditingExpense(null);
+  };
+
   return (
     <div className="input-form">
       <div className="form-header">
@@ -465,36 +523,19 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
           <section className="form-section">
             <ExpensesList
               expenses={expenses}
-              onEdit={(expense) => {
-                setEditingExpense(expense);
-                setShowExpensesForm(true);
-              }}
+              onEdit={handleEditExpense}
               onDelete={(expenseId) => {
                 if (window.confirm('Delete this expense?')) {
-                  setExpenses(expenses.filter(e => e.id !== expenseId));
+                  handleDeleteExpense(expenseId);
                 }
               }}
-              onAddExpense={() => {
-                setEditingExpense(null);
-                setShowExpensesForm(true);
-              }}
+              onAddExpense={handleAddExpenseClick}
             />
             {showExpensesForm && (
               <ExpensesForm
                 expense={editingExpense}
-                onSave={(savedExpense) => {
-                  if (editingExpense) {
-                    setExpenses(expenses.map(e => e.id === editingExpense.id ? { ...savedExpense, id: editingExpense.id } : e));
-                  } else {
-                    setExpenses([...expenses, { ...savedExpense, id: Date.now() }]);
-                  }
-                  setShowExpensesForm(false);
-                  setEditingExpense(null);
-                }}
-                onCancel={() => {
-                  setShowExpensesForm(false);
-                  setEditingExpense(null);
-                }}
+                onSave={handleExpenseFormSubmit}
+                onCancel={handleCloseExpensesForm}
               />
             )}
           </section>

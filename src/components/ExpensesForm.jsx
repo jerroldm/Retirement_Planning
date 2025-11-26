@@ -1,31 +1,48 @@
 import React, { useState } from 'react';
 
 export const ExpensesForm = ({ expense, onSave, onCancel }) => {
+  // Convert database format (preRetirement/postRetirement booleans) to UI format (phase string)
+  // Note: SQLite returns 0/1, not true/false, so we use !! to convert to boolean
+  const getPhaseFromExpense = (exp) => {
+    if (!exp) return 'both';
+    const pre = !!exp.preRetirement;
+    const post = !!exp.postRetirement;
+    if (pre && post) return 'both';
+    if (pre) return 'pre';
+    if (post) return 'post';
+    return 'both';
+  };
+
   const [formData, setFormData] = useState({
-    name: expense?.name || '',
-    description: expense?.description || '',
-    annualAmount: expense?.annualAmount || '',
-    phase: expense?.phase || 'both',
-    icon: expense?.icon || '💰',
+    expenseName: expense?.expenseName || '',
+    monthlyAmount: expense?.monthlyAmount || '',
+    phase: getPhaseFromExpense(expense),
+    notes: expense?.notes || '',
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: name === 'annualAmount' ? (value === '' ? '' : parseFloat(value)) : value,
+      [name]: name === 'monthlyAmount' ? (value === '' ? '' : parseFloat(value)) : value,
     });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    // Convert UI format (phase string) to database format (preRetirement/postRetirement booleans)
+    let preRetirement = true;
+    let postRetirement = true;
+    if (formData.phase === 'pre') postRetirement = false;
+    if (formData.phase === 'post') preRetirement = false;
+
     onSave({
-      ...expense,
-      name: formData.name || 'Expense',
-      description: formData.description || '',
-      annualAmount: formData.annualAmount === '' ? 0 : formData.annualAmount,
-      phase: formData.phase,
-      icon: formData.icon,
+      expenseName: formData.expenseName || 'Expense',
+      monthlyAmount: formData.monthlyAmount === '' ? 0 : formData.monthlyAmount,
+      preRetirement,
+      postRetirement,
+      notes: formData.notes || '',
     });
   };
 
@@ -36,37 +53,25 @@ export const ExpensesForm = ({ expense, onSave, onCancel }) => {
         <form onSubmit={handleSubmit} className="form-layout">
           <div className="form-grid" style={{ marginBottom: '16px' }}>
             <div className="form-group">
-              <label htmlFor="name">Expense Name</label>
+              <label htmlFor="expenseName">Expense Name</label>
               <input
-                id="name"
-                name="name"
+                id="expenseName"
+                name="expenseName"
                 type="text"
                 placeholder="e.g., Groceries, Utilities, Travel"
-                value={formData.name}
+                value={formData.expenseName}
                 onChange={handleChange}
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="description">Description</label>
+              <label htmlFor="monthlyAmount">Monthly Amount</label>
               <input
-                id="description"
-                name="description"
-                type="text"
-                placeholder="e.g., Monthly grocery expenses"
-                value={formData.description}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="annualAmount">Annual Amount</label>
-              <input
-                id="annualAmount"
-                name="annualAmount"
+                id="monthlyAmount"
+                name="monthlyAmount"
                 type="number"
                 placeholder="0"
-                value={formData.annualAmount}
+                value={formData.monthlyAmount}
                 onChange={handleChange}
                 step="0.01"
                 min="0"
@@ -88,15 +93,14 @@ export const ExpensesForm = ({ expense, onSave, onCancel }) => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="icon">Icon</label>
+              <label htmlFor="notes">Notes</label>
               <input
-                id="icon"
-                name="icon"
+                id="notes"
+                name="notes"
                 type="text"
-                placeholder="e.g., 💰"
-                value={formData.icon}
+                placeholder="e.g., Optional notes about this expense"
+                value={formData.notes}
                 onChange={handleChange}
-                maxLength="2"
               />
             </div>
           </div>
