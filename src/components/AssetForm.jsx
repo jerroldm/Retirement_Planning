@@ -19,6 +19,9 @@ export const AssetForm = ({ assetType, initialData, onSubmit, onCancel, persons 
         if (value === null || value === undefined) {
           // For checkboxes, use false; for others use empty string
           acc[key] = fieldDef && fieldDef.type === 'checkbox' ? false : '';
+        } else if (fieldDef && fieldDef.type === 'checkbox') {
+          // Convert numeric checkbox values (0 or 1) to boolean
+          acc[key] = value === 1 || value === true;
         } else {
           acc[key] = value;
         }
