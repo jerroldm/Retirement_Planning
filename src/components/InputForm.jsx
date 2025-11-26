@@ -139,22 +139,12 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
 
   const handleAssetFormSubmit = async (submittedData) => {
     try {
-      console.log('handleAssetFormSubmit - editingAsset:', editingAsset ? { id: editingAsset.id, assetName: editingAsset.assetName } : null);
-      console.log('handleAssetFormSubmit - submittedData:', submittedData);
-
       if (editingAsset) {
-        console.log('Calling updateAsset with ID:', editingAsset.id);
-        console.log('About to call updateAsset with data:', submittedData);
-        const updateResult = await assetAPI.updateAsset(editingAsset.id, submittedData);
-        console.log('updateAsset completed successfully, result:', updateResult);
+        await assetAPI.updateAsset(editingAsset.id, submittedData);
       } else {
-        console.log('Calling createAsset');
-        const createResult = await assetAPI.createAsset(submittedData);
-        console.log('createAsset completed successfully, result:', createResult);
+        await assetAPI.createAsset(submittedData);
       }
-      console.log('About to loadAssets');
       await loadAssets();
-      console.log('loadAssets completed');
 
       // Notify parent (App.jsx) that assets have been saved so calculations can be updated
       if (onAssetsSaved) {

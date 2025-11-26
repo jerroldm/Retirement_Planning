@@ -132,9 +132,6 @@ router.put('/:id', verifyToken, (req, res) => {
     expectedSaleProceeds,
   } = req.body;
 
-  console.log('PUT - Destructured expectedSaleProceeds:', expectedSaleProceeds, 'type:', typeof expectedSaleProceeds);
-  console.log('PUT - Will be stored as:', expectedSaleProceeds || 0);
-
   const updateParams = [
     personId || null, assetName, currentValue || 0,
     loanBalance, loanRate, monthlyPayment, payoffYear, payoffMonth, extraPrincipalPayment || 0,
@@ -145,9 +142,6 @@ router.put('/:id', verifyToken, (req, res) => {
     sellPlanEnabled ? 1 : 0, sellYear, sellMonth, expectedSaleProceeds || 0,
     req.params.id, req.userId,
   ];
-
-  console.log('PUT - updateParams array (length ' + updateParams.length + '):', updateParams);
-  console.log('PUT - expectedSaleProceeds will be at index 21, actual value:', updateParams[21]);
 
   db.run(
     `UPDATE assets SET

@@ -5,13 +5,11 @@ export const assetAPI = {
   // Get all assets for current user
   async getAssets() {
     const token = localStorage.getItem('authToken');
-    console.log('getAssets - Token exists:', !!token);
     const response = await fetch(API_BASE, {
       headers: {
         'Authorization': `Bearer ${token}`,
       },
     });
-    console.log('getAssets - Response status:', response.status, 'ok:', response.ok);
     if (!response.ok) {
       const errorText = await response.text();
       console.error('getAssets - Error response:', errorText);
@@ -35,8 +33,6 @@ export const assetAPI = {
   // Create new asset
   async createAsset(assetData) {
     const token = localStorage.getItem('authToken');
-    console.log('createAsset - Token exists:', !!token);
-    console.log('createAsset - Data:', assetData);
     const response = await fetch(API_BASE, {
       method: 'POST',
       headers: {
@@ -45,7 +41,6 @@ export const assetAPI = {
       },
       body: JSON.stringify(assetData),
     });
-    console.log('createAsset - Response status:', response.status, 'ok:', response.ok);
     if (!response.ok) {
       const errorText = await response.text();
       console.error('createAsset - Error response:', errorText);
@@ -57,13 +52,7 @@ export const assetAPI = {
   // Update asset
   async updateAsset(id, assetData) {
     const token = localStorage.getItem('authToken');
-    console.log('updateAsset - STARTING UPDATE');
-    console.log('updateAsset - Asset ID:', id, 'Token exists:', !!token);
-    console.log('updateAsset - Data being sent:', assetData);
-    const url = `${API_BASE}/${id}`;
-    console.log('updateAsset - URL:', url);
-    console.log('updateAsset - About to send PUT request');
-    const response = await fetch(url, {
+    const response = await fetch(`${API_BASE}/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -71,16 +60,10 @@ export const assetAPI = {
       },
       body: JSON.stringify(assetData),
     });
-    console.log('updateAsset - Response received');
-    console.log('updateAsset - Response status:', response.status, 'ok:', response.ok);
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('updateAsset - Error response:', errorText);
       throw new Error(`Failed to update asset: ${response.status}`);
     }
-    const result = await response.json();
-    console.log('updateAsset - COMPLETED SUCCESSFULLY, result:', result);
-    return result;
+    return response.json();
   },
 
   // Delete asset
@@ -99,14 +82,12 @@ export const assetAPI = {
   // Migrate home data from financial_data to assets table
   async migrateHomeData() {
     const token = localStorage.getItem('authToken');
-    console.log('migrateHomeData - Token exists:', !!token);
     const response = await fetch(`${API_BASE}/migrate/home-data`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
       },
     });
-    console.log('migrateHomeData - Response status:', response.status, 'ok:', response.ok);
     if (!response.ok) {
       const errorText = await response.text();
       console.error('migrateHomeData - Error response:', errorText);
@@ -118,7 +99,6 @@ export const assetAPI = {
   // Migrate person ownership - assign unassigned assets/accounts to 'Self' person
   async migratePersonOwnership() {
     const token = localStorage.getItem('authToken');
-    console.log('migratePersonOwnership - Token exists:', !!token);
     const response = await fetch(`${API_BASE}/migrate/assign-person-ownership`, {
       method: 'POST',
       headers: {
@@ -126,7 +106,6 @@ export const assetAPI = {
         'Authorization': `Bearer ${token}`,
       },
     });
-    console.log('migratePersonOwnership - Response status:', response.status, 'ok:', response.ok);
     if (!response.ok) {
       const errorText = await response.text();
       console.error('migratePersonOwnership - Error response:', errorText);

@@ -67,7 +67,6 @@ export const AssetForm = ({ assetType, initialData, onSubmit, onCancel, persons 
       newErrors.currentValue = 'Current value is required and must be non-negative';
     }
 
-    console.log('AssetForm.validateForm - newErrors:', newErrors);
     return newErrors;
   };
 
@@ -79,11 +78,6 @@ export const AssetForm = ({ assetType, initialData, onSubmit, onCancel, persons 
       setErrors(newErrors);
       return;
     }
-
-    console.log('AssetForm.handleSubmit - formData keys:', Object.keys(formData));
-    console.log('AssetForm.handleSubmit - formData:', formData);
-    console.log('AssetForm.handleSubmit - sellPlanEnabled in formData:', formData.sellPlanEnabled);
-    console.log('AssetForm.handleSubmit - expectedSaleProceeds in formData:', formData.expectedSaleProceeds);
 
     // Convert string values to appropriate types
     const submittedData = {
@@ -103,10 +97,6 @@ export const AssetForm = ({ assetType, initialData, onSubmit, onCancel, persons 
         return acc;
       }, {})
     };
-
-    console.log('AssetForm.handleSubmit - FINAL submittedData keys:', Object.keys(submittedData));
-    console.log('AssetForm.handleSubmit - sellPlanEnabled in submittedData:', submittedData.sellPlanEnabled);
-    console.log('AssetForm.handleSubmit - expectedSaleProceeds in submittedData:', submittedData.expectedSaleProceeds);
 
     onSubmit(submittedData);
   };
