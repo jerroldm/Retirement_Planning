@@ -197,6 +197,26 @@ const initializeDatabase = () => {
     }
   });
 
+  // Income sources table (for managing individual income sources)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS income_sources (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      userId INTEGER NOT NULL,
+      sourceName TEXT NOT NULL,
+      annualSalary REAL DEFAULT 0,
+      annualSalaryIncrease REAL DEFAULT 0,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (userId) REFERENCES users(id)
+    )
+  `, (err) => {
+    if (err) {
+      console.error('Error creating income_sources table:', err);
+    } else {
+      console.log('Income sources table created or already exists');
+    }
+  });
+
   // Scenarios table (for saving different scenarios)
   db.run(`
     CREATE TABLE IF NOT EXISTS scenarios (

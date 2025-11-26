@@ -9,6 +9,7 @@ import financialRoutes from './routes/financial.js';
 import assetRoutes from './routes/assets.js';
 import savingsAccountRoutes from './routes/savingsAccounts.js';
 import personRoutes from './routes/persons.js';
+import incomeRoutes from './routes/income.js';
 
 dotenv.config();
 
@@ -40,6 +41,7 @@ app.use('/api/financial', financialRoutes);
 app.use('/api/assets', assetRoutes);
 app.use('/api/savings-accounts', savingsAccountRoutes);
 app.use('/api/persons', personRoutes);
+app.use('/api/income', incomeRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

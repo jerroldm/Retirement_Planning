@@ -14,6 +14,7 @@ import PersonForm from './PersonForm';
 import { personClient } from '../api/personClient';
 import { IncomeList } from './IncomeList';
 import { IncomeForm } from './IncomeForm';
+import { incomeAPI } from '../api/incomeClient';
 import './InputForm.css';
 
 export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) => {
@@ -39,14 +40,17 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
   const [selectedPersonType, setSelectedPersonType] = useState(null);
   const [editingPerson, setEditingPerson] = useState(null);
 
-  const [editingIncomeUser, setEditingIncomeUser] = useState(null);
+  const [incomeSources, setIncomeSources] = useState([]);
+  const [incomeSourcesLoading, setIncomeSourcesLoading] = useState(false);
   const [showIncomeForm, setShowIncomeForm] = useState(false);
+  const [editingIncomeSource, setEditingIncomeSource] = useState(null);
 
-  // Load assets, savings accounts, and persons when component mounts
+  // Load assets, savings accounts, persons, and income sources when component mounts
   useEffect(() => {
     loadAssets();
     loadSavingsAccounts();
     loadPersons();
+    loadIncomeSources();
   }, []);
 
   const loadSavingsAccounts = async () => {
@@ -70,6 +74,18 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
       console.error('Failed to load persons:', error);
     } finally {
       setPersonsLoading(false);
+    }
+  };
+
+  const loadIncomeSources = async () => {
+    try {
+      setIncomeSourcesLoading(true);
+      const loadedSources = await incomeAPI.getSources();
+      setIncomeSources(loadedSources);
+    } catch (error) {
+      console.error('Failed to load income sources:', error);
+    } finally {
+      setIncomeSourcesLoading(false);
     }
   };
 
@@ -312,26 +328,45 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
     setSelectedPersonType(null);
   };
 
-  const handleEditIncome = (person) => {
-    setEditingIncomeUser(person);
+  const handleAddIncomeClick = () => {
+    setEditingIncomeSource(null);
+    setShowIncomeForm(true);
+  };
+
+  const handleEditIncome = (source) => {
+    setEditingIncomeSource(source);
     setShowIncomeForm(true);
   };
 
   const handleIncomeFormSubmit = async (submittedData) => {
     try {
-      await personClient.updatePerson(submittedData.id, submittedData);
-      await loadPersons();
+      if (editingIncomeSource) {
+        await incomeAPI.updateSource(editingIncomeSource.id, submittedData);
+      } else {
+        await incomeAPI.createSource(submittedData);
+      }
+      await loadIncomeSources();
       setShowIncomeForm(false);
-      setEditingIncomeUser(null);
+      setEditingIncomeSource(null);
     } catch (error) {
-      console.error('Failed to save income:', error);
-      alert('Failed to save income. Please try again.');
+      console.error('Failed to save income source:', error);
+      alert('Failed to save income source. Please try again.');
+    }
+  };
+
+  const handleDeleteIncome = async (id) => {
+    try {
+      await incomeAPI.deleteSource(id);
+      await loadIncomeSources();
+    } catch (error) {
+      console.error('Failed to delete income source:', error);
+      alert('Failed to delete income source. Please try again.');
     }
   };
 
   const handleCloseIncomeForm = () => {
     setShowIncomeForm(false);
-    setEditingIncomeUser(null);
+    setEditingIncomeSource(null);
   };
 
   return (
@@ -382,17 +417,21 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
         {activeTab === 'income' && (
           <section className="form-section">
             <h3>Income & Salary</h3>
+            <button className="btn btn-primary" onClick={handleAddIncomeClick} style={{ marginBottom: '16px' }}>
+              Add Income Source
+            </button>
             <IncomeList
-              persons={persons}
+              sources={incomeSources}
               onEdit={handleEditIncome}
+              onDelete={handleDeleteIncome}
             />
           </section>
         )}
 
         {/* Income Form Modal */}
-        {showIncomeForm && editingIncomeUser && (
+        {showIncomeForm && (
           <IncomeForm
-            person={editingIncomeUser}
+            source={editingIncomeSource}
             onSave={handleIncomeFormSubmit}
             onCancel={handleCloseIncomeForm}
           />
