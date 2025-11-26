@@ -26,16 +26,6 @@ export const AssetList = ({ assets, onEdit, onDelete, isLoading, onAddClick }) =
     );
   }
 
-  // Group assets by type for better organization
-  const assetsByType = assets.reduce((grouped, asset) => {
-    const type = asset.assetType;
-    if (!grouped[type]) {
-      grouped[type] = [];
-    }
-    grouped[type].push(asset);
-    return grouped;
-  }, {});
-
   return (
     <div className="asset-list">
       <div className="asset-list-header">
@@ -46,23 +36,13 @@ export const AssetList = ({ assets, onEdit, onDelete, isLoading, onAddClick }) =
       </div>
 
       <div className="asset-list-content">
-        {Object.entries(assetsByType).map(([type, typeAssets]) => (
-          <div key={type} className="asset-type-group">
-            <div className="asset-type-group-header">
-              <h3>{type.replace('-', ' ').toUpperCase()}</h3>
-              <span className="asset-count">{typeAssets.length} {typeAssets.length === 1 ? 'item' : 'items'}</span>
-            </div>
-            <div className="asset-cards-grid">
-              {typeAssets.map(asset => (
-                <AssetCard
-                  key={asset.id}
-                  asset={asset}
-                  onEdit={onEdit}
-                  onDelete={onDelete}
-                />
-              ))}
-            </div>
-          </div>
+        {assets.map(asset => (
+          <AssetCard
+            key={asset.id}
+            asset={asset}
+            onEdit={onEdit}
+            onDelete={onDelete}
+          />
         ))}
       </div>
     </div>

@@ -1,7 +1,7 @@
 import React from 'react';
 import './IncomeList.css';
 
-export const IncomeList = ({ sources, onEdit, onDelete }) => {
+export const IncomeList = ({ sources, onEdit, onDelete, onAddIncome }) => {
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -13,15 +13,27 @@ export const IncomeList = ({ sources, onEdit, onDelete }) => {
 
   const hasSources = sources && sources.length > 0;
 
+  if (!hasSources) {
+    return (
+      <div className="income-list">
+        <div className="income-list-empty">
+          <p>No income sources yet.</p>
+          <button className="btn-add-income" onClick={onAddIncome}>
+            + Add your first income source
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="income-list">
-      {!hasSources && (
-        <div className="empty-state">
-          <p>No income sources added yet. Click "Add Income Source" to get started.</p>
-        </div>
-      )}
-
-      {hasSources && (
+      <div className="income-list-header">
+        <h2>Your Income Sources</h2>
+        <button className="btn-add-income" onClick={onAddIncome}>
+          + Add Income Source
+        </button>
+      </div>
         <div className="income-container">
           {sources.map(source => (
             <div key={source.id} className="income-card">
@@ -37,7 +49,7 @@ export const IncomeList = ({ sources, onEdit, onDelete }) => {
                     onClick={() => onEdit(source)}
                     title="Edit income source"
                   >
-                    ✎
+                    ✏️
                   </button>
                   <button
                     className="btn-icon delete"
@@ -48,7 +60,7 @@ export const IncomeList = ({ sources, onEdit, onDelete }) => {
                     }}
                     title="Delete income source"
                   >
-                    ✕
+                    🗑️
                   </button>
                 </div>
               </div>
@@ -66,7 +78,6 @@ export const IncomeList = ({ sources, onEdit, onDelete }) => {
             </div>
           ))}
         </div>
-      )}
     </div>
   );
 };

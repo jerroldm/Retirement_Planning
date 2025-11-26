@@ -1,8 +1,8 @@
-.income-list {
+.expenses-list {
   padding: 0;
 }
 
-.income-list-header {
+.expenses-list-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -11,13 +11,13 @@
   border-bottom: 2px solid #e0e0e0;
 }
 
-.income-list-header h2 {
+.expenses-list-header h2 {
   margin: 0;
   color: #333;
   font-size: 24px;
 }
 
-.income-list-empty {
+.expenses-list-empty {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -27,18 +27,18 @@
   color: #999;
 }
 
-.income-list-empty p {
+.expenses-list-empty p {
   margin: 0 0 20px 0;
   font-size: 16px;
 }
 
-.income-container {
+.expenses-container {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 16px;
 }
 
-.income-card {
+.expense-card {
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   padding: 16px;
@@ -47,12 +47,12 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.income-card:hover {
-  border-color: #2196F3;
-  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.15);
+.expense-card:hover {
+  border-color: #FF9800;
+  box-shadow: 0 4px 12px rgba(255, 152, 0, 0.15);
 }
 
-.income-header {
+.expense-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -62,26 +62,26 @@
   border-bottom: 1px solid #f0f0f0;
 }
 
-.income-info {
+.expense-info {
   display: flex;
   gap: 12px;
   flex: 1;
   min-width: 0;
 }
 
-.income-icon {
+.expense-icon {
   font-size: 28px;
   min-width: 32px;
   text-align: center;
 }
 
-.income-actions {
+.expense-actions {
   display: flex;
   gap: 8px;
   min-width: fit-content;
 }
 
-.income-info h5 {
+.expense-info h5 {
   margin: 0 0 4px 0;
   font-size: 15px;
   font-weight: 600;
@@ -89,13 +89,13 @@
   word-break: break-word;
 }
 
-.person-type {
+.expense-type {
   margin: 0;
   font-size: 12px;
   color: #999;
 }
 
-.income-details {
+.expense-details {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -142,7 +142,7 @@
   background-color: #e3f2fd;
 }
 
-.btn-add-income {
+.btn-add-expense {
   padding: 10px 16px;
   background: #007bff;
   color: white;
@@ -154,10 +154,10 @@
   transition: background 0.2s;
 }
 
-.btn-add-income:hover {
+.btn-add-expense:hover {
   background: #0056b3;
 }
 
-.btn-add-income:active {
+.btn-add-expense:active {
   background: #004085;
 }
