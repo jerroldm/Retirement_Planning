@@ -69,6 +69,9 @@ router.post('/', verifyToken, (req, res) => {
     expectedSaleProceeds,
   } = req.body;
 
+  console.log('Destructured expectedSaleProceeds:', expectedSaleProceeds, 'type:', typeof expectedSaleProceeds);
+  console.log('Will be stored as:', expectedSaleProceeds || 0);
+
   db.run(
     `INSERT INTO assets (
       userId, personId, assetType, assetName, currentValue,
@@ -128,6 +131,9 @@ router.put('/:id', verifyToken, (req, res) => {
     sellMonth,
     expectedSaleProceeds,
   } = req.body;
+
+  console.log('PUT - Destructured expectedSaleProceeds:', expectedSaleProceeds, 'type:', typeof expectedSaleProceeds);
+  console.log('PUT - Will be stored as:', expectedSaleProceeds || 0);
 
   db.run(
     `UPDATE assets SET
