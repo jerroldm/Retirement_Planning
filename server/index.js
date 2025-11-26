@@ -11,6 +11,7 @@ import savingsAccountRoutes from './routes/savingsAccounts.js';
 import personRoutes from './routes/persons.js';
 import incomeRoutes from './routes/income.js';
 import expensesRoutes from './routes/expenses.js';
+import socialSecurityRoutes from './routes/socialSecurity.js';
 
 dotenv.config();
 
@@ -44,6 +45,7 @@ app.use('/api/savings-accounts', savingsAccountRoutes);
 app.use('/api/persons', personRoutes);
 app.use('/api/income', incomeRoutes);
 app.use('/api/expenses', expensesRoutes);
+app.use('/api/social-security', socialSecurityRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

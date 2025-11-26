@@ -50,18 +50,19 @@ SQLite database is stored at `/data/retirement.db`. The database is auto-initial
 - All API calls use `localStorage.getItem('authToken')` for JWT token (stored under key `'authToken'`, not `'token'`)
 
 **Key Pattern - API Clients:**
-Each entity type (financial, assets, savings accounts, income, expenses) has its own API client:
+Each entity type (financial, assets, savings accounts, income, expenses, social security) has its own API client:
 - `src/api/client.js` - Main API client for financial data & auth (defines `apiCall()` helper)
 - `src/api/assetClient.js` - Asset CRUD operations
 - `src/api/savingsAccountClient.js` - Savings account CRUD operations
 - `src/api/incomeClient.js` - Income sources CRUD operations
 - `src/api/expensesClient.js` - Expenses CRUD operations
+- `src/api/socialSecurityClient.js` - Social Security benefits CRUD operations
 
 ### Backend Structure
 
 **Server Setup (`server/index.js`):**
 - Express app with CORS enabled
-- Routes mounted at `/api/{auth,financial,assets,savings-accounts,persons,income,expenses}`
+- Routes mounted at `/api/{auth,financial,assets,savings-accounts,persons,income,expenses,social-security}`
 - Health check endpoint at `/api/health`
 
 **Route Files (`server/routes/`):**
@@ -72,6 +73,7 @@ Each entity type (financial, assets, savings accounts, income, expenses) has its
 - `persons.js` - Individual person demographic and financial data
 - `income.js` - Income sources CRUD operations
 - `expenses.js` - Expenses CRUD operations
+- `socialSecurity.js` - Social Security benefits CRUD operations
 
 **Authentication:**
 - Middleware in `server/middleware/auth.js` exports `verifyToken()` middleware
@@ -82,7 +84,7 @@ Each entity type (financial, assets, savings accounts, income, expenses) has its
 **Database (`server/db.js`):**
 - SQLite3 wrapper with promisified callback API
 - Auto-creates all tables on server startup
-- Tables: `users`, `financial_data`, `assets`, `savings_accounts`, `persons`, `income_sources`, `expenses`, `scenarios`
+- Tables: `users`, `financial_data`, `assets`, `savings_accounts`, `persons`, `income_sources`, `expenses`, `social_security`, `scenarios`
 - No migrations framework; schema updates happen in this file
 
 ### Frontend Structure
@@ -99,6 +101,7 @@ Each entity type (financial, assets, savings accounts, income, expenses) has its
 - **Persons:** `PersonList.jsx`, `PersonForm.jsx`, `PersonTypeSelector.jsx` - Individual person management with demographic and financial data
 - **Income:** `IncomeList.jsx`, `IncomeForm.jsx` - Income sources management (one or more income sources per user)
 - **Expenses:** `ExpensesList.jsx`, `ExpensesForm.jsx` - Expenses management (persistent, with monthly amounts and phase tracking)
+- **Social Security:** `SocialSecurityList.jsx`, `SocialSecurityForm.jsx` - Social Security benefits tracking per person
 - **Views:** `Dashboard.jsx`, `DataTable.jsx`, `ExpensesTable.jsx`, `MortgageAmortizationTable.jsx`
 - **Auth:** `AuthPage.jsx` - Login/signup page
 
@@ -142,6 +145,12 @@ Stored in `expenses` table. Tracks custom expenses per user with:
 - preRetirement: Boolean flag for whether this expense applies before retirement
 - postRetirement: Boolean flag for whether this expense applies after retirement
 - notes: Optional notes about the expense
+
+**Social Security (flexible, one-to-many):**
+Stored in `social_security` table. Tracks Social Security benefits per person with:
+- personId: Reference to the person (self or spouse)
+- estimatedAnnualBenefit: Estimated annual benefit at Full Retirement Age (FRA of 67)
+- plannedClaimingAge: Age at which the person plans to claim benefits (default 67)
 
 ## Data Loading Architecture (Critical for Correct Calculations)
 

@@ -239,6 +239,25 @@ const initializeDatabase = () => {
     }
   });
 
+  // Social Security table (for managing social security benefits per person)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS social_security (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      userId INTEGER NOT NULL,
+      personId INTEGER,
+      estimatedAnnualBenefit REAL DEFAULT 0,
+      plannedClaimingAge INTEGER DEFAULT 67,
+      FOREIGN KEY (userId) REFERENCES users(id),
+      FOREIGN KEY (personId) REFERENCES persons(id)
+    )
+  `, (err) => {
+    if (err) {
+      console.error('Error creating social_security table:', err);
+    } else {
+      console.log('Social security table created or already exists');
+    }
+  });
+
   // Scenarios table (for saving different scenarios)
   db.run(`
     CREATE TABLE IF NOT EXISTS scenarios (

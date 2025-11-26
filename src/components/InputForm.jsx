@@ -18,6 +18,9 @@ import { incomeAPI } from '../api/incomeClient';
 import { ExpensesList } from './ExpensesList';
 import { ExpensesForm } from './ExpensesForm';
 import { expensesClient } from '../api/expensesClient';
+import { SocialSecurityList } from './SocialSecurityList';
+import { SocialSecurityForm } from './SocialSecurityForm';
+import { socialSecurityClient } from '../api/socialSecurityClient';
 import './InputForm.css';
 
 export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) => {
@@ -53,13 +56,19 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
   const [showExpensesForm, setShowExpensesForm] = useState(false);
   const [editingExpense, setEditingExpense] = useState(null);
 
-  // Load assets, savings accounts, persons, income sources, and expenses when component mounts
+  const [socialSecurityRecords, setSocialSecurityRecords] = useState([]);
+  const [socialSecurityLoading, setSocialSecurityLoading] = useState(false);
+  const [showSocialSecurityForm, setShowSocialSecurityForm] = useState(false);
+  const [editingSocialSecurity, setEditingSocialSecurity] = useState(null);
+
+  // Load assets, savings accounts, persons, income sources, expenses, and social security when component mounts
   useEffect(() => {
     loadAssets();
     loadSavingsAccounts();
     loadPersons();
     loadIncomeSources();
     loadExpenses();
+    loadSocialSecurityRecords();
   }, []);
 
   const loadSavingsAccounts = async () => {
@@ -107,6 +116,18 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
       console.error('Failed to load expenses:', error);
     } finally {
       setExpensesLoading(false);
+    }
+  };
+
+  const loadSocialSecurityRecords = async () => {
+    try {
+      setSocialSecurityLoading(true);
+      const loadedRecords = await socialSecurityClient.getRecords();
+      setSocialSecurityRecords(loadedRecords);
+    } catch (error) {
+      console.error('Failed to load social security records:', error);
+    } finally {
+      setSocialSecurityLoading(false);
     }
   };
 
@@ -433,6 +454,47 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
     setEditingExpense(null);
   };
 
+  const handleAddSocialSecurityClick = () => {
+    setEditingSocialSecurity(null);
+    setShowSocialSecurityForm(true);
+  };
+
+  const handleEditSocialSecurity = (record) => {
+    setEditingSocialSecurity(record);
+    setShowSocialSecurityForm(true);
+  };
+
+  const handleSocialSecurityFormSubmit = async (submittedData) => {
+    try {
+      if (editingSocialSecurity) {
+        await socialSecurityClient.updateRecord(editingSocialSecurity.id, submittedData);
+      } else {
+        await socialSecurityClient.createRecord(submittedData);
+      }
+      await loadSocialSecurityRecords();
+      setShowSocialSecurityForm(false);
+      setEditingSocialSecurity(null);
+    } catch (error) {
+      console.error('Failed to save social security record:', error);
+      alert('Failed to save social security record. Please try again.');
+    }
+  };
+
+  const handleDeleteSocialSecurity = async (id) => {
+    try {
+      await socialSecurityClient.deleteRecord(id);
+      await loadSocialSecurityRecords();
+    } catch (error) {
+      console.error('Failed to delete social security record:', error);
+      alert('Failed to delete social security record. Please try again.');
+    }
+  };
+
+  const handleCloseSocialSecurityForm = () => {
+    setShowSocialSecurityForm(false);
+    setEditingSocialSecurity(null);
+  };
+
   return (
     <div className="input-form">
       <div className="form-header">
@@ -536,6 +598,31 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
                 expense={editingExpense}
                 onSave={handleExpenseFormSubmit}
                 onCancel={handleCloseExpensesForm}
+              />
+            )}
+          </section>
+        )}
+
+        {/* Social Security */}
+        {activeTab === 'social-security' && (
+          <section className="form-section">
+            <SocialSecurityList
+              records={socialSecurityRecords}
+              persons={persons}
+              onEdit={handleEditSocialSecurity}
+              onDelete={(id) => {
+                if (window.confirm('Delete this social security record?')) {
+                  handleDeleteSocialSecurity(id);
+                }
+              }}
+              onAddRecord={handleAddSocialSecurityClick}
+            />
+            {showSocialSecurityForm && (
+              <SocialSecurityForm
+                record={editingSocialSecurity}
+                persons={persons}
+                onSave={handleSocialSecurityFormSubmit}
+                onCancel={handleCloseSocialSecurityForm}
               />
             )}
           </section>

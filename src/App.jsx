@@ -273,12 +273,13 @@ function AppContent() {
     { id: 'savings', label: '🏦 Savings', type: 'form' },
     { id: 'assets', label: '🏠 Assets', type: 'form' },
     { id: 'expenses', label: '⚙️ Expenses', type: 'form' },
+    { id: 'social-security', label: '🏛️ Social Security', type: 'form' },
     { id: 'economic', label: '📈 Economic', type: 'form' },
     { id: 'taxes', label: '💰 Taxes', type: 'form' },
   ];
 
   const isFormTab = (tabId) => {
-    return ['personal', 'income', 'savings', 'assets', 'expenses', 'economic', 'taxes'].includes(tabId);
+    return ['personal', 'income', 'savings', 'assets', 'expenses', 'social-security', 'economic', 'taxes'].includes(tabId);
   };
 
   const handleTabClick = (tabId) => {
