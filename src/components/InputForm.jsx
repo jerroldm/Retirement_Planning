@@ -12,6 +12,8 @@ import { PersonList } from './PersonList';
 import PersonTypeSelector from './PersonTypeSelector';
 import PersonForm from './PersonForm';
 import { personClient } from '../api/personClient';
+import { IncomeList } from './IncomeList';
+import { IncomeForm } from './IncomeForm';
 import './InputForm.css';
 
 export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) => {
@@ -36,6 +38,9 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
   const [showPersonForm, setShowPersonForm] = useState(false);
   const [selectedPersonType, setSelectedPersonType] = useState(null);
   const [editingPerson, setEditingPerson] = useState(null);
+
+  const [editingIncomeUser, setEditingIncomeUser] = useState(null);
+  const [showIncomeForm, setShowIncomeForm] = useState(false);
 
   // Load assets, savings accounts, and persons when component mounts
   useEffect(() => {
@@ -307,6 +312,28 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
     setSelectedPersonType(null);
   };
 
+  const handleEditIncome = (person) => {
+    setEditingIncomeUser(person);
+    setShowIncomeForm(true);
+  };
+
+  const handleIncomeFormSubmit = async (submittedData) => {
+    try {
+      await personClient.updatePerson(submittedData.id, submittedData);
+      await loadPersons();
+      setShowIncomeForm(false);
+      setEditingIncomeUser(null);
+    } catch (error) {
+      console.error('Failed to save income:', error);
+      alert('Failed to save income. Please try again.');
+    }
+  };
+
+  const handleCloseIncomeForm = () => {
+    setShowIncomeForm(false);
+    setEditingIncomeUser(null);
+  };
+
   return (
     <div className="input-form">
       <div className="form-header">
@@ -355,67 +382,20 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
         {activeTab === 'income' && (
           <section className="form-section">
             <h3>Income & Salary</h3>
-
-            <div className="subsection">
-              <h4>You (Person 1)</h4>
-              <div className="form-grid">
-                <div className="form-group">
-                  <label htmlFor="currentSalary">Current Annual Salary</label>
-                  <input
-                    type="number"
-                    id="currentSalary"
-                    name="currentSalary"
-                    value={formData.currentSalary}
-                    onChange={handleChange}
-                    min="0"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="annualSalaryIncrease">Annual Salary Increase (%)</label>
-                  <input
-                    type="number"
-                    id="annualSalaryIncrease"
-                    name="annualSalaryIncrease"
-                    value={formData.annualSalaryIncrease}
-                    onChange={handleChange}
-                    min="0"
-                    step="0.1"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {persons.some(p => p.personType === 'spouse') && (
-              <div className="subsection">
-                <h4>Spouse</h4>
-                <div className="form-grid">
-                  <div className="form-group">
-                    <label htmlFor="spouse2CurrentSalary">Current Annual Salary</label>
-                    <input
-                      type="number"
-                      id="spouse2CurrentSalary"
-                      name="spouse2CurrentSalary"
-                      value={formData.spouse2CurrentSalary || ''}
-                      onChange={handleChange}
-                      min="0"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="spouse2AnnualSalaryIncrease">Annual Salary Increase (%)</label>
-                    <input
-                      type="number"
-                      id="spouse2AnnualSalaryIncrease"
-                      name="spouse2AnnualSalaryIncrease"
-                      value={formData.spouse2AnnualSalaryIncrease || ''}
-                      onChange={handleChange}
-                      min="0"
-                      step="0.1"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
+            <IncomeList
+              persons={persons}
+              onEdit={handleEditIncome}
+            />
           </section>
+        )}
+
+        {/* Income Form Modal */}
+        {showIncomeForm && editingIncomeUser && (
+          <IncomeForm
+            person={editingIncomeUser}
+            onSave={handleIncomeFormSubmit}
+            onCancel={handleCloseIncomeForm}
+          />
         )}
 
         {/* Retirement Savings */}
