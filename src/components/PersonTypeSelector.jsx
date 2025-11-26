@@ -1,4 +1,5 @@
 import { PERSON_TYPES } from '../config/personConfig';
+import './PersonTypeSelector.css';
 
 export default function PersonTypeSelector({ onSelect, onCancel, existingTypes = [] }) {
   const availableTypes = Object.entries(PERSON_TYPES).filter(

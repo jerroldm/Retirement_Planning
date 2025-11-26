@@ -11,15 +11,27 @@ export const PersonList = ({ persons, onEdit, onDelete, onAddPerson }) => {
 
   const hasPersons = persons.length > 0;
 
+  if (!hasPersons) {
+    return (
+      <div className="persons-list">
+        <div className="persons-list-empty">
+          <p>No people yet.</p>
+          <button className="btn-add-person" onClick={onAddPerson}>
+            + Add your first person
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="persons-list">
-      {!hasPersons && (
-        <div className="empty-state">
-          <p>No persons yet. Add your first person to get started.</p>
-        </div>
-      )}
-
-      {hasPersons && (
+      <div className="persons-list-header">
+        <h2>Your People</h2>
+        <button className="btn-add-person" onClick={onAddPerson}>
+          + Add Person
+        </button>
+      </div>
         <div className="persons-container">
           {persons.map(person => {
             const personConfig = PERSON_TYPES[person.personType];
@@ -77,11 +89,6 @@ export const PersonList = ({ persons, onEdit, onDelete, onAddPerson }) => {
             );
           })}
         </div>
-      )}
-
-      <button className="btn-add-person" onClick={onAddPerson}>
-        + Add Person
-      </button>
     </div>
   );
 };

@@ -42,7 +42,7 @@ export const AssetCard = ({ asset, onEdit, onDelete }) => {
             onClick={() => onEdit(asset)}
             title="Edit asset"
           >
-            ✎
+            ✏️
           </button>
           <button
             className="btn-icon btn-delete"

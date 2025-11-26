@@ -1,17 +1,35 @@
 .persons-list {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+  padding: 0;
 }
 
-.empty-state {
+.persons-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.persons-list-header h2 {
+  margin: 0;
+  color: #333;
+  font-size: 24px;
+}
+
+.persons-list-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
   text-align: center;
-  padding: 40px 20px;
-  color: #666;
-  font-size: 14px;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  border: 2px dashed #ddd;
+  color: #999;
+}
+
+.persons-list-empty p {
+  margin: 0 0 20px 0;
+  font-size: 16px;
 }
 
 .persons-container {
@@ -125,18 +143,21 @@
 }
 
 .btn-add-person {
-  padding: 12px 24px;
-  background-color: #4CAF50;
+  padding: 10px 16px;
+  background: #007bff;
   color: white;
   border: none;
   border-radius: 4px;
+  cursor: pointer;
   font-size: 14px;
   font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  align-self: flex-start;
+  transition: background 0.2s;
 }
 
 .btn-add-person:hover {
-  background-color: #45a049;
+  background: #0056b3;
+}
+
+.btn-add-person:active {
+  background: #004085;
 }

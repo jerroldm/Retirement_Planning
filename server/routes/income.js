@@ -19,6 +19,24 @@ router.get('/', verifyToken, (req, res) => {
   );
 });
 
+// Get single income source
+router.get('/:id', verifyToken, (req, res) => {
+  db.get(
+    `SELECT * FROM income_sources WHERE id = ? AND userId = ?`,
+    [req.params.id, req.userId],
+    (err, source) => {
+      if (err) {
+        console.error('Database error querying income source:', err);
+        return res.status(500).json({ error: 'Database error' });
+      }
+      if (!source) {
+        return res.status(404).json({ error: 'Income source not found' });
+      }
+      res.json(source);
+    }
+  );
+});
+
 // Create a new income source
 router.post('/', verifyToken, (req, res) => {
   const { sourceName, annualSalary, annualSalaryIncrease } = req.body;

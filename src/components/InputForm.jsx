@@ -15,6 +15,8 @@ import { personClient } from '../api/personClient';
 import { IncomeList } from './IncomeList';
 import { IncomeForm } from './IncomeForm';
 import { incomeAPI } from '../api/incomeClient';
+import { ExpensesList } from './ExpensesList';
+import { ExpensesForm } from './ExpensesForm';
 import './InputForm.css';
 
 export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) => {
@@ -44,6 +46,10 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
   const [incomeSourcesLoading, setIncomeSourcesLoading] = useState(false);
   const [showIncomeForm, setShowIncomeForm] = useState(false);
   const [editingIncomeSource, setEditingIncomeSource] = useState(null);
+
+  const [expenses, setExpenses] = useState([]);
+  const [showExpensesForm, setShowExpensesForm] = useState(false);
+  const [editingExpense, setEditingExpense] = useState(null);
 
   // Load assets, savings accounts, persons, and income sources when component mounts
   useEffect(() => {
@@ -380,17 +386,12 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
         {/* Personal Information */}
         {activeTab === 'personal' && (
           <section className="form-section">
-            <h3>Personal Information</h3>
-
-            <div className="subsection">
-              <h4>Persons</h4>
-              <PersonList
-                persons={persons}
-                onEdit={handleEditPerson}
-                onDelete={handleDeletePerson}
-                onAddPerson={handleAddPersonClick}
-              />
-            </div>
+            <PersonList
+              persons={persons}
+              onEdit={handleEditPerson}
+              onDelete={handleDeletePerson}
+              onAddPerson={handleAddPersonClick}
+            />
           </section>
         )}
 
@@ -416,14 +417,11 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
         {/* Income & Salary */}
         {activeTab === 'income' && (
           <section className="form-section">
-            <h3>Income & Salary</h3>
-            <button className="btn btn-primary" onClick={handleAddIncomeClick} style={{ marginBottom: '16px' }}>
-              Add Income Source
-            </button>
             <IncomeList
               sources={incomeSources}
               onEdit={handleEditIncome}
               onDelete={handleDeleteIncome}
+              onAddIncome={handleAddIncomeClick}
             />
           </section>
         )}
@@ -440,7 +438,6 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
         {/* Retirement Savings */}
         {activeTab === 'savings' && (
           <section className="form-section">
-            <h3>Retirement Savings Accounts</h3>
             <SavingsAccountList
               accounts={savingsAccounts}
               onEdit={handleEditAccount}
@@ -453,7 +450,6 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
         {/* Assets */}
         {activeTab === 'assets' && (
           <section className="form-section">
-            <h3>Assets</h3>
             <AssetList
               assets={assets}
               onEdit={handleEditAsset}
@@ -467,45 +463,40 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
         {/* Expenses & Lifestyle */}
         {activeTab === 'expenses' && (
           <section className="form-section">
-            <h3>Expenses & Lifestyle</h3>
-            <div className="subsection">
-              <h4>Pre-Retirement Expenses</h4>
-              <div className="form-grid">
-                <div className="form-group">
-                  <label htmlFor="preRetirementAnnualExpenses">Annual Expenses (before retirement)</label>
-                  <input
-                    type="number"
-                    id="preRetirementAnnualExpenses"
-                    name="preRetirementAnnualExpenses"
-                    value={formData.preRetirementAnnualExpenses}
-                    onChange={handleChange}
-                    min="0"
-                  />
-                  <small style={{marginTop: '4px', color: '#999', fontSize: '12px'}}>
-                    Living expenses while working (excluding mortgage)
-                  </small>
-                </div>
-              </div>
-            </div>
-            <div className="subsection">
-              <h4>Post-Retirement Expenses</h4>
-              <div className="form-grid">
-                <div className="form-group">
-                  <label htmlFor="postRetirementAnnualExpenses">Annual Expenses (after retirement)</label>
-                  <input
-                    type="number"
-                    id="postRetirementAnnualExpenses"
-                    name="postRetirementAnnualExpenses"
-                    value={formData.postRetirementAnnualExpenses}
-                    onChange={handleChange}
-                    min="0"
-                  />
-                  <small style={{marginTop: '4px', color: '#999', fontSize: '12px'}}>
-                    Living expenses in retirement (excluding mortgage)
-                  </small>
-                </div>
-              </div>
-            </div>
+            <ExpensesList
+              expenses={expenses}
+              onEdit={(expense) => {
+                setEditingExpense(expense);
+                setShowExpensesForm(true);
+              }}
+              onDelete={(expenseId) => {
+                if (window.confirm('Delete this expense?')) {
+                  setExpenses(expenses.filter(e => e.id !== expenseId));
+                }
+              }}
+              onAddExpense={() => {
+                setEditingExpense(null);
+                setShowExpensesForm(true);
+              }}
+            />
+            {showExpensesForm && (
+              <ExpensesForm
+                expense={editingExpense}
+                onSave={(savedExpense) => {
+                  if (editingExpense) {
+                    setExpenses(expenses.map(e => e.id === editingExpense.id ? { ...savedExpense, id: editingExpense.id } : e));
+                  } else {
+                    setExpenses([...expenses, { ...savedExpense, id: Date.now() }]);
+                  }
+                  setShowExpensesForm(false);
+                  setEditingExpense(null);
+                }}
+                onCancel={() => {
+                  setShowExpensesForm(false);
+                  setEditingExpense(null);
+                }}
+              />
+            )}
           </section>
         )}
 
