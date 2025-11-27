@@ -331,3 +331,110 @@ db.run(sql, params, function(err) {
 7. **No Form Validation:** Input forms don't validate before saving - garbage in = garbage in calculations
 8. **SQLite Boolean Handling:** SQLite returns `0` and `1` for boolean columns instead of `true` and `false`. When comparing booleans from the database, use the `!!` operator to convert: `const bool = !!dbValue`. Example: In ExpensesList, phase conversion uses `const pre = !!expense.preRetirement` to properly handle SQLite's 0/1 values.
 9. **Scenario Feature:** Partially implemented - creates financial data snapshots but incomplete CRUD UI
+
+## Development Progress and Phase Status
+
+### Phase 4: Testing & Verification - COMPLETE ✅
+
+**Completed:** November 27, 2025
+
+All critical bugs in the retirement projection calculations have been identified, fixed, and verified:
+
+#### Bugs Fixed (11 Total)
+
+1. **Contribution Override Bug** - Fixed handling of zero contribution values. Previously checked `if (totalTraditionalIRAContribution > 0)` causing $0 contributions to fall back to $10k defaults. Now checks for account existence.
+
+2. **State Tax Calculation** - State taxes were calculated against raw income instead of taxable income. Fixed to apply standard deduction before state tax calculation.
+
+3. **Partial-Year Retirement Logic** - Major architectural fix for users retiring mid-year. Previously treated entire year as either pre-retirement or post-retirement. Now:
+   - Splits year based on birth month
+   - Calculates 5 months pre-retirement, 7 months post-retirement (for June birthday)
+   - Adjusts income, expenses, and contributions proportionally
+
+4. **Gross Salary in Year-by-Year Table** - Showed $0 instead of partial-year income. Fixed to use `finalGrossIncome` which includes partial-year calculations.
+
+5. **AGI Calculation** - Was showing $0 instead of properly deducting contributions. Now correctly calculates: Gross Income - Standard Deduction - Traditional IRA Contributions (adjusted for partial year).
+
+6. **State Tax During Retirement Year** - Was applying retirement state (WY) taxes to income earned in working state (CA). Fixed to use working state during retirement year, switching to retirement state only after retirement completes.
+
+7. **Home Sale Double-Counting** - Net worth jumped when home sale proceeds were added without removing home equity in same year. Fixed by zeroing out home in sale year using `>=` instead of `>`.
+
+8. **Contribution Stop Age Default** - Was defaulting to 65 instead of retirement age. Now defaults to retirement age (60).
+
+9. **Contribution Eligibility** - Changed from `age < primaryContributionStopAge` to `age <= primaryContributionStopAge` to include retirement year.
+
+10. **Contribution Amount Adjustment** - Retirement year contributions now adjusted: `$24k × (5 months / 12) = $10k` instead of $0.
+
+11. **Default Contribution Values** - All defaults changed from $10,000 to $0 per user specification.
+
+#### Key Implementation Changes
+
+**src/utils/calculations.js:**
+- Lines 57-155: Updated mortgage amortization to handle partial-year retirement
+- Lines 319-331: Fixed contribution loading by checking account existence
+- Lines 453-551: Implemented partial-year retirement logic with month-based splitting
+- Lines 511-526: Fixed home sale handling to zero out in sale year
+- Lines 650-651: Fixed state tax to use taxable income
+- Lines 705-739: Added contribution eligibility and amount adjustment for retirement year
+- Lines 741-756: Updated ordinary income calculation with retirement year adjustments
+- Lines 834-837: Fixed Year-by-Year table to use `finalGrossIncome`
+- Lines 869-887: Updated AGI calculation with deduction and contribution adjustments
+- Line 219: Changed contribution stop age default to `retirementAge`
+
+**src/utils/taxCalculations.js:**
+- Lines 28-59: Disabled federal tax bracket debug logging
+
+**Tax System Foundation (For Phase 5):**
+- Created `src/config/federalTaxBrackets.js` - 2025 federal tax brackets by filing status
+- Created `src/config/stateTaxConfig.js` - State tax configuration for all 50 states
+- Created `src/utils/taxCalculations.js` - Tax calculation functions (infrastructure)
+- Updated database schema in `server/db.js` - Added columns for workingState, retirementState, stateChangeOption, stateChangeAge, filingStatus, withdrawalStrategy
+
+#### Test Scenario
+
+User configuration: Self, birth June 1969, retires at age 60 (June 2029), CA working state, WY retirement state
+
+Verification at age 60:
+- Pre-retirement months: 5 (Jan-May)
+- Post-retirement months: 7 (June-Dec)
+- Income: $168,400 (partial year)
+- Expenses: $54,000 total ($22,500 pre + $31,500 post)
+- Contributions: $10,000 ($24,000 × 5/12)
+- Federal Tax: Correctly calculated on taxable income
+- State Tax: Correctly applied CA taxes on income earned before retirement
+
+### Phase 5: Tax System Implementation - PENDING
+
+**Status:** Foundation prepared, not yet implemented
+
+Comprehensive tax system implementation will include:
+- Federal progressive tax brackets (7 brackets)
+- State-specific tax rates for all 50 states
+- Withdrawal strategy modeling (Waterfall and Tax Bracket Fill)
+- Required Minimum Distribution (RMD) calculations per SECURE Act 2.0
+- Social Security taxation integration
+- Capital gains tax treatment
+- Multiple income source integration
+
+See `TAX_SYSTEM_PLAN.md` for full detailed plan.
+
+### Known Limitations (Phase 4)
+
+1. Tax calculations remain simplified (flat rates) - will be enhanced in Phase 5
+2. No RMD enforcement yet - will be implemented in Phase 5
+3. Withdrawal strategy logic exists but not fully integrated into projections
+4. Capital gains tracking not yet implemented
+5. Social Security claiming strategies not yet modeled
+
+### Next Steps
+
+Phase 5 implementation should follow the detailed plan in `TAX_SYSTEM_PLAN.md`. Recommended sequence:
+1. Create tax configuration infrastructure (already done)
+2. Create tax calculation engine functions (already done)
+3. Update database schema (partially done - needs routes update)
+4. Update UI for tax configuration (Taxes tab in InputForm.jsx)
+5. Integrate withdrawal strategies into calculations
+6. Add Social Security benefits and claiming age modeling
+7. Implement RMD logic with birth-year dependent thresholds
+8. Update Dashboard and DataTable to show tax/withdrawal breakdowns
+9. Comprehensive testing with various scenarios
