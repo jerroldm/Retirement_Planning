@@ -508,6 +508,15 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
     // Apply inflation only for years after the current year (yearIndex > 0)
     const livingExpenses = baseExpenses * Math.pow(1 + inflationRate / 100, Math.max(0, yearIndex - 1));
 
+    if (age === 60) {
+      console.log('=== EXPENSE INFLATION DEBUG - AGE 60 ===');
+      console.log('  baseExpenses:', baseExpenses);
+      console.log('  inflationRate:', inflationRate);
+      console.log('  yearIndex:', yearIndex);
+      console.log('  inflationMultiplier:', Math.pow(1 + inflationRate / 100, Math.max(0, yearIndex - 1)));
+      console.log('  livingExpenses (after inflation):', livingExpenses);
+    }
+
     // Total spending includes living expenses and mortgage
     const annualSpending = livingExpenses + annualMortgagePayment;
 
@@ -546,7 +555,10 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
         console.log('  age:', age);
         console.log('  isRetired:', isRetired);
         console.log('  grossIncome:', grossIncome);
+        console.log('  annualMortgagePayment:', annualMortgagePayment);
+        console.log('  totalGrossIncome:', totalGrossIncome);
         console.log('  annualSpending:', annualSpending);
+        console.log('  shortfall (spending - grossIncome):', annualSpending - totalGrossIncome);
         console.log('  withdrawalStrategy:', withdrawalStrategy);
         console.log('  Withdrawal breakdown:', withdrawalFromRetirements);
       }
