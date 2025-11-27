@@ -508,6 +508,22 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
       }
     }
 
+    // Zero out home value and mortgage after sale year
+    if (homeSalePlanEnabled && projectedCalendarYear > homeSaleYear) {
+      currentHomeValue = 0;
+      currentMortgage = 0;
+    }
+
+    // Also check if any other assets are being sold in previous years
+    if (allAssets && allAssets.length > 0) {
+      for (const asset of allAssets) {
+        if (asset.sellPlanEnabled && asset.assetType === 'primary-residence' && projectedCalendarYear > asset.sellYear) {
+          currentHomeValue = 0;
+          currentMortgage = 0;
+        }
+      }
+    }
+
     // Calculate income for primary person
     // If income sources are defined, use ONLY those (they're the source of truth)
     // Otherwise, fall back to currentSalary from financial_data (legacy)
@@ -779,7 +795,8 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
     const stateTaxableIncome = taxableOrdinaryIncome + stateCapitalGains;
     const stateTax = calculateStateTax(stateTaxableIncome, currentState, filingStatus);
 
-    // Debug state tax at age 60
+    // Debug state tax at age 60 - DISABLED
+    /*
     if (age === 60) {
       console.log('=== STATE TAX DEBUG - AGE 60 ===');
       console.log('  ordinaryIncome:', ordinaryIncome);
@@ -789,6 +806,7 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
       console.log('  currentState:', currentState);
       console.log('  stateTax:', stateTax);
     }
+    */
 
 
     const totalTaxes = Math.max(0, federalOrdinaryTax + federalCapitalGainsTax + stateTax);
