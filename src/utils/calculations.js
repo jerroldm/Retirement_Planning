@@ -825,7 +825,9 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
       (isMarried ? spouse2TraditionalContribution + spouse2RothContribution + spouse2InvestmentContribution : 0);
 
     // Calculate AGI (Adjusted Gross Income) for display
-    const agi = !isRetired ? ordinaryIncome : totalGrossIncome + withdrawalFromRetirements.traditionalIRA;
+    // AGI includes salary/wages + Traditional IRA withdrawals (which are included in taxable income)
+    // Use finalGrossIncome to properly account for partial-year retirement
+    const agi = finalGrossIncome + withdrawalFromRetirements.traditionalIRA;
 
     years.push({
       age: age,
