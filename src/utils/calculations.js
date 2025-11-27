@@ -547,7 +547,19 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
       // Pre-retirement portion: use pre-retirement settings for months 1-5
       const preRetirementInflation = Math.pow(1 + inflationRate / 100, Math.max(0, yearIndex - 1));
       const preRetirementExpenses = (calculatedPreRetirementExpenses * preRetirementInflation) * (monthsPreRetirement / 12);
-      const preRetirementIncome = totalGrossIncome * (monthsPreRetirement / 12);
+
+      // For pre-retirement income, recalculate what income would have been before retirement
+      // Use the salary/income from before the retirement transition
+      let preRetirementIncome = 0;
+      if (incomeSources && incomeSources.length > 0) {
+        preRetirementIncome = incomeSources.reduce((total, source) => {
+          const sourceIncome = (source.annualSalary || 0) * Math.pow(1 + ((source.annualSalaryIncrease || 0) / 100), yearIndex);
+          return total + sourceIncome;
+        }, 0);
+      } else {
+        preRetirementIncome = currentSalaryValue;
+      }
+      preRetirementIncome = preRetirementIncome * (monthsPreRetirement / 12);
 
       // Post-retirement portion: use post-retirement settings for months 6-12
       const postRetirementExpenses = (calculatedPostRetirementExpenses * preRetirementInflation) * (monthsPostRetirement / 12);
