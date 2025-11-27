@@ -272,6 +272,65 @@ const initializeDatabase = () => {
       FOREIGN KEY (financialDataId) REFERENCES financial_data(id)
     )
   `);
+
+  // Run migrations for new tax system columns
+  runMigrations();
+};
+
+/**
+ * Run database migrations for new tax system columns
+ * Checks if columns exist before adding them to maintain idempotency
+ */
+const runMigrations = () => {
+  // Migration: Add tax system columns to financial_data table
+  db.serialize(() => {
+    // Check if workingState column exists
+    db.all("PRAGMA table_info(financial_data)", (err, columns) => {
+      if (err) {
+        console.error('Error checking table schema:', err);
+        return;
+      }
+
+      const columnNames = columns.map(col => col.name);
+      const migrationsNeeded = [];
+
+      // Check which columns are missing
+      if (!columnNames.includes('workingState')) {
+        migrationsNeeded.push("ALTER TABLE financial_data ADD COLUMN workingState TEXT DEFAULT NULL");
+      }
+      if (!columnNames.includes('retirementState')) {
+        migrationsNeeded.push("ALTER TABLE financial_data ADD COLUMN retirementState TEXT DEFAULT NULL");
+      }
+      if (!columnNames.includes('stateChangeOption')) {
+        migrationsNeeded.push("ALTER TABLE financial_data ADD COLUMN stateChangeOption TEXT DEFAULT 'at-retirement'");
+      }
+      if (!columnNames.includes('stateChangeAge')) {
+        migrationsNeeded.push("ALTER TABLE financial_data ADD COLUMN stateChangeAge INTEGER DEFAULT NULL");
+      }
+      if (!columnNames.includes('filingStatus')) {
+        migrationsNeeded.push("ALTER TABLE financial_data ADD COLUMN filingStatus TEXT DEFAULT 'single'");
+      }
+      if (!columnNames.includes('withdrawalStrategy')) {
+        migrationsNeeded.push("ALTER TABLE financial_data ADD COLUMN withdrawalStrategy TEXT DEFAULT 'waterfall'");
+      }
+
+      // Run migrations
+      if (migrationsNeeded.length > 0) {
+        console.log(`Running ${migrationsNeeded.length} tax system migrations...`);
+        migrationsNeeded.forEach(migration => {
+          db.run(migration, (err) => {
+            if (err) {
+              console.error('Migration error:', err);
+            } else {
+              console.log('Migration completed:', migration.substring(0, 50) + '...');
+            }
+          });
+        });
+      } else {
+        console.log('Tax system columns already exist, no migrations needed');
+      }
+    });
+  });
 };
 
 export default db;

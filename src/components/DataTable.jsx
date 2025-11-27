@@ -51,8 +51,23 @@ export const DataTable = ({ data }) => {
               <th onClick={() => handleSort('salary')} className="sortable">
                 Gross Salary <SortIcon column="salary" />
               </th>
+              <th onClick={() => handleSort('agi')} className="sortable">
+                AGI <SortIcon column="agi" />
+              </th>
+              <th onClick={() => handleSort('federalOrdinaryTax')} className="sortable">
+                Federal Ord. Tax <SortIcon column="federalOrdinaryTax" />
+              </th>
+              <th onClick={() => handleSort('federalCapitalGainsTax')} className="sortable">
+                Federal Cap. Gains Tax <SortIcon column="federalCapitalGainsTax" />
+              </th>
+              <th onClick={() => handleSort('stateTax')} className="sortable">
+                State Tax <SortIcon column="stateTax" />
+              </th>
               <th onClick={() => handleSort('taxes')} className="sortable">
-                Taxes <SortIcon column="taxes" />
+                Total Tax <SortIcon column="taxes" />
+              </th>
+              <th onClick={() => handleSort('totalWithdrawals')} className="sortable">
+                Withdrawals <SortIcon column="totalWithdrawals" />
               </th>
               <th onClick={() => handleSort('expenses')} className="sortable">
                 Expenses <SortIcon column="expenses" />
@@ -81,7 +96,12 @@ export const DataTable = ({ data }) => {
                     {row.isRetired && <span className="badge">Retired</span>}
                   </td>
                   <td>{formatCurrency(row.salary)}</td>
+                  <td>{formatCurrency(row.agi || 0)}</td>
+                  <td>{formatCurrency(row.federalOrdinaryTax || 0)}</td>
+                  <td>{formatCurrency(row.federalCapitalGainsTax || 0)}</td>
+                  <td>{formatCurrency(row.stateTax || 0)}</td>
                   <td>{formatCurrency(row.taxes)}</td>
+                  <td>{formatCurrency(row.totalWithdrawals || 0)}</td>
                   <td>{formatCurrency(row.expenses)}</td>
                   <td className={row.cashFlow >= 0 ? 'positive' : 'negative'}>
                     {formatCurrency(row.cashFlow)}
@@ -100,35 +120,79 @@ export const DataTable = ({ data }) => {
                 </tr>
                 {expandedRow === idx && (
                   <tr className="detail-row">
-                    <td colSpan="9">
+                    <td colSpan="14">
                       <div className="details-grid">
-                        <div className="detail-item">
-                          <label>Net Income</label>
-                          <value>{formatCurrency(row.netIncome)}</value>
+                        <div className="detail-section">
+                          <h4>Tax Breakdown</h4>
+                          <div className="detail-item">
+                            <label>Federal Ordinary Income Tax</label>
+                            <value>{formatCurrency(row.federalOrdinaryTax || 0)}</value>
+                          </div>
+                          <div className="detail-item">
+                            <label>Federal Capital Gains Tax</label>
+                            <value>{formatCurrency(row.federalCapitalGainsTax || 0)}</value>
+                          </div>
+                          <div className="detail-item">
+                            <label>State Tax ({row.currentState})</label>
+                            <value>{formatCurrency(row.stateTax || 0)}</value>
+                          </div>
+                          <div className="detail-item">
+                            <label>Total Taxes</label>
+                            <value>{formatCurrency(row.taxes)}</value>
+                          </div>
                         </div>
-                        <div className="detail-item">
-                          <label>Traditional IRA/401(k)</label>
-                          <value>{formatCurrency(row.traditionalIRA)}</value>
+                        <div className="detail-section">
+                          <h4>Withdrawal Breakdown</h4>
+                          <div className="detail-item">
+                            <label>Traditional IRA Withdrawal</label>
+                            <value>{formatCurrency(row.traditionalIRAWithdrawal || 0)}</value>
+                          </div>
+                          <div className="detail-item">
+                            <label>Roth IRA Withdrawal</label>
+                            <value>{formatCurrency(row.rothIRAWithdrawal || 0)}</value>
+                          </div>
+                          <div className="detail-item">
+                            <label>Investment Account Withdrawal</label>
+                            <value>{formatCurrency(row.investmentAccountsWithdrawal || 0)}</value>
+                          </div>
+                          <div className="detail-item">
+                            <label>Total Withdrawals</label>
+                            <value>{formatCurrency(row.totalWithdrawals || 0)}</value>
+                          </div>
                         </div>
-                        <div className="detail-item">
-                          <label>Roth IRA/401(k)</label>
-                          <value>{formatCurrency(row.rothIRA)}</value>
+                        <div className="detail-section">
+                          <h4>Account Balances</h4>
+                          <div className="detail-item">
+                            <label>Net Income</label>
+                            <value>{formatCurrency(row.netIncome)}</value>
+                          </div>
+                          <div className="detail-item">
+                            <label>Traditional IRA/401(k) Balance</label>
+                            <value>{formatCurrency(row.traditionalIRA)}</value>
+                          </div>
+                          <div className="detail-item">
+                            <label>Roth IRA/401(k) Balance</label>
+                            <value>{formatCurrency(row.rothIRA)}</value>
+                          </div>
+                          <div className="detail-item">
+                            <label>Investment Accounts Balance</label>
+                            <value>{formatCurrency(row.investmentAccounts)}</value>
+                          </div>
                         </div>
-                        <div className="detail-item">
-                          <label>Investment Accounts</label>
-                          <value>{formatCurrency(row.investmentAccounts)}</value>
-                        </div>
-                        <div className="detail-item">
-                          <label>Home Value</label>
-                          <value>{formatCurrency(row.homeValue)}</value>
-                        </div>
-                        <div className="detail-item">
-                          <label>Mortgage Balance</label>
-                          <value>{formatCurrency(row.mortgageBalance)}</value>
-                        </div>
-                        <div className="detail-item">
-                          <label>Other Assets</label>
-                          <value>{formatCurrency(row.otherAssets)}</value>
+                        <div className="detail-section">
+                          <h4>Other Assets</h4>
+                          <div className="detail-item">
+                            <label>Home Value</label>
+                            <value>{formatCurrency(row.homeValue)}</value>
+                          </div>
+                          <div className="detail-item">
+                            <label>Mortgage Balance</label>
+                            <value>{formatCurrency(row.mortgageBalance)}</value>
+                          </div>
+                          <div className="detail-item">
+                            <label>Other Assets</label>
+                            <value>{formatCurrency(row.otherAssets)}</value>
+                          </div>
                         </div>
                       </div>
                     </td>

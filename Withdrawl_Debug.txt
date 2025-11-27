@@ -1,0 +1,318 @@
+[vite] connecting... client:495:9
+[vite] connected. client:618:15
+Download the React DevTools for a better development experience: https://react.dev/link/react-devtools react-dom_client.js:20101:54
+calculateRetirementProjection - birthMonth: 6 birthYear: 1989 recalculatedCurrentAge: 36 2 calculations.js:366:11
+API Call: GET http://localhost:3001/api/auth/me 2 client.js:17:11
+InputForm syncing formData, inputs: 
+Object { birthMonth: 6, birthYear: 1989 }
+InputForm.jsx:152:13
+API Call: GET http://localhost:3001/api/financial client.js:17:11
+InputForm syncing formData, inputs: 
+Object { birthMonth: 6, birthYear: 1989 }
+InputForm.jsx:152:13
+API Call: GET http://localhost:3001/api/financial client.js:17:11
+App.jsx - Financial data loaded from API: 
+Object { birthMonth: 6, birthYear: 1969, data: {…} }
+App.jsx:90:17
+App.jsx - Financial data loaded from API: 
+Object { birthMonth: 6, birthYear: 1969, data: {…} }
+App.jsx:90:17
+Persons loaded: 
+Array [ {…} ]
+App.jsx:143:21
+Home data migration result: 
+Object { message: "Home data already migrated", migrated: false }
+App.jsx:149:21
+Persons loaded: 
+Array [ {…} ]
+App.jsx:143:21
+Person ownership migration result: 
+Object { message: "Person ownership assigned successfully", assetsUpdated: 0, accountsUpdated: 0 }
+App.jsx:155:21
+Home data migration result: 
+Object { message: "Home data already migrated", migrated: false }
+App.jsx:149:21
+calculateRetirementProjection - birthMonth: 6 birthYear: 1969 recalculatedCurrentAge: 56 calculations.js:366:11
+=== WITHDRAWAL DEBUG - AGE 60 === calculations.js:542:17
+  primaryRetirementAge: 60 calculations.js:543:17
+  age: 60 calculations.js:544:17
+  isRetired: true calculations.js:545:17
+  grossIncome: 0 calculations.js:546:17
+  annualSpending: 67412.715 calculations.js:547:17
+  withdrawalStrategy: waterfall calculations.js:548:17
+  Withdrawal breakdown: 
+Object { investmentAccounts: 67412.715, traditionalIRA: 0, rothIRA: 0, total: 67412.715 }
+calculations.js:549:17
+calculateRetirementProjection - birthMonth: 6 birthYear: 1969 recalculatedCurrentAge: 56 calculations.js:366:11
+=== WITHDRAWAL DEBUG - AGE 60 === calculations.js:542:17
+  primaryRetirementAge: 60 calculations.js:543:17
+  age: 60 calculations.js:544:17
+  isRetired: true calculations.js:545:17
+  grossIncome: 0 calculations.js:546:17
+  annualSpending: 67412.715 calculations.js:547:17
+  withdrawalStrategy: waterfall calculations.js:548:17
+  Withdrawal breakdown: 
+Object { investmentAccounts: 67412.715, traditionalIRA: 0, rothIRA: 0, total: 67412.715 }
+calculations.js:549:17
+Person ownership migration result: 
+Object { message: "Person ownership assigned successfully", assetsUpdated: 0, accountsUpdated: 0 }
+App.jsx:155:21
+calculateRetirementProjection - birthMonth: 6 birthYear: 1969 recalculatedCurrentAge: 56 calculations.js:366:11
+=== WITHDRAWAL DEBUG - AGE 60 === calculations.js:542:17
+  primaryRetirementAge: 60 calculations.js:543:17
+  age: 60 calculations.js:544:17
+  isRetired: true calculations.js:545:17
+  grossIncome: 0 calculations.js:546:17
+  annualSpending: 67412.715 calculations.js:547:17
+  withdrawalStrategy: waterfall calculations.js:548:17
+  Withdrawal breakdown: 
+Object { investmentAccounts: 67412.715, traditionalIRA: 0, rothIRA: 0, total: 67412.715 }
+calculations.js:549:17
+calculateRetirementProjection - birthMonth: 6 birthYear: 1969 recalculatedCurrentAge: 56 calculations.js:366:11
+=== WITHDRAWAL DEBUG - AGE 60 === calculations.js:542:17
+  primaryRetirementAge: 60 calculations.js:543:17
+  age: 60 calculations.js:544:17
+  isRetired: true calculations.js:545:17
+  grossIncome: 0 calculations.js:546:17
+  annualSpending: 67412.715 calculations.js:547:17
+  withdrawalStrategy: waterfall calculations.js:548:17
+  Withdrawal breakdown: 
+Object { investmentAccounts: 67412.715, traditionalIRA: 0, rothIRA: 0, total: 67412.715 }
+calculations.js:549:17
+Income sources loaded: 
+Array [ {…} ]
+App.jsx:163:21
+calculateRetirementProjection - birthMonth: 6 birthYear: 1969 recalculatedCurrentAge: 56 calculations.js:366:11
+=== WITHDRAWAL DEBUG - AGE 60 === calculations.js:542:17
+  primaryRetirementAge: 60 calculations.js:543:17
+  age: 60 calculations.js:544:17
+  isRetired: true calculations.js:545:17
+  grossIncome: 0 calculations.js:546:17
+  annualSpending: 67412.715 calculations.js:547:17
+  withdrawalStrategy: waterfall calculations.js:548:17
+  Withdrawal breakdown: 
+Object { investmentAccounts: 67412.715, traditionalIRA: 0, rothIRA: 0, total: 67412.715 }
+calculations.js:549:17
+calculateRetirementProjection - birthMonth: 6 birthYear: 1969 recalculatedCurrentAge: 56 calculations.js:366:11
+=== WITHDRAWAL DEBUG - AGE 60 === calculations.js:542:17
+  primaryRetirementAge: 60 calculations.js:543:17
+  age: 60 calculations.js:544:17
+  isRetired: true calculations.js:545:17
+  grossIncome: 0 calculations.js:546:17
+  annualSpending: 67412.715 calculations.js:547:17
+  withdrawalStrategy: waterfall calculations.js:548:17
+  Withdrawal breakdown: 
+Object { investmentAccounts: 67412.715, traditionalIRA: 0, rothIRA: 0, total: 67412.715 }
+calculations.js:549:17
+Income sources loaded: 
+Array [ {…} ]
+App.jsx:163:21
+calculateRetirementProjection - birthMonth: 6 birthYear: 1969 recalculatedCurrentAge: 56 calculations.js:366:11
+=== WITHDRAWAL DEBUG - AGE 60 === calculations.js:542:17
+  primaryRetirementAge: 60 calculations.js:543:17
+  age: 60 calculations.js:544:17
+  isRetired: true calculations.js:545:17
+  grossIncome: 0 calculations.js:546:17
+  annualSpending: 67412.715 calculations.js:547:17
+  withdrawalStrategy: waterfall calculations.js:548:17
+  Withdrawal breakdown: 
+Object { investmentAccounts: 67412.715, traditionalIRA: 0, rothIRA: 0, total: 67412.715 }
+calculations.js:549:17
+calculateRetirementProjection - birthMonth: 6 birthYear: 1969 recalculatedCurrentAge: 56 calculations.js:366:11
+=== WITHDRAWAL DEBUG - AGE 60 === calculations.js:542:17
+  primaryRetirementAge: 60 calculations.js:543:17
+  age: 60 calculations.js:544:17
+  isRetired: true calculations.js:545:17
+  grossIncome: 0 calculations.js:546:17
+  annualSpending: 67412.715 calculations.js:547:17
+  withdrawalStrategy: waterfall calculations.js:548:17
+  Withdrawal breakdown: 
+Object { investmentAccounts: 67412.715, traditionalIRA: 0, rothIRA: 0, total: 67412.715 }
+calculations.js:549:17
+Savings accounts loaded: 
+Array(4) [ {…}, {…}, {…}, {…} ]
+App.jsx:171:21
+Savings accounts loaded - Traditional IRA: 331812.78 Roth IRA: 363001.68 Investment: 42449.8 calculations.js:333:13
+Savings contributions loaded - Traditional Contrib: 24000 Roth Contrib: 0 Investment Contrib: 0 calculations.js:334:13
+calculateRetirementProjection - birthMonth: 6 birthYear: 1969 recalculatedCurrentAge: 56 calculations.js:366:11
+=== WITHDRAWAL DEBUG - AGE 60 === calculations.js:542:17
+  primaryRetirementAge: 60 calculations.js:543:17
+  age: 60 calculations.js:544:17
+  isRetired: true calculations.js:545:17
+  grossIncome: 0 calculations.js:546:17
+  annualSpending: 67412.715 calculations.js:547:17
+  withdrawalStrategy: waterfall calculations.js:548:17
+  Withdrawal breakdown: 
+Object { investmentAccounts: 42449.8, traditionalIRA: 24962.914999999994, rothIRA: 0, total: 67412.715 }
+calculations.js:549:17
+Savings accounts loaded - Traditional IRA: 331812.78 Roth IRA: 363001.68 Investment: 42449.8 calculations.js:333:13
+Savings contributions loaded - Traditional Contrib: 24000 Roth Contrib: 0 Investment Contrib: 0 calculations.js:334:13
+calculateRetirementProjection - birthMonth: 6 birthYear: 1969 recalculatedCurrentAge: 56 calculations.js:366:11
+=== WITHDRAWAL DEBUG - AGE 60 === calculations.js:542:17
+  primaryRetirementAge: 60 calculations.js:543:17
+  age: 60 calculations.js:544:17
+  isRetired: true calculations.js:545:17
+  grossIncome: 0 calculations.js:546:17
+  annualSpending: 67412.715 calculations.js:547:17
+  withdrawalStrategy: waterfall calculations.js:548:17
+  Withdrawal breakdown: 
+Object { investmentAccounts: 42449.8, traditionalIRA: 24962.914999999994, rothIRA: 0, total: 67412.715 }
+calculations.js:549:17
+Savings accounts loaded: 
+Array(4) [ {…}, {…}, {…}, {…} ]
+App.jsx:171:21
+Savings accounts loaded - Traditional IRA: 331812.78 Roth IRA: 363001.68 Investment: 42449.8 calculations.js:333:13
+Savings contributions loaded - Traditional Contrib: 24000 Roth Contrib: 0 Investment Contrib: 0 calculations.js:334:13
+calculateRetirementProjection - birthMonth: 6 birthYear: 1969 recalculatedCurrentAge: 56 calculations.js:366:11
+=== WITHDRAWAL DEBUG - AGE 60 === calculations.js:542:17
+  primaryRetirementAge: 60 calculations.js:543:17
+  age: 60 calculations.js:544:17
+  isRetired: true calculations.js:545:17
+  grossIncome: 0 calculations.js:546:17
+  annualSpending: 67412.715 calculations.js:547:17
+  withdrawalStrategy: waterfall calculations.js:548:17
+  Withdrawal breakdown: 
+Object { investmentAccounts: 42449.8, traditionalIRA: 24962.914999999994, rothIRA: 0, total: 67412.715 }
+calculations.js:549:17
+Savings accounts loaded - Traditional IRA: 331812.78 Roth IRA: 363001.68 Investment: 42449.8 calculations.js:333:13
+Savings contributions loaded - Traditional Contrib: 24000 Roth Contrib: 0 Investment Contrib: 0 calculations.js:334:13
+calculateRetirementProjection - birthMonth: 6 birthYear: 1969 recalculatedCurrentAge: 56 calculations.js:366:11
+=== WITHDRAWAL DEBUG - AGE 60 === calculations.js:542:17
+  primaryRetirementAge: 60 calculations.js:543:17
+  age: 60 calculations.js:544:17
+  isRetired: true calculations.js:545:17
+  grossIncome: 0 calculations.js:546:17
+  annualSpending: 67412.715 calculations.js:547:17
+  withdrawalStrategy: waterfall calculations.js:548:17
+  Withdrawal breakdown: 
+Object { investmentAccounts: 42449.8, traditionalIRA: 24962.914999999994, rothIRA: 0, total: 67412.715 }
+calculations.js:549:17
+Expenses loaded: 
+Array [ {…}, {…} ]
+App.jsx:179:21
+Savings accounts loaded - Traditional IRA: 331812.78 Roth IRA: 363001.68 Investment: 42449.8 calculations.js:333:13
+Savings contributions loaded - Traditional Contrib: 24000 Roth Contrib: 0 Investment Contrib: 0 calculations.js:334:13
+Expenses loaded - Pre-retirement: 0 Post-retirement: 126000 calculations.js:362:13
+calculateRetirementProjection - birthMonth: 6 birthYear: 1969 recalculatedCurrentAge: 56 calculations.js:366:11
+=== WITHDRAWAL DEBUG - AGE 60 === calculations.js:542:17
+  primaryRetirementAge: 60 calculations.js:543:17
+  age: 60 calculations.js:544:17
+  isRetired: true calculations.js:545:17
+  grossIncome: 0 calculations.js:546:17
+  annualSpending: 155923.602 calculations.js:547:17
+  withdrawalStrategy: waterfall calculations.js:548:17
+  Withdrawal breakdown: 
+Object { investmentAccounts: 42449.8, traditionalIRA: 113473.80200000001, rothIRA: 0, total: 155923.602 }
+calculations.js:549:17
+Savings accounts loaded - Traditional IRA: 331812.78 Roth IRA: 363001.68 Investment: 42449.8 calculations.js:333:13
+Savings contributions loaded - Traditional Contrib: 24000 Roth Contrib: 0 Investment Contrib: 0 calculations.js:334:13
+Expenses loaded - Pre-retirement: 0 Post-retirement: 126000 calculations.js:362:13
+calculateRetirementProjection - birthMonth: 6 birthYear: 1969 recalculatedCurrentAge: 56 calculations.js:366:11
+=== WITHDRAWAL DEBUG - AGE 60 === calculations.js:542:17
+  primaryRetirementAge: 60 calculations.js:543:17
+  age: 60 calculations.js:544:17
+  isRetired: true calculations.js:545:17
+  grossIncome: 0 calculations.js:546:17
+  annualSpending: 155923.602 calculations.js:547:17
+  withdrawalStrategy: waterfall calculations.js:548:17
+  Withdrawal breakdown: 
+Object { investmentAccounts: 42449.8, traditionalIRA: 113473.80200000001, rothIRA: 0, total: 155923.602 }
+calculations.js:549:17
+Expenses loaded: 
+Array [ {…}, {…} ]
+App.jsx:179:21
+Savings accounts loaded - Traditional IRA: 331812.78 Roth IRA: 363001.68 Investment: 42449.8 calculations.js:333:13
+Savings contributions loaded - Traditional Contrib: 24000 Roth Contrib: 0 Investment Contrib: 0 calculations.js:334:13
+Expenses loaded - Pre-retirement: 0 Post-retirement: 126000 calculations.js:362:13
+calculateRetirementProjection - birthMonth: 6 birthYear: 1969 recalculatedCurrentAge: 56 calculations.js:366:11
+=== WITHDRAWAL DEBUG - AGE 60 === calculations.js:542:17
+  primaryRetirementAge: 60 calculations.js:543:17
+  age: 60 calculations.js:544:17
+  isRetired: true calculations.js:545:17
+  grossIncome: 0 calculations.js:546:17
+  annualSpending: 155923.602 calculations.js:547:17
+  withdrawalStrategy: waterfall calculations.js:548:17
+  Withdrawal breakdown: 
+Object { investmentAccounts: 42449.8, traditionalIRA: 113473.80200000001, rothIRA: 0, total: 155923.602 }
+calculations.js:549:17
+Savings accounts loaded - Traditional IRA: 331812.78 Roth IRA: 363001.68 Investment: 42449.8 calculations.js:333:13
+Savings contributions loaded - Traditional Contrib: 24000 Roth Contrib: 0 Investment Contrib: 0 calculations.js:334:13
+Expenses loaded - Pre-retirement: 0 Post-retirement: 126000 calculations.js:362:13
+calculateRetirementProjection - birthMonth: 6 birthYear: 1969 recalculatedCurrentAge: 56 calculations.js:366:11
+=== WITHDRAWAL DEBUG - AGE 60 === calculations.js:542:17
+  primaryRetirementAge: 60 calculations.js:543:17
+  age: 60 calculations.js:544:17
+  isRetired: true calculations.js:545:17
+  grossIncome: 0 calculations.js:546:17
+  annualSpending: 155923.602 calculations.js:547:17
+  withdrawalStrategy: waterfall calculations.js:548:17
+  Withdrawal breakdown: 
+Object { investmentAccounts: 42449.8, traditionalIRA: 113473.80200000001, rothIRA: 0, total: 155923.602 }
+calculations.js:549:17
+Loading data from DB with merged assets - birthMonth: 6 birthYear: 1969 App.jsx:187:21
+Savings accounts loaded - Traditional IRA: 331812.78 Roth IRA: 363001.68 Investment: 42449.8 calculations.js:333:13
+Savings contributions loaded - Traditional Contrib: 24000 Roth Contrib: 0 Investment Contrib: 0 calculations.js:334:13
+Expenses loaded - Pre-retirement: 0 Post-retirement: 126000 calculations.js:362:13
+calculateRetirementProjection - birthMonth: 6 birthYear: 1969 recalculatedCurrentAge: 56 calculations.js:366:11
+=== WITHDRAWAL DEBUG - AGE 60 === calculations.js:542:17
+  primaryRetirementAge: 60 calculations.js:543:17
+  age: 60 calculations.js:544:17
+  isRetired: true calculations.js:545:17
+  grossIncome: 0 calculations.js:546:17
+  annualSpending: 167355.602 calculations.js:547:17
+  withdrawalStrategy: waterfall calculations.js:548:17
+  Withdrawal breakdown: 
+Object { investmentAccounts: 42449.8, traditionalIRA: 124905.80200000001, rothIRA: 0, total: 167355.602 }
+calculations.js:549:17
+Savings accounts loaded - Traditional IRA: 331812.78 Roth IRA: 363001.68 Investment: 42449.8 calculations.js:333:13
+Savings contributions loaded - Traditional Contrib: 24000 Roth Contrib: 0 Investment Contrib: 0 calculations.js:334:13
+Expenses loaded - Pre-retirement: 0 Post-retirement: 126000 calculations.js:362:13
+calculateRetirementProjection - birthMonth: 6 birthYear: 1969 recalculatedCurrentAge: 56 calculations.js:366:11
+=== WITHDRAWAL DEBUG - AGE 60 === calculations.js:542:17
+  primaryRetirementAge: 60 calculations.js:543:17
+  age: 60 calculations.js:544:17
+  isRetired: true calculations.js:545:17
+  grossIncome: 0 calculations.js:546:17
+  annualSpending: 167355.602 calculations.js:547:17
+  withdrawalStrategy: waterfall calculations.js:548:17
+  Withdrawal breakdown: 
+Object { investmentAccounts: 42449.8, traditionalIRA: 124905.80200000001, rothIRA: 0, total: 167355.602 }
+calculations.js:549:17
+InputForm syncing formData, inputs: 
+Object { birthMonth: 6, birthYear: 1969 }
+InputForm.jsx:152:13
+InputForm syncing formData, inputs: 
+Object { birthMonth: 6, birthYear: 1969 }
+InputForm.jsx:152:13
+Loading data from DB with merged assets - birthMonth: 6 birthYear: 1969 App.jsx:187:21
+Savings accounts loaded - Traditional IRA: 331812.78 Roth IRA: 363001.68 Investment: 42449.8 calculations.js:333:13
+Savings contributions loaded - Traditional Contrib: 24000 Roth Contrib: 0 Investment Contrib: 0 calculations.js:334:13
+Expenses loaded - Pre-retirement: 0 Post-retirement: 126000 calculations.js:362:13
+calculateRetirementProjection - birthMonth: 6 birthYear: 1969 recalculatedCurrentAge: 56 calculations.js:366:11
+=== WITHDRAWAL DEBUG - AGE 60 === calculations.js:542:17
+  primaryRetirementAge: 60 calculations.js:543:17
+  age: 60 calculations.js:544:17
+  isRetired: true calculations.js:545:17
+  grossIncome: 0 calculations.js:546:17
+  annualSpending: 167355.602 calculations.js:547:17
+  withdrawalStrategy: waterfall calculations.js:548:17
+  Withdrawal breakdown: 
+Object { investmentAccounts: 42449.8, traditionalIRA: 124905.80200000001, rothIRA: 0, total: 167355.602 }
+calculations.js:549:17
+Savings accounts loaded - Traditional IRA: 331812.78 Roth IRA: 363001.68 Investment: 42449.8 calculations.js:333:13
+Savings contributions loaded - Traditional Contrib: 24000 Roth Contrib: 0 Investment Contrib: 0 calculations.js:334:13
+Expenses loaded - Pre-retirement: 0 Post-retirement: 126000 calculations.js:362:13
+calculateRetirementProjection - birthMonth: 6 birthYear: 1969 recalculatedCurrentAge: 56 calculations.js:366:11
+=== WITHDRAWAL DEBUG - AGE 60 === calculations.js:542:17
+  primaryRetirementAge: 60 calculations.js:543:17
+  age: 60 calculations.js:544:17
+  isRetired: true calculations.js:545:17
+  grossIncome: 0 calculations.js:546:17
+  annualSpending: 167355.602 calculations.js:547:17
+  withdrawalStrategy: waterfall calculations.js:548:17
+  Withdrawal breakdown: 
+Object { investmentAccounts: 42449.8, traditionalIRA: 124905.80200000001, rothIRA: 0, total: 167355.602 }
+calculations.js:549:17
+InputForm syncing formData, inputs: 
+Object { birthMonth: 6, birthYear: 1969 }
+InputForm.jsx:152:13

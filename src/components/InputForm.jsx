@@ -21,9 +21,11 @@ import { expensesClient } from '../api/expensesClient';
 import { SocialSecurityList } from './SocialSecurityList';
 import { SocialSecurityForm } from './SocialSecurityForm';
 import { socialSecurityClient } from '../api/socialSecurityClient';
+import { stateList } from '../config/stateTaxConfig.js';
+import { getStandardDeduction } from '../utils/taxCalculations.js';
 import './InputForm.css';
 
-export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) => {
+export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved, onSavingsAccountsSaved, onExpensesSaved }) => {
   const [formData, setFormData] = useState(inputs || defaultInputs);
   const [assets, setAssets] = useState([]);
   const [assetsLoading, setAssetsLoading] = useState(false);
@@ -270,6 +272,9 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
         await savingsAccountAPI.createAccount(submittedData);
       }
       await loadSavingsAccounts();
+      if (onSavingsAccountsSaved) {
+        await onSavingsAccountsSaved();
+      }
       setShowAccountForm(false);
       setEditingAccount(null);
       setSelectedAccountType(null);
@@ -283,6 +288,9 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
     try {
       await savingsAccountAPI.deleteAccount(id);
       await loadSavingsAccounts();
+      if (onSavingsAccountsSaved) {
+        await onSavingsAccountsSaved();
+      }
     } catch (error) {
       console.error('Failed to delete account:', error);
       alert('Failed to delete account. Please try again.');
@@ -431,6 +439,9 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
         await expensesClient.createExpense(submittedData);
       }
       await loadExpenses();
+      if (onExpensesSaved) {
+        await onExpensesSaved();
+      }
       setShowExpensesForm(false);
       setEditingExpense(null);
     } catch (error) {
@@ -443,6 +454,9 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
     try {
       await expensesClient.deleteExpense(id);
       await loadExpenses();
+      if (onExpensesSaved) {
+        await onExpensesSaved();
+      }
     } catch (error) {
       console.error('Failed to delete expense:', error);
       alert('Failed to delete expense. Please try again.');
@@ -661,35 +675,145 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved }) 
           </section>
         )}
 
-        {/* Tax Assumptions */}
+        {/* Tax Configuration */}
         {activeTab === 'taxes' && (
           <section className="form-section">
-            <h3>Tax Assumptions</h3>
+            <h3>Tax Configuration</h3>
+
+            {/* Filing Status */}
             <div className="form-grid">
               <div className="form-group">
-                <label htmlFor="federalTaxRate">Federal Tax Rate (%)</label>
-                <input
-                  type="number"
-                  id="federalTaxRate"
-                  name="federalTaxRate"
-                  value={formData.federalTaxRate}
+                <label htmlFor="filingStatus">Filing Status</label>
+                <select
+                  id="filingStatus"
+                  name="filingStatus"
+                  value={formData.filingStatus || 'single'}
                   onChange={handleChange}
-                  min="0"
-                  step="0.1"
-                />
+                >
+                  <option value="single">Single</option>
+                  <option value="married-joint">Married Filing Jointly</option>
+                  <option value="married-separate">Married Filing Separately</option>
+                  <option value="head-of-household">Head of Household</option>
+                </select>
               </div>
+            </div>
+
+            {/* State Configuration */}
+            <h4>State Tax Configuration</h4>
+            <div className="form-grid">
               <div className="form-group">
-                <label htmlFor="stateTaxRate">State Tax Rate (%)</label>
-                <input
-                  type="number"
-                  id="stateTaxRate"
-                  name="stateTaxRate"
-                  value={formData.stateTaxRate}
+                <label htmlFor="workingState">Working State (Current/Pre-Retirement)*</label>
+                <select
+                  id="workingState"
+                  name="workingState"
+                  value={formData.workingState || ''}
                   onChange={handleChange}
-                  min="0"
-                  step="0.1"
-                />
+                  required
+                >
+                  <option value="">-- Select State --</option>
+                  {stateList.map(state => (
+                    <option key={state.code} value={state.code}>
+                      {state.name}
+                    </option>
+                  ))}
+                </select>
               </div>
+
+              <div className="form-group">
+                <label htmlFor="retirementState">Retirement State (Optional)</label>
+                <select
+                  id="retirementState"
+                  name="retirementState"
+                  value={formData.retirementState || ''}
+                  onChange={handleChange}
+                >
+                  <option value="">-- No state change --</option>
+                  {stateList.map(state => (
+                    <option key={state.code} value={state.code}>
+                      {state.name}
+                    </option>
+                  ))}
+                </select>
+                <small>Select a different state if you plan to relocate upon retirement</small>
+              </div>
+            </div>
+
+            {/* State Change Timing - only show if retirementState is selected */}
+            {formData.retirementState && (
+              <>
+                <h4>When to change states?</h4>
+                <div className="form-group">
+                  <label>
+                    <input
+                      type="radio"
+                      name="stateChangeOption"
+                      value="at-retirement"
+                      checked={(formData.stateChangeOption || 'at-retirement') === 'at-retirement'}
+                      onChange={handleChange}
+                    />
+                    At retirement age ({formData.retirementAge || 65})
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      name="stateChangeOption"
+                      value="at-age"
+                      checked={formData.stateChangeOption === 'at-age'}
+                      onChange={handleChange}
+                    />
+                    At specific age
+                  </label>
+                </div>
+
+                {formData.stateChangeOption === 'at-age' && (
+                  <div className="form-group">
+                    <label htmlFor="stateChangeAge">Age to move to {stateList.find(s => s.code === formData.retirementState)?.name || 'retirement state'}</label>
+                    <input
+                      type="number"
+                      id="stateChangeAge"
+                      name="stateChangeAge"
+                      value={formData.stateChangeAge || ''}
+                      onChange={handleChange}
+                      min={formData.currentAge}
+                      max={formData.deathAge}
+                    />
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Withdrawal Strategy */}
+            <h4>Retirement Account Withdrawal Strategy</h4>
+            <div className="form-grid">
+              <div className="form-group">
+                <label htmlFor="withdrawalStrategy">Withdrawal Strategy</label>
+                <select
+                  id="withdrawalStrategy"
+                  name="withdrawalStrategy"
+                  value={formData.withdrawalStrategy || 'waterfall'}
+                  onChange={handleChange}
+                >
+                  <option value="waterfall">Waterfall (Simple Tax-Efficient)</option>
+                  <option value="tax-bracket-fill">Tax Bracket Fill (Optimized)</option>
+                </select>
+                <small>
+                  {formData.withdrawalStrategy === 'waterfall'
+                    ? 'Draws from investment accounts first, then Traditional IRA, then Roth IRA'
+                    : 'Fills available tax brackets with Traditional IRA first to minimize tax rate'}
+                </small>
+              </div>
+            </div>
+
+            {/* Information Section */}
+            <div className="info-section">
+              <p><strong>Federal Tax Brackets:</strong> 2025 IRS progressive rates (10%, 12%, 22%, 24%, 32%, 35%, 37%)</p>
+              <p><strong>Standard Deduction:</strong> ${getStandardDeduction(formData.filingStatus || 'single').toLocaleString()}</p>
+              {formData.workingState && (
+                <p><strong>Working State Tax:</strong> {stateList.find(s => s.code === formData.workingState)?.name || formData.workingState}</p>
+              )}
+              {formData.retirementState && (
+                <p><strong>Retirement State Tax:</strong> {stateList.find(s => s.code === formData.retirementState)?.name || formData.retirementState}</p>
+              )}
             </div>
           </section>
         )}

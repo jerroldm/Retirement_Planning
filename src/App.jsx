@@ -10,12 +10,18 @@ import { calculateRetirementProjection, generateMortgageAmortizationSchedule, de
 import { financialAPI } from './api/client'
 import { assetAPI } from './api/assetClient'
 import { personClient } from './api/personClient'
+import { incomeAPI } from './api/incomeClient'
+import { savingsAccountAPI } from './api/savingsAccountClient'
+import { expensesClient } from './api/expensesClient'
 import './App.css'
 
 function AppContent() {
   const { user, isLoading: authLoading, logout } = useAuth()
   const [inputs, setInputs] = useState(defaultInputs)
   const [persons, setPersons] = useState([])
+  const [incomeSources, setIncomeSources] = useState([])
+  const [savingsAccounts, setSavingsAccounts] = useState([])
+  const [expenses, setExpenses] = useState([])
   const [activeView, setActiveView] = useState('personal')
   const [isSaving, setIsSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState(null)
@@ -28,29 +34,44 @@ function AppContent() {
     }
 
     const homeAsset = assets.find(asset => asset.assetType === 'primary-residence');
-    if (!homeAsset) {
-      return baseInputs;
+
+    // Calculate total value of non-home assets
+    let otherAssetsTotal = 0;
+    for (const asset of assets) {
+      if (asset.assetType !== 'primary-residence') {
+        const assetValue = parseFloat(asset.currentValue) || 0;
+        otherAssetsTotal += assetValue;
+      }
     }
 
-    // Merge home asset data into inputs, preferring asset values when available
-    return {
+    // Build merged inputs
+    const mergedInputs = {
       ...baseInputs,
-      homeValue: homeAsset.currentValue || baseInputs.homeValue,
-      homeMortgage: homeAsset.loanBalance || baseInputs.homeMortgage,
-      homeMortgageRate: homeAsset.loanRate || baseInputs.homeMortgageRate,
-      homeMortgageMonthlyPayment: homeAsset.monthlyPayment || baseInputs.homeMortgageMonthlyPayment,
-      homeMortgagePayoffYear: homeAsset.payoffYear || baseInputs.homeMortgagePayoffYear,
-      homeMortgagePayoffMonth: homeAsset.payoffMonth || baseInputs.homeMortgagePayoffMonth,
-      homePropertyTax: homeAsset.propertyTax || baseInputs.homePropertyTax,
-      homePropertyTaxAnnualIncrease: homeAsset.propertyTaxAnnualIncrease || baseInputs.homePropertyTaxAnnualIncrease,
-      homeInsurance: homeAsset.insurance || baseInputs.homeInsurance,
-      homeInsuranceAnnualIncrease: homeAsset.insuranceAnnualIncrease || baseInputs.homeInsuranceAnnualIncrease,
-      homeSalePlanEnabled: homeAsset.sellPlanEnabled || baseInputs.homeSalePlanEnabled,
-      homeSaleYear: homeAsset.sellYear || baseInputs.homeSaleYear,
-      homeSaleMonth: homeAsset.sellMonth || baseInputs.homeSaleMonth,
-      homeMortgageExtraPrincipalPayment: homeAsset.extraPrincipalPayment || baseInputs.homeMortgageExtraPrincipalPayment,
       allAssets: assets,
     };
+
+    // Merge home asset data if it exists
+    if (homeAsset) {
+      mergedInputs.homeValue = homeAsset.currentValue || baseInputs.homeValue;
+      mergedInputs.homeMortgage = homeAsset.loanBalance || baseInputs.homeMortgage;
+      mergedInputs.homeMortgageRate = homeAsset.loanRate || baseInputs.homeMortgageRate;
+      mergedInputs.homeMortgageMonthlyPayment = homeAsset.monthlyPayment || baseInputs.homeMortgageMonthlyPayment;
+      mergedInputs.homeMortgagePayoffYear = homeAsset.payoffYear || baseInputs.homeMortgagePayoffYear;
+      mergedInputs.homeMortgagePayoffMonth = homeAsset.payoffMonth || baseInputs.homeMortgagePayoffMonth;
+      mergedInputs.homePropertyTax = homeAsset.propertyTax || baseInputs.homePropertyTax;
+      mergedInputs.homePropertyTaxAnnualIncrease = homeAsset.propertyTaxAnnualIncrease || baseInputs.homePropertyTaxAnnualIncrease;
+      mergedInputs.homeInsurance = homeAsset.insurance || baseInputs.homeInsurance;
+      mergedInputs.homeInsuranceAnnualIncrease = homeAsset.insuranceAnnualIncrease || baseInputs.homeInsuranceAnnualIncrease;
+      mergedInputs.homeSalePlanEnabled = homeAsset.sellPlanEnabled || baseInputs.homeSalePlanEnabled;
+      mergedInputs.homeSaleYear = homeAsset.sellYear || baseInputs.homeSaleYear;
+      mergedInputs.homeSaleMonth = homeAsset.sellMonth || baseInputs.homeSaleMonth;
+      mergedInputs.homeMortgageExtraPrincipalPayment = homeAsset.extraPrincipalPayment || baseInputs.homeMortgageExtraPrincipalPayment;
+    }
+
+    // Always override otherAssets with calculated total (including 0 if no other assets exist)
+    mergedInputs.otherAssets = otherAssetsTotal;
+
+    return mergedInputs;
   };
 
   // Helper function to extract person data and merge into inputs
@@ -113,6 +134,12 @@ function AppContent() {
             inflationRate: data.inflationRate || 3,
             federalTaxRate: data.federalTaxRate || 22,
             stateTaxRate: data.stateTaxRate || 5,
+            workingState: data.workingState || 'TX',
+            retirementState: data.retirementState || null,
+            stateChangeOption: data.stateChangeOption || 'at-retirement',
+            stateChangeAge: data.stateChangeAge || null,
+            filingStatus: data.filingStatus || 'single',
+            withdrawalStrategy: data.withdrawalStrategy || 'waterfall',
           };
 
           // Load persons data first (before setting inputs)
@@ -143,6 +170,36 @@ function AppContent() {
           // Set persons first (before setting inputs) so calculations have all data
           setPersons(personsList);
 
+          // Load income sources
+          let incomeSourcesList = [];
+          try {
+            incomeSourcesList = await incomeAPI.getSources();
+            console.log('Income sources loaded:', incomeSourcesList);
+            setIncomeSources(incomeSourcesList);
+          } catch (incomeError) {
+            console.log('Could not load income sources:', incomeError.message);
+          }
+
+          // Load savings accounts
+          let savingsAccountsList = [];
+          try {
+            savingsAccountsList = await savingsAccountAPI.getAccounts();
+            console.log('Savings accounts loaded:', savingsAccountsList);
+            setSavingsAccounts(savingsAccountsList);
+          } catch (savingsError) {
+            console.log('Could not load savings accounts:', savingsError.message);
+          }
+
+          // Load expenses
+          let expensesList = [];
+          try {
+            expensesList = await expensesClient.getExpenses();
+            console.log('Expenses loaded:', expensesList);
+            setExpenses(expensesList);
+          } catch (expensesError) {
+            console.log('Could not load expenses:', expensesError.message);
+          }
+
           // Try to load and merge assets if available
           try {
             const assets = await assetAPI.getAssets();
@@ -169,8 +226,8 @@ function AppContent() {
   }, [user])
 
   const projectionData = useMemo(() => {
-    return calculateRetirementProjection(inputs, persons)
-  }, [inputs, persons])
+    return calculateRetirementProjection(inputs, persons, incomeSources, savingsAccounts, expenses)
+  }, [inputs, persons, incomeSources, savingsAccounts, expenses])
 
   const mortgageSchedule = useMemo(() => {
     return generateMortgageAmortizationSchedule(inputs, persons)
@@ -183,6 +240,26 @@ function AppContent() {
       setInputs(prevInputs => mergeAssetDataIntoInputs(prevInputs, assets));
     } catch (err) {
       console.error('Failed to reload asset data:', err);
+    }
+  };
+
+  const reloadSavingsAccountsData = async () => {
+    // Reload savings accounts - this will trigger recalculation via useMemo
+    try {
+      const accounts = await savingsAccountAPI.getAccounts();
+      setSavingsAccounts(accounts);
+    } catch (err) {
+      console.error('Failed to reload savings accounts:', err);
+    }
+  };
+
+  const reloadExpensesData = async () => {
+    // Reload expenses - this will trigger recalculation via useMemo
+    try {
+      const expensesList = await expensesClient.getExpenses();
+      setExpenses(expensesList);
+    } catch (err) {
+      console.error('Failed to reload expenses:', err);
     }
   };
 
@@ -237,6 +314,12 @@ function AppContent() {
           inflationRate: newInputs.inflationRate,
           federalTaxRate: newInputs.federalTaxRate,
           stateTaxRate: newInputs.stateTaxRate,
+          workingState: newInputs.workingState,
+          retirementState: newInputs.retirementState,
+          stateChangeOption: newInputs.stateChangeOption,
+          stateChangeAge: newInputs.stateChangeAge,
+          filingStatus: newInputs.filingStatus,
+          withdrawalStrategy: newInputs.withdrawalStrategy,
         }
         console.log('dataToSave being sent:', { birthMonth: dataToSave.birthMonth, birthYear: dataToSave.birthYear })
         await financialAPI.saveFinancialData(dataToSave)
@@ -330,7 +413,7 @@ function AppContent() {
               {activeView === 'expenses-breakdown' && <ExpensesTable data={projectionData} />}
               {activeView === 'mortgage-schedule' && <MortgageAmortizationTable schedule={mortgageSchedule} />}
               {isFormTab(activeView) && (
-                <InputForm inputs={inputs} onInputsChange={handleInputsChange} activeTab={activeView} onAssetsSaved={reloadAssetData} />
+                <InputForm inputs={inputs} onInputsChange={handleInputsChange} activeTab={activeView} onAssetsSaved={reloadAssetData} onSavingsAccountsSaved={reloadSavingsAccountsData} onExpensesSaved={reloadExpensesData} />
               )}
             </>
           )}
