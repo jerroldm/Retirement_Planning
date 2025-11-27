@@ -812,11 +812,117 @@ db.get('SELECT workingState FROM financial_data LIMIT 1', (err, row) => {
 - [ ] Tax breakdown visible in Dashboard and DataTable
 - [ ] Withdrawal strategy visible in output data
 
+## Implementation Status (As of November 27, 2025)
+
+### Completed
+- ✅ Phase 1: Tax Configuration Infrastructure
+  - `src/config/federalTaxBrackets.js` - 2025 federal brackets for all filing statuses
+  - `src/config/stateTaxConfig.js` - All 50 states + DC with flat/bracket configurations
+  - `src/utils/taxCalculations.js` - Core tax calculation functions (federal, state, Social Security)
+  - `server/db.js` - Database schema updated with new tax fields
+  - `server/routes/financial.js` - Routes updated to handle new tax fields
+  - All Phase 4 bugs fixed (partial-year retirement, state tax calculations, etc.)
+
+### In Progress / Pending
+- Phase 2: Tax Calculation Engine integration into `calculateRetirementProjection()`
+- Phase 3: Income source integration (SS, supplemental, rental)
+- Phase 4: UI updates for Tax tab with state and filing status selectors
+- Phase 5: Withdrawal strategy integration and RMD enforcement
+- Phase 6: Dashboard and DataTable tax/withdrawal visualization
+
+## Database Field Mapping
+
+### New fields added to `financial_data` table (Phase 1 Complete)
+```sql
+workingState TEXT DEFAULT NULL          -- State during working years (e.g., 'CA', 'TX')
+retirementState TEXT DEFAULT NULL       -- State after retirement (optional)
+stateChangeOption TEXT DEFAULT 'at-retirement'  -- 'at-retirement' or 'at-age'
+stateChangeAge INTEGER DEFAULT NULL     -- Specific age to move (if at-age selected)
+filingStatus TEXT DEFAULT 'single'      -- 'single', 'married-joint', 'married-separate', 'head-of-household'
+withdrawalStrategy TEXT DEFAULT 'waterfall'  -- 'waterfall' or 'tax-bracket-fill'
+```
+
+### Backward Compatibility Notes
+- Legacy `federalTaxRate` and `stateTaxRate` fields remain in database but will be superseded
+- Default values ensure existing users aren't affected
+- Gradual migration: new users get progressive brackets, old users can opt-in
+
+## Important Edge Cases and Validation Rules
+
+### Tax Bracket Fill Strategy Edge Cases
+1. **Negative taxable income**: Handle when expenses exceed income in early years (pre-work)
+2. **Multiple income sources**: Must correctly combine salary + supplemental + SS taxation
+3. **Social Security threshold crossing**: Changes in withdrawn amounts can flip SS taxation on/off
+4. **RMD greater than need**: User may not want to withdraw RMD amount but law requires it
+5. **Bracket inversion**: In rare cases with specific deductions, may need to backtrack through brackets
+
+### State-Specific Considerations
+1. **State withholding credits**: Some states allow credits for federal tax paid
+2. **Residency rules**: Some states require 183+ days for residency
+3. **Part-year residents**: Need to prorate state income tax when moving states during year
+4. **State-specific deductions**: CA, NJ allow additional deductions above federal standard deduction
+5. **Reciprocal agreements**: PA, IL have reciprocal agreements with neighboring states
+6. **No-tax states**: FL, TX, WY, NV, AK, SD, WA have no state income tax
+
+### Social Security Edge Cases
+1. **Year of claiming**: SS benefits may start mid-year (must prorate)
+2. **Deemed filing**: Before FRA, claiming suspends benefits for spouse
+3. **File and suspend**: Strategy no longer available post-2015 but may affect legacy plans
+4. **Earnings test**: Before FRA, $1 in benefits lost for each $2 earned over threshold
+5. **Taxation thresholds**: Exact thresholds for 50%/85% taxation with multiple earners
+
+### Traditional IRA / 401k Considerations
+1. **Pro-rata rule**: Contributions mixed with after-tax contributions affect taxation
+2. **Spousal IRA**: Separate tracking for spouse contributions
+3. **Inherited IRAs**: Different RMD rules for inherited vs. owned accounts
+4. **Roth conversions**: Rollover from Traditional to Roth has tax implications
+5. **CARES Act provisions**: COVID relief allowed penalty-free withdrawals (temporary)
+
+### Roth IRA Special Rules
+1. **Contribution ordering**: Contributions withdrawn first, then earnings
+2. **Qualified distribution test**: Must meet 5-year rule AND age 59½ (or other qualifying event)
+3. **Backdoor Roth**: Converting non-deductible Traditional IRA contributions
+4. **Five-year clock**: Separate clock for each conversion
+
+## Performance Considerations
+
+1. **Tax bracket calculations**: Cache bracket arrays rather than recalculating each year
+2. **State lookups**: Use hash lookup for 50-state configuration (O(1) vs O(n))
+3. **Projection years**: Some scenarios run 50+ years - minimize per-year calculations
+4. **Social Security taxation**: Complex formula should be memoized per income level
+5. **Withdrawal strategy calculation**: May need to iterate through multiple scenarios
+
+## Testing Checklist for Phase 5+
+
+### Unit Tests (for individual functions)
+- [ ] Federal tax calculation for each bracket
+- [ ] State tax calculation for bracket and flat-rate states
+- [ ] Social Security taxation at various income levels
+- [ ] RMD calculation at each threshold age (72, 73, 75)
+- [ ] Waterfall vs Tax Bracket Fill strategy comparison
+- [ ] Standard deduction application for different filing statuses
+
+### Integration Tests (multiple systems together)
+- [ ] Partial-year retirement with state changes
+- [ ] Multiple income sources with Social Security
+- [ ] Withdrawal strategies with RMD enforcement
+- [ ] Tax bracket fill with different contribution amounts
+- [ ] Home sale + withdrawals in same year
+
+### Scenario Tests (real-world situations)
+- [ ] Early retiree (55) with large Traditional IRA
+- [ ] Married couple, one working, one retired
+- [ ] State change mid-retirement (e.g., CA to TX)
+- [ ] Business owner with supplemental income sources
+- [ ] Late retirement (70+) with high Social Security
+
 ## Notes
 
-- This is a MAJOR refactor of the calculation engine
-- Test extensively with real-world scenarios
-- Consider adding a tax summary component showing bracket breakdown
-- May want to add ability to override standard deduction for itemizers
-- Consider adding state-specific deductions (e.g., CA allows some federal deductions)
-- Capital gains cost basis tracking would require storing purchase price/date for assets
+- This is a MAJOR refactor of the calculation engine - Phase 5+ will touch core retirement projection logic
+- Test extensively with real-world scenarios before deploying to production
+- Consider adding a tax summary component showing bracket breakdown and marginal rates
+- May want to add ability to override standard deduction for itemizers (advanced feature)
+- Consider adding state-specific deductions (e.g., CA allows some federal deductions) - Phase 5+ enhancement
+- Capital gains cost basis tracking would require storing purchase price/date for assets - Phase 6+ feature
+- Consider implementing tax scenario comparison (show impact of delaying SS, changing withdrawal strategy, etc.)
+- Document any assumptions about tax law that may change year-to-year (brackets, thresholds, RMD ages)
