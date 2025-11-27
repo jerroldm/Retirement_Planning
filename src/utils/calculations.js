@@ -215,8 +215,8 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
   let primaryRothIRAContribution = rothIRAContribution;
   let primaryRothIRACompanyMatch = rothIRACompanyMatch;
   let primaryInvestmentAccountsContribution = investmentAccountsContribution;
-  // Contribution stop age should default to retirement age if not explicitly set
-  let primaryContributionStopAge = contributionStopAge && contributionStopAge < 100 ? contributionStopAge : retirementAge;
+  // Contribution stop age defaults to retirement age (contributions stop when you retire)
+  let primaryContributionStopAge = retirementAge;
   let primaryCurrentAge = calculateAge(birthMonth, birthYear);
 
   let spouse2BirthMonth = null;
