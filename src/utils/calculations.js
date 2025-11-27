@@ -812,7 +812,7 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
       federalCapitalGainsTax: Math.round(federalCapitalGainsTax),
       stateTax: Math.round(stateTax),
       netIncome: Math.round(netIncome),
-      livingExpenses: Math.round(livingExpenses),
+      livingExpenses: Math.round(finalLivingExpenses),
       mortgagePayment: Math.round(annualMortgagePayment),
       expenses: Math.round(annualSpending),
       totalContributions: Math.round(totalContributions),
