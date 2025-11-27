@@ -407,12 +407,20 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
 
   // Debug: Show mortgage schedule around age 60
   const debugYearsToCheck = [2028, 2029, 2030];
+  console.log('=== MORTGAGE SCHEDULE DEBUG ===');
   for (const year of debugYearsToCheck) {
     const payment = mortgagePaymentsByYear[year];
     const balance = mortgagePaymentsByYear[`${year}_balance`];
     if (payment !== undefined) {
       console.log(`Mortgage Year ${year}: Payment=$${payment.toFixed(2)}, Balance=$${(balance || 0).toFixed(2)}`);
     }
+  }
+
+  // Show all 2029 payments by month
+  console.log('2029 Monthly Payments:');
+  const paymentsIn2029 = amortizationSchedule.filter(p => p.year === 2029);
+  for (const payment of paymentsIn2029) {
+    console.log(`  ${payment.month}/2029: $${payment.totalPayment}, Balance=$${payment.endBalance}`);
   }
 
   const years = [];
