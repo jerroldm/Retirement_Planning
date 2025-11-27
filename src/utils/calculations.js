@@ -729,6 +729,15 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
     let spouse2RothContribution = spouse2RothEmployeeContribution + spouse2RothCompanyMatch;
     let spouse2InvestmentContribution = spouse2InvestmentEmployeeContribution;
 
+    // Adjust contributions for retirement year (only for months worked)
+    if (isRetirementYear) {
+      const monthsPreRetirement = primaryBirthMonth - 1;  // months before retirement
+      traditionalContribution = traditionalContribution * (monthsPreRetirement / 12);
+      rothContribution = rothContribution * (monthsPreRetirement / 12);
+      investmentContribution = investmentContribution * (monthsPreRetirement / 12);
+      // Spouse contributions not adjusted - they continue working all year
+    }
+
     // Calculate taxes using progressive brackets
     // During working years: subtract ONLY employee Traditional IRA contributions from AGI (company match doesn't reduce employee's AGI)
     // During retirement years: add Traditional IRA withdrawals (taxable)
