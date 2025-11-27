@@ -616,8 +616,10 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
     const annualSpending = finalLivingExpenses + finalAnnualMortgagePayment;
 
     // Determine current state based on age, retirement status, and state change options
+    // For retirement year (partial year), use working state since income was earned there
     let currentState = workingState || 'TX';
-    if (retirementState && isRetired) {
+    if (retirementState && isRetired && !isRetirementYear) {
+      // Only switch to retirement state for full retirement years (not the partial retirement year)
       if (stateChangeOption === 'at-retirement') {
         currentState = retirementState;
       } else if (stateChangeOption === 'at-age' && stateChangeAge && age >= stateChangeAge) {
