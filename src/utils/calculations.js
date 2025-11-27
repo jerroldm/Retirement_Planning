@@ -712,17 +712,26 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
     // Calculate taxes using progressive brackets
     // During working years: subtract ONLY employee Traditional IRA contributions from AGI (company match doesn't reduce employee's AGI)
     // During retirement years: add Traditional IRA withdrawals (taxable)
-    let ordinaryIncome = totalGrossIncome;
+    // For partial-year retirement: adjust contributions for months worked
+    let ordinaryIncome = finalGrossIncome;
 
     if (!isRetired) {
       // Working years: subtract ONLY employee Traditional IRA contributions (pre-tax)
       // Company match doesn't reduce employee's AGI - it's additional employer contribution
       const totalTraditionalEmployeeContributions = primaryTraditionalEmployeeContribution +
         (isMarried ? spouse2TraditionalEmployeeContribution : 0);
-      ordinaryIncome = Math.max(0, totalGrossIncome - totalTraditionalEmployeeContributions);
+      ordinaryIncome = Math.max(0, finalGrossIncome - totalTraditionalEmployeeContributions);
+    } else if (isRetirementYear) {
+      // Retirement year: need to adjust contributions for only the months worked (pre-retirement portion)
+      const monthsPreRetirement = primaryBirthMonth - 1;  // months before retirement in June
+      const adjustedTraditionalEmployeeContribution = primaryTraditionalEmployeeContribution * (monthsPreRetirement / 12);
+      const adjustedSpouse2Contribution = isMarried ? spouse2TraditionalEmployeeContribution : 0; // Spouse may still be working all year
+      const totalAdjustedContributions = adjustedTraditionalEmployeeContribution + adjustedSpouse2Contribution;
+
+      ordinaryIncome = Math.max(0, finalGrossIncome - totalAdjustedContributions + withdrawalFromRetirements.traditionalIRA);
     } else {
-      // Retirement years: add Traditional IRA withdrawals (taxable)
-      ordinaryIncome = totalGrossIncome + withdrawalFromRetirements.traditionalIRA;
+      // Full retirement years: add Traditional IRA withdrawals (taxable)
+      ordinaryIncome = finalGrossIncome + withdrawalFromRetirements.traditionalIRA;
     }
 
     const capitalGains = withdrawalFromRetirements.investmentAccounts;
@@ -825,9 +834,27 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
       (isMarried ? spouse2TraditionalContribution + spouse2RothContribution + spouse2InvestmentContribution : 0);
 
     // Calculate AGI (Adjusted Gross Income) for display
-    // AGI includes salary/wages + Traditional IRA withdrawals (which are included in taxable income)
-    // Use finalGrossIncome to properly account for partial-year retirement
-    const agi = finalGrossIncome + withdrawalFromRetirements.traditionalIRA;
+    // AGI = Gross Income - Traditional IRA Contributions (pre-tax deduction)
+    // For retirement years with Traditional IRA withdrawals, add those back (they're taxable)
+    let agi = finalGrossIncome;
+
+    if (!isRetired) {
+      // Working years: subtract employee Traditional IRA contributions
+      const totalTraditionalEmployeeContributions = primaryTraditionalEmployeeContribution +
+        (isMarried ? spouse2TraditionalEmployeeContribution : 0);
+      agi = Math.max(0, finalGrossIncome - totalTraditionalEmployeeContributions);
+    } else if (isRetirementYear) {
+      // Retirement year: adjust contributions for only months worked
+      const monthsPreRetirement = primaryBirthMonth - 1;
+      const adjustedTraditionalEmployeeContribution = primaryTraditionalEmployeeContribution * (monthsPreRetirement / 12);
+      const adjustedSpouse2Contribution = isMarried ? spouse2TraditionalEmployeeContribution : 0;
+      const totalAdjustedContributions = adjustedTraditionalEmployeeContribution + adjustedSpouse2Contribution;
+
+      agi = Math.max(0, finalGrossIncome - totalAdjustedContributions + withdrawalFromRetirements.traditionalIRA);
+    } else {
+      // Full retirement years: add Traditional IRA withdrawals (they're taxable)
+      agi = finalGrossIncome + withdrawalFromRetirements.traditionalIRA;
+    }
 
     years.push({
       age: age,
