@@ -702,8 +702,9 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
     let spouse2RothCompanyMatch = 0;
     let spouse2InvestmentEmployeeContribution = 0;
 
-    const shouldMakeContributions = age < primaryContributionStopAge;
-    const spouse2ShouldMakeContributions = isMarried && age < spouse2ContributionStopAge;
+    // For retirement year, allow contributions for months worked before retirement
+    const shouldMakeContributions = age <= primaryContributionStopAge;
+    const spouse2ShouldMakeContributions = isMarried && age <= spouse2ContributionStopAge;
 
     if (shouldMakeContributions) {
       primaryTraditionalEmployeeContribution = primaryTraditionalIRAContribution || 0;
