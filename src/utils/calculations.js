@@ -530,22 +530,64 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
 
     const totalGrossIncome = grossIncome + spouse2Income;
 
-    // Calculate expenses based on retirement status
-    const baseExpenses = isRetired ? calculatedPostRetirementExpenses : calculatedPreRetirementExpenses;
-    // Apply inflation only for years after the current year (yearIndex > 0)
-    const livingExpenses = baseExpenses * Math.pow(1 + inflationRate / 100, Math.max(0, yearIndex - 1));
+    // Handle partial-year retirement: if this is the year you turn 60 (retirement age),
+    // split the year into pre-retirement and post-retirement portions
+    let finalGrossIncome = totalGrossIncome;
+    let finalLivingExpenses = 0;
+    let finalAnnualMortgagePayment = annualMortgagePayment;
 
-    if (age === 60) {
-      console.log('=== EXPENSE INFLATION DEBUG - AGE 60 ===');
-      console.log('  baseExpenses:', baseExpenses);
+    // Check if this is the retirement year (age equals retirement age for first time)
+    const isRetirementYear = age === primaryRetirementAge;
+
+    if (isRetirementYear) {
+      // This is the year of retirement - need to split by month
+      const monthsPreRetirement = primaryBirthMonth - 1;  // Jan-May = 5 months (months 1-5)
+      const monthsPostRetirement = 12 - primaryBirthMonth + 1;  // June-Dec = 7 months (months 6-12)
+
+      // Pre-retirement portion: use pre-retirement settings for months 1-5
+      const preRetirementInflation = Math.pow(1 + inflationRate / 100, Math.max(0, yearIndex - 1));
+      const preRetirementExpenses = (calculatedPreRetirementExpenses * preRetirementInflation) * (monthsPreRetirement / 12);
+      const preRetirementIncome = totalGrossIncome * (monthsPreRetirement / 12);
+
+      // Post-retirement portion: use post-retirement settings for months 6-12
+      const postRetirementExpenses = (calculatedPostRetirementExpenses * preRetirementInflation) * (monthsPostRetirement / 12);
+      const postRetirementIncome = 0; // No income after retirement
+
+      // Combine for the full year
+      finalLivingExpenses = preRetirementExpenses + postRetirementExpenses;
+      finalGrossIncome = preRetirementIncome + postRetirementIncome;
+
+      // Mortgage is trickier - need to account for it being paid off in November
+      // For now, use the calculated annual payment (it already includes only through Nov)
+      finalAnnualMortgagePayment = annualMortgagePayment;
+
+      if (age === 60) {
+        console.log('=== RETIREMENT YEAR SPLIT DEBUG - AGE 60 ===');
+        console.log('  monthsPreRetirement:', monthsPreRetirement);
+        console.log('  monthsPostRetirement:', monthsPostRetirement);
+        console.log('  preRetirementExpenses (5 months):', preRetirementExpenses);
+        console.log('  postRetirementExpenses (7 months):', postRetirementExpenses);
+        console.log('  finalLivingExpenses (total):', finalLivingExpenses);
+        console.log('  preRetirementIncome:', preRetirementIncome);
+        console.log('  finalGrossIncome:', finalGrossIncome);
+      }
+    } else {
+      // Normal year - not retirement year
+      const baseExpenses = isRetired ? calculatedPostRetirementExpenses : calculatedPreRetirementExpenses;
+      // Apply inflation only for years after the current year (yearIndex > 0)
+      finalLivingExpenses = baseExpenses * Math.pow(1 + inflationRate / 100, Math.max(0, yearIndex - 1));
+    }
+
+    if (age === 60 && !isRetirementYear) {
+      console.log('=== EXPENSE INFLATION DEBUG - AGE 60 (non-retirement year) ===');
+      console.log('  baseExpenses:', isRetired ? calculatedPostRetirementExpenses : calculatedPreRetirementExpenses);
       console.log('  inflationRate:', inflationRate);
       console.log('  yearIndex:', yearIndex);
-      console.log('  inflationMultiplier:', Math.pow(1 + inflationRate / 100, Math.max(0, yearIndex - 1)));
-      console.log('  livingExpenses (after inflation):', livingExpenses);
+      console.log('  livingExpenses (after inflation):', finalLivingExpenses);
     }
 
     // Total spending includes living expenses and mortgage
-    const annualSpending = livingExpenses + annualMortgagePayment;
+    const annualSpending = finalLivingExpenses + finalAnnualMortgagePayment;
 
     // Determine current state based on age, retirement status, and state change options
     let currentState = workingState || 'TX';
@@ -566,7 +608,7 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
         primaryRothIRA,
         primaryInvestmentAccounts,
         annualSpending,
-        grossIncome || 0,
+        finalGrossIncome || 0,
         0, // supplemental income - would come from incomeSources
         0, // social security income - would come from socialSecurityRecords
         age,
@@ -583,18 +625,20 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
         console.log('  primaryRetirementAge:', primaryRetirementAge);
         console.log('  age:', age);
         console.log('  isRetired:', isRetired);
-        console.log('  grossIncome:', grossIncome);
+        console.log('  isRetirementYear:', isRetirementYear);
+        console.log('  grossIncome (full year):', grossIncome);
+        console.log('  finalGrossIncome (after split):', finalGrossIncome);
         console.log('  annualMortgagePayment:', annualMortgagePayment);
-        console.log('  totalGrossIncome:', totalGrossIncome);
+        console.log('  totalGrossIncome (before split):', totalGrossIncome);
         console.log('  annualSpending:', annualSpending);
-        console.log('  shortfall (spending - grossIncome):', annualSpending - totalGrossIncome);
+        console.log('  shortfall (spending - finalIncome):', annualSpending - finalGrossIncome);
         console.log('  withdrawalStrategy:', withdrawalStrategy);
         console.log('  Withdrawal breakdown:', withdrawalFromRetirements);
       }
     }
 
     // Total income including withdrawals
-    const totalIncomeWithWithdrawals = totalGrossIncome + withdrawalFromRetirements.total;
+    const totalIncomeWithWithdrawals = finalGrossIncome + withdrawalFromRetirements.total;
 
     // Calculate contributions early so they can be used for tax calculations - stop at contribution stop age
     // Note: We track employee contributions and company match separately
