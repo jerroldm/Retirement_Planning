@@ -777,6 +777,17 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
     const stateTaxableIncome = taxableOrdinaryIncome + stateCapitalGains;
     const stateTax = calculateStateTax(stateTaxableIncome, currentState, filingStatus);
 
+    // Debug state tax at age 60
+    if (age === 60) {
+      console.log('=== STATE TAX DEBUG - AGE 60 ===');
+      console.log('  ordinaryIncome:', ordinaryIncome);
+      console.log('  taxableOrdinaryIncome (after std deduction):', taxableOrdinaryIncome);
+      console.log('  capitalGains:', capitalGains);
+      console.log('  stateTaxableIncome:', stateTaxableIncome);
+      console.log('  currentState:', currentState);
+      console.log('  stateTax:', stateTax);
+    }
+
 
     const totalTaxes = Math.max(0, federalOrdinaryTax + federalCapitalGainsTax + stateTax);
 
