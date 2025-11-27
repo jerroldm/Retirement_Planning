@@ -405,6 +405,16 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
     mortgagePaymentsByYear[`${year}_balance`] = payment.endBalance;
   }
 
+  // Debug: Show mortgage schedule around age 60
+  const debugYearsToCheck = [2028, 2029, 2030];
+  for (const year of debugYearsToCheck) {
+    const payment = mortgagePaymentsByYear[year];
+    const balance = mortgagePaymentsByYear[`${year}_balance`];
+    if (payment !== undefined) {
+      console.log(`Mortgage Year ${year}: Payment=$${payment.toFixed(2)}, Balance=$${(balance || 0).toFixed(2)}`);
+    }
+  }
+
   const years = [];
 
   // Extract home appreciation rate from home asset if available
@@ -551,6 +561,8 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
       // Debug logging for withdrawal calculation - ENABLED FOR AGE 60 DEBUG
       if (age === 60) {
         console.log('=== WITHDRAWAL DEBUG - AGE 60 ===');
+        console.log('  projectedCalendarYear:', projectedCalendarYear);
+        console.log('  yearIndex:', yearIndex);
         console.log('  primaryRetirementAge:', primaryRetirementAge);
         console.log('  age:', age);
         console.log('  isRetired:', isRetired);
