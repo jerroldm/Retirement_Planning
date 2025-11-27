@@ -455,6 +455,15 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
     const projectedCalendarYear = currentCalendarYear + yearIndex;
     const isRetired = age >= primaryRetirementAge;
 
+    if (age === 60) {
+      console.log('=== AGE 60 CALCULATION START ===');
+      console.log('  currentMonth:', currentMonth);
+      console.log('  primaryBirthMonth:', primaryBirthMonth);
+      console.log('  This year (2029), retirement occurs in month:', primaryBirthMonth);
+      console.log('  Pre-retirement months (Jan-May):', primaryBirthMonth - 1);
+      console.log('  Post-retirement months (June-Dec):', 13 - primaryBirthMonth);
+    }
+
     // For married couples, check if spouse is retired based on their age
     let spouse2IsRetired = false;
     if (isMarried) {
