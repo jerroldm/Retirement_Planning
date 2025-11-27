@@ -347,7 +347,8 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
       const monthlyAmount = parseFloat(expense.monthlyAmount) || 0;
       const annualAmount = monthlyAmount * 12;
 
-      console.log(`Expense: ${expense.expenseName} - Monthly: ${monthlyAmount} Annual: ${annualAmount}, Pre: ${expense.preRetirement}, Post: ${expense.postRetirement}`);
+      // Debug expense loading - DISABLED
+      // console.log(`Expense: ${expense.expenseName} - Monthly: ${monthlyAmount} Annual: ${annualAmount}, Pre: ${expense.preRetirement}, Post: ${expense.postRetirement}`);
 
       if (expense.preRetirement) {
         totalPreRetirementExpenses += annualAmount;
@@ -361,11 +362,13 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
     if (totalPreRetirementExpenses > 0) calculatedPreRetirementExpenses = totalPreRetirementExpenses;
     if (totalPostRetirementExpenses > 0) calculatedPostRetirementExpenses = totalPostRetirementExpenses;
 
-    console.log('Expenses loaded - Pre-retirement:', totalPreRetirementExpenses, 'Post-retirement:', totalPostRetirementExpenses);
+    // Debug expense totals - DISABLED
+    // console.log('Expenses loaded - Pre-retirement:', totalPreRetirementExpenses, 'Post-retirement:', totalPostRetirementExpenses);
   }
 
   const recalculatedCurrentAge = primaryCurrentAge;
-  console.log('calculateRetirementProjection - birthMonth:', primaryBirthMonth, 'birthYear:', primaryBirthYear, 'recalculatedCurrentAge:', recalculatedCurrentAge);
+  // Debug calculation start - DISABLED
+  // console.log('calculateRetirementProjection - birthMonth:', primaryBirthMonth, 'birthYear:', primaryBirthYear, 'recalculatedCurrentAge:', recalculatedCurrentAge);
 
   // Generate amortization schedule to get exact mortgage payments
   const amortizationSchedule = generateMortgageAmortizationSchedule(inputs, persons);
@@ -405,7 +408,8 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
     mortgagePaymentsByYear[`${year}_balance`] = payment.endBalance;
   }
 
-  // Debug: Show mortgage schedule around age 60
+  // Debug: Show mortgage schedule around age 60 - DISABLED
+  /*
   const debugYearsToCheck = [2028, 2029, 2030];
   console.log('=== MORTGAGE SCHEDULE DEBUG ===');
   for (const year of debugYearsToCheck) {
@@ -422,6 +426,7 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
   for (const payment of paymentsIn2029) {
     console.log(`  ${payment.month}/2029: $${payment.totalPayment}, Balance=$${payment.endBalance}`);
   }
+  */
 
   const years = [];
 
@@ -455,6 +460,8 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
     const projectedCalendarYear = currentCalendarYear + yearIndex;
     const isRetired = age >= primaryRetirementAge;
 
+    // Debug for age 60 - DISABLED
+    /*
     if (age === 60) {
       console.log('=== AGE 60 CALCULATION START ===');
       console.log('  currentMonth:', currentMonth);
@@ -463,6 +470,7 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
       console.log('  Pre-retirement months (Jan-May):', primaryBirthMonth - 1);
       console.log('  Post-retirement months (June-Dec):', 13 - primaryBirthMonth);
     }
+    */
 
     // For married couples, check if spouse is retired based on their age
     let spouse2IsRetired = false;
@@ -573,6 +581,8 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
       // For now, use the calculated annual payment (it already includes only through Nov)
       finalAnnualMortgagePayment = annualMortgagePayment;
 
+      // Debug for retirement year split - DISABLED
+      /*
       if (age === 60) {
         console.log('=== RETIREMENT YEAR SPLIT DEBUG - AGE 60 ===');
         console.log('  monthsPreRetirement:', monthsPreRetirement);
@@ -583,6 +593,7 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
         console.log('  preRetirementIncome:', preRetirementIncome);
         console.log('  finalGrossIncome:', finalGrossIncome);
       }
+      */
     } else {
       // Normal year - not retirement year
       const baseExpenses = isRetired ? calculatedPostRetirementExpenses : calculatedPreRetirementExpenses;
@@ -590,6 +601,8 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
       finalLivingExpenses = baseExpenses * Math.pow(1 + inflationRate / 100, Math.max(0, yearIndex - 1));
     }
 
+    // Debug expense inflation - DISABLED
+    /*
     if (age === 60 && !isRetirementYear) {
       console.log('=== EXPENSE INFLATION DEBUG - AGE 60 (non-retirement year) ===');
       console.log('  baseExpenses:', isRetired ? calculatedPostRetirementExpenses : calculatedPreRetirementExpenses);
@@ -597,6 +610,7 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
       console.log('  yearIndex:', yearIndex);
       console.log('  livingExpenses (after inflation):', finalLivingExpenses);
     }
+    */
 
     // Total spending includes living expenses and mortgage
     const annualSpending = finalLivingExpenses + finalAnnualMortgagePayment;
@@ -629,7 +643,8 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
         withdrawalStrategy
       );
 
-      // Debug logging for withdrawal calculation - ENABLED FOR AGE 60 DEBUG
+      // Debug logging for withdrawal calculation - DISABLED
+      /*
       if (age === 60) {
         console.log('=== WITHDRAWAL DEBUG - AGE 60 ===');
         console.log('  projectedCalendarYear:', projectedCalendarYear);
@@ -647,6 +662,7 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
         console.log('  withdrawalStrategy:', withdrawalStrategy);
         console.log('  Withdrawal breakdown:', withdrawalFromRetirements);
       }
+      */
     }
 
     // Total income including withdrawals
