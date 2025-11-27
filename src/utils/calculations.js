@@ -508,16 +508,17 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
       }
     }
 
-    // Zero out home value and mortgage after sale year
-    if (homeSalePlanEnabled && projectedCalendarYear > homeSaleYear) {
+    // Zero out home value and mortgage in the sale year and after
+    // (proceeds are added to investments, so we don't double-count by including home equity)
+    if (homeSalePlanEnabled && projectedCalendarYear >= homeSaleYear) {
       currentHomeValue = 0;
       currentMortgage = 0;
     }
 
-    // Also check if any other assets are being sold in previous years
+    // Also check if any other assets are being sold in this year or previous years
     if (allAssets && allAssets.length > 0) {
       for (const asset of allAssets) {
-        if (asset.sellPlanEnabled && asset.assetType === 'primary-residence' && projectedCalendarYear > asset.sellYear) {
+        if (asset.sellPlanEnabled && asset.assetType === 'primary-residence' && projectedCalendarYear >= asset.sellYear) {
           currentHomeValue = 0;
           currentMortgage = 0;
         }
