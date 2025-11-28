@@ -331,6 +331,14 @@ db.run(sql, params, function(err) {
 7. **No Form Validation:** Input forms don't validate before saving - garbage in = garbage in calculations
 8. **SQLite Boolean Handling:** SQLite returns `0` and `1` for boolean columns instead of `true` and `false`. When comparing booleans from the database, use the `!!` operator to convert: `const bool = !!dbValue`. Example: In ExpensesList, phase conversion uses `const pre = !!expense.preRetirement` to properly handle SQLite's 0/1 values.
 9. **Scenario Feature:** Partially implemented - creates financial data snapshots but incomplete CRUD UI
+10. **Table Column Alignment:** When creating new data tables that need proper column alignment between headers and data rows:
+    - Use `table-layout: fixed;` on the table element to force equal column width distribution
+    - Ensure matching padding on header (`th`) and data (`td`) cells
+    - Use `.year-table` class from DataTable.css as the standard table class for consistency
+    - Avoid `position: sticky;` on table headers as it interferes with `table-layout: fixed` column calculations
+    - Both header and body cells need `box-sizing: border-box;` to include padding in width calculations
+    - Apply special rules for first-child (`.year-table th:first-child, .year-table td:first-child`) and age-cell alignment
+    - Example: See DataTable.css (lines 46-123) for the proven pattern used by Expenses Breakdown and Savings Breakdown tables
 
 ## Development Progress and Phase Status
 
