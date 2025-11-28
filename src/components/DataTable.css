@@ -69,8 +69,8 @@
   padding-left: 12px;
 }
 
-.year-table .age-cell {
-  text-align: center;
+.year-table td.age-cell {
+  text-align: center !important;
   padding-left: 8px;
 }
 
