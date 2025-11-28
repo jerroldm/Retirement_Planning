@@ -298,15 +298,23 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
   if (spouse2DeathAge === null && isMarried) {
     spouse2DeathAge = DEFAULT_DEATH_AGE;
   }
-  // For single person scenario, ensure spouse2DeathAge is set
-  if (spouse2DeathAge === null) {
-    spouse2DeathAge = DEFAULT_DEATH_AGE;
+  // For single person, spouse2DeathAge should NOT be used in calculations
+  // Only set it if married
+  if (spouse2DeathAge === null && !isMarried) {
+    spouse2DeathAge = primaryDeathAge;  // Use same as primary for consistency, but won't be used in max()
+  }
+
+  // Determine projection end age
+  let projectionEndAge = primaryDeathAge;
+  if (isMarried) {
+    projectionEndAge = Math.max(primaryDeathAge, spouse2DeathAge);
   }
 
   console.log('[calculateRetirementProjection] Final death ages:', {
+    isMarried,
     primaryDeathAge,
     spouse2DeathAge,
-    maxAge: Math.max(primaryDeathAge, spouse2DeathAge)
+    projectionEndAge
   });
 
   // Extract account balances and contributions from savingsAccounts if available
@@ -485,7 +493,7 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
   let currentMortgage = homeMortgage;
   let currentHomeValue = homeValue;
 
-  for (let age = recalculatedCurrentAge; age <= Math.max(primaryDeathAge, spouse2DeathAge); age++) {
+  for (let age = recalculatedCurrentAge; age <= projectionEndAge; age++) {
     const yearIndex = age - recalculatedCurrentAge;
     const projectedCalendarYear = currentCalendarYear + yearIndex;
     const isRetired = age >= primaryRetirementAge;
