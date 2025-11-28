@@ -167,15 +167,11 @@ function AppContent() {
             console.log('Person ownership migration skipped:', ownershipError.message);
           }
 
-          // Set persons first (before setting inputs) so calculations have all data
-          setPersons(personsList);
-
           // Load income sources
           let incomeSourcesList = [];
           try {
             incomeSourcesList = await incomeAPI.getSources();
             console.log('Income sources loaded:', incomeSourcesList);
-            setIncomeSources(incomeSourcesList);
           } catch (incomeError) {
             console.log('Could not load income sources:', incomeError.message);
           }
@@ -185,7 +181,6 @@ function AppContent() {
           try {
             savingsAccountsList = await savingsAccountAPI.getAccounts();
             console.log('Savings accounts loaded:', savingsAccountsList);
-            setSavingsAccounts(savingsAccountsList);
           } catch (savingsError) {
             console.log('Could not load savings accounts:', savingsError.message);
           }
@@ -195,24 +190,28 @@ function AppContent() {
           try {
             expensesList = await expensesClient.getExpenses();
             console.log('Expenses loaded:', expensesList);
-            setExpenses(expensesList);
           } catch (expensesError) {
             console.log('Could not load expenses:', expensesError.message);
           }
 
-          // Try to load and merge assets if available
+          // Load assets
+          let assets = [];
           try {
-            const assets = await assetAPI.getAssets();
-            const mergedInputs = mergeAssetDataIntoInputs(baseInputs, assets);
-            console.log('Loading data from DB with merged assets - birthMonth:', mergedInputs.birthMonth, 'birthYear:', mergedInputs.birthYear);
-            setInputs(mergedInputs);
+            assets = await assetAPI.getAssets();
           } catch (assetError) {
-            console.log('Could not load assets, using financial data:', assetError.message);
-            console.log('Loading baseInputs - birthMonth:', baseInputs.birthMonth, 'birthYear:', baseInputs.birthYear);
-            setInputs(baseInputs);
+            console.log('Could not load assets:', assetError.message);
           }
 
+          // Merge asset data into inputs
+          const mergedInputs = mergeAssetDataIntoInputs(baseInputs, assets);
+          console.log('Loading data from DB - birthMonth:', mergedInputs.birthMonth, 'birthYear:', mergedInputs.birthYear, 'deathAge:', mergedInputs.deathAge);
 
+          // Set ALL state at once to ensure calculations have all data together
+          setPersons(personsList);
+          setIncomeSources(incomeSourcesList);
+          setSavingsAccounts(savingsAccountsList);
+          setExpenses(expensesList);
+          setInputs(mergedInputs);
           setLastSaved(new Date(data.updatedAt))
         }
       } catch (err) {
