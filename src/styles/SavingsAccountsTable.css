@@ -97,7 +97,6 @@
 
 .data-table th:first-child {
   text-align: center;
-  padding-left: 14px;
   width: 50px;
 }
 
@@ -139,6 +138,22 @@
 
 .data-table td:last-child {
   border-right: none;
+}
+
+.data-table td:first-child {
+  width: 50px;
+}
+
+.data-table td:nth-child(2) {
+  width: 70px;
+}
+
+.data-table td:nth-child(3),
+.data-table td:nth-child(4),
+.data-table td:nth-child(5),
+.data-table td:nth-child(6),
+.data-table td:nth-child(7) {
+  width: 140px;
 }
 
 .age-cell {
