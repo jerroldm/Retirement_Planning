@@ -218,6 +218,7 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
   // Contribution stop age defaults to retirement age (contributions stop when you retire)
   let primaryContributionStopAge = retirementAge;
   let primaryCurrentAge = calculateAge(birthMonth, birthYear);
+  let primaryDeathAge = deathAge;
 
   let spouse2BirthMonth = null;
   let spouse2BirthYear = null;
@@ -234,6 +235,7 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
   let spouse2RothIRACompanyMatch = 0;
   let spouse2InvestmentAccountsContribution = 0;
   let spouse2ContributionStopAge = retirementAge;
+  let spouse2DeathAge = deathAge;
 
   // Extract data from persons array if available
   if (persons && persons.length > 0) {
@@ -243,6 +245,7 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
       if (primaryPerson.birthMonth) primaryBirthMonth = primaryPerson.birthMonth;
       if (primaryPerson.birthYear) primaryBirthYear = primaryPerson.birthYear;
       if (primaryPerson.retirementAge) primaryRetirementAge = primaryPerson.retirementAge;
+      if (primaryPerson.deathAge) primaryDeathAge = primaryPerson.deathAge;
       if (primaryPerson.currentSalary) primaryCurrentSalary = primaryPerson.currentSalary;
       if (primaryPerson.annualSalaryIncrease) primaryAnnualSalaryIncrease = primaryPerson.annualSalaryIncrease;
       if (primaryPerson.traditionalIRA) primaryTraditionalIRA = primaryPerson.traditionalIRA;
@@ -265,6 +268,7 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
         spouse2BirthYear = spousePerson.birthYear;
         spouse2CurrentAge = calculateAge(spouse2BirthMonth, spouse2BirthYear);
         if (spousePerson.retirementAge) spouse2RetirementAge = spousePerson.retirementAge;
+        if (spousePerson.deathAge) spouse2DeathAge = spousePerson.deathAge;
         if (spousePerson.currentSalary) spouse2CurrentSalary = spousePerson.currentSalary;
         if (spousePerson.annualSalaryIncrease) spouse2AnnualSalaryIncrease = spousePerson.annualSalaryIncrease;
         if (spousePerson.traditionalIRA) spouse2TraditionalIRA = spousePerson.traditionalIRA;
@@ -456,7 +460,7 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
   let currentMortgage = homeMortgage;
   let currentHomeValue = homeValue;
 
-  for (let age = recalculatedCurrentAge; age <= deathAge; age++) {
+  for (let age = recalculatedCurrentAge; age <= Math.max(primaryDeathAge, spouse2DeathAge); age++) {
     const yearIndex = age - recalculatedCurrentAge;
     const projectedCalendarYear = currentCalendarYear + yearIndex;
     const isRetired = age >= primaryRetirementAge;
