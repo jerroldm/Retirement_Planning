@@ -53,7 +53,7 @@ const SavingsAccountsTable = ({ accountsBreakdown = [] }) => {
 
           {account.yearlyHistory && account.yearlyHistory.length > 0 ? (
             <div className="table-wrapper">
-              <table className="data-table">
+              <table className="year-table">
                 <thead>
                   <tr>
                     <th>Age</th>
