@@ -179,10 +179,10 @@ export const SavingsAccountForm = ({ accountType, editingAccount, onSubmit, onCa
           })}
 
           <div className="form-actions">
-            <button type="submit" className="btn-submit">
+            <button type="submit" className="btn btn-primary">
               {editingAccount ? 'Update Account' : 'Create Account'}
             </button>
-            <button type="button" className="btn-cancel" onClick={onCancel}>
+            <button type="button" className="btn btn-secondary" onClick={onCancel}>
               Cancel
             </button>
           </div>

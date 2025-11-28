@@ -347,10 +347,10 @@ export const AssetForm = ({ assetType, initialData, onSubmit, onCancel, persons 
           </div>
 
           <div className="modal-footer">
-            <button type="button" className="btn-cancel" onClick={onCancel}>
+            <button type="button" className="btn btn-secondary" onClick={onCancel}>
               Cancel
             </button>
-            <button type="submit" className="btn-submit">
+            <button type="submit" className="btn btn-primary">
               {isEditing ? 'Update Asset' : 'Add Asset'}
             </button>
           </div>
