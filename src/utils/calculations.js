@@ -12,6 +12,15 @@ import {
   getRMDStartAge,
 } from './taxCalculations.js';
 
+import {
+  initializeAccountStates,
+  checkShouldContribute,
+  allocateWithdrawals,
+  computeAggregates,
+  computeTotalBalance,
+  validateAggregateConsistency,
+} from './accountCalculations.js';
+
 // Helper function to calculate age from birth month and year
 export const calculateAge = (birthMonth, birthYear) => {
   if (!birthMonth || !birthYear) return 0;
@@ -317,7 +326,12 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
     projectionEndAge
   });
 
-  // Extract account balances and contributions from savingsAccounts if available
+  // Initialize individual account states for per-account tracking
+  // These are used to track the breakdown of withdrawals and contributions by individual account
+  let accountStates = initializeAccountStates(savingsAccounts);
+
+  // Also compute aggregates from accounts for use in calculation logic
+  // This maintains backward compatibility with existing withdrawal strategies
   if (savingsAccounts && savingsAccounts.length > 0) {
     // Sum up balances and contributions by account type
     let totalTraditionalIRA = 0;
@@ -863,6 +877,76 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
     // Calculate net income
     const netIncome = totalIncomeWithWithdrawals - totalTaxes;
 
+    // ===== PHASE 1: CONTRIBUTION PHASE (Per-Account Tracking) =====
+    // Apply annual contributions to individual accounts if they exist
+    if (accountStates && accountStates.length > 0) {
+      for (const account of accountStates) {
+        // Check if this account should receive contributions this year
+        const shouldContribute = checkShouldContribute(
+          account,
+          age,
+          projectedCalendarYear,
+          primaryRetirementAge,
+          isRetirementYear
+        );
+
+        if (shouldContribute) {
+          // Determine contribution amount based on account type
+          let annualContributionAmount = 0;
+          if (account.accountType === 'traditional-ira') {
+            annualContributionAmount = primaryTraditionalIRAContribution || 0;
+          } else if (account.accountType === 'roth-ira') {
+            annualContributionAmount = primaryRothIRAContribution || 0;
+          } else if (account.accountType === 'investment-account') {
+            annualContributionAmount = primaryInvestmentAccountsContribution || 0;
+          }
+
+          // For retirement year, prorate contributions for months worked
+          if (isRetirementYear) {
+            const monthsPreRetirement = primaryBirthMonth - 1;
+            annualContributionAmount = annualContributionAmount * (monthsPreRetirement / 12);
+          }
+
+          // Accumulate pending contribution for this account
+          account.pendingContribution += annualContributionAmount;
+
+          // Also add company match for eligible account types
+          if (account.companyMatch > 0) {
+            let companyMatchAmount = account.companyMatch || 0;
+            if (isRetirementYear) {
+              const monthsPreRetirement = primaryBirthMonth - 1;
+              companyMatchAmount = companyMatchAmount * (monthsPreRetirement / 12);
+            }
+            account.pendingMatch += companyMatchAmount;
+          }
+        }
+      }
+    }
+
+    // ===== PHASE 2: WITHDRAWAL ALLOCATION PHASE (Per-Account Tracking) =====
+    // Allocate TYPE-level withdrawals to individual accounts using sequential smallest-first
+    if (accountStates && accountStates.length > 0 && isRetired) {
+      // Prepare withdrawal amounts by type from the calculated withdrawals
+      const withdrawalByType = {
+        'investment-account': withdrawalFromRetirements.investmentAccounts || 0,
+        'traditional-ira': withdrawalFromRetirements.traditionalIRA || 0,
+        'roth-ira': withdrawalFromRetirements.rothIRA || 0,
+        'savings-account': 0,
+        'other-account': 0
+      };
+
+      // Allocate withdrawals to individual accounts
+      const allocations = allocateWithdrawals(accountStates, withdrawalByType);
+
+      // Apply allocations to individual accounts
+      for (const allocation of allocations) {
+        const account = accountStates.find(a => a.id === allocation.accountId);
+        if (account) {
+          account.yearlyWithdrawal += allocation.amount;
+        }
+      }
+    }
+
     // Apply withdrawals from retirement accounts (reduce balances before growth)
     currentTraditionalIRA = Math.max(0, currentTraditionalIRA - withdrawalFromRetirements.traditionalIRA);
     currentRothIRA = Math.max(0, currentRothIRA - withdrawalFromRetirements.rothIRA);
@@ -899,6 +983,46 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
 
     // Reset sale proceeds after adding to investment accounts
     currentSaleProceeds = 0;
+
+    // ===== PHASE 3: GROWTH & FINALIZATION PHASE (Per-Account Tracking) =====
+    // Apply growth and contributions to individual account balances, then record yearly history
+    if (accountStates && accountStates.length > 0) {
+      for (const account of accountStates) {
+        let yearlyGrowth = 0;
+        let yearlyContribution = 0;
+        let yearlyWithdrawal = account.yearlyWithdrawal || 0;
+
+        // Apply growth to account balance if this is not the first year
+        if (yearIndex > 0) {
+          yearlyGrowth = account.currentBalance * (investmentReturn / 100);
+          account.currentBalance = account.currentBalance * (1 + investmentReturn / 100);
+        }
+
+        // Add pending contribution and match to the account
+        const totalContributionThisYear = account.pendingContribution + account.pendingMatch;
+        yearlyContribution = totalContributionThisYear;
+        account.currentBalance += totalContributionThisYear;
+
+        // Apply withdrawals (reduce balance)
+        account.currentBalance = Math.max(0, account.currentBalance - yearlyWithdrawal);
+
+        // Record yearly history for this account
+        account.yearlyHistory.push({
+          age,
+          year: projectedCalendarYear,
+          beginningBalance: account.currentBalance - yearlyGrowth - yearlyContribution + yearlyWithdrawal,
+          contributions: yearlyContribution,
+          withdrawals: yearlyWithdrawal,
+          growth: yearlyGrowth,
+          endingBalance: account.currentBalance
+        });
+
+        // Reset yearly accumulators for next year
+        account.yearlyWithdrawal = 0;
+        account.pendingContribution = 0;
+        account.pendingMatch = 0;
+      }
+    }
 
     // Total portfolio value
     const totalRetirementSavings = Math.max(
@@ -974,7 +1098,20 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
     });
   }
 
-  return years;
+  // Generate accountsBreakdown from account states for display
+  // Convert account states into a structure suitable for table display
+  const accountsBreakdown = accountStates.map(account => ({
+    id: account.id,
+    accountName: account.accountName,
+    accountType: account.accountType,
+    yearlyHistory: account.yearlyHistory,
+    finalBalance: account.currentBalance
+  }));
+
+  return {
+    years,
+    accountsBreakdown
+  };
 };
 
 export const defaultInputs = {

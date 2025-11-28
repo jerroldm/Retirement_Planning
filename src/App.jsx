@@ -224,8 +224,12 @@ function AppContent() {
     loadFinancialData()
   }, [user])
 
-  const projectionData = useMemo(() => {
-    return calculateRetirementProjection(inputs, persons, incomeSources, savingsAccounts, expenses)
+  const { projectionData, accountsBreakdown } = useMemo(() => {
+    const result = calculateRetirementProjection(inputs, persons, incomeSources, savingsAccounts, expenses)
+    return {
+      projectionData: result.years,
+      accountsBreakdown: result.accountsBreakdown || []
+    }
   }, [inputs, persons, incomeSources, savingsAccounts, expenses])
 
   const mortgageSchedule = useMemo(() => {
@@ -407,7 +411,7 @@ function AppContent() {
             <div className="loading-spinner">Loading your data...</div>
           ) : (
             <>
-              {activeView === 'dashboard' && <Dashboard data={projectionData} />}
+              {activeView === 'dashboard' && <Dashboard data={projectionData} accountsBreakdown={accountsBreakdown} />}
               {activeView === 'table' && <DataTable data={projectionData} />}
               {activeView === 'expenses-breakdown' && <ExpensesTable data={projectionData} />}
               {activeView === 'mortgage-schedule' && <MortgageAmortizationTable schedule={mortgageSchedule} />}

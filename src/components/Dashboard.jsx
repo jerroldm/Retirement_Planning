@@ -3,9 +3,10 @@ import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
+import SavingsAccountsTable from './SavingsAccountsTable';
 import './Dashboard.css';
 
-export const Dashboard = ({ data }) => {
+export const Dashboard = ({ data, accountsBreakdown = [] }) => {
   const [activeTab, setActiveTab] = useState('portfolio');
 
   const chartData = useMemo(() => {
@@ -86,6 +87,12 @@ export const Dashboard = ({ data }) => {
           onClick={() => setActiveTab('accounts')}
         >
           Account Types
+        </button>
+        <button
+          className={`tab ${activeTab === 'savings-breakdown' ? 'active' : ''}`}
+          onClick={() => setActiveTab('savings-breakdown')}
+        >
+          Savings Breakdown
         </button>
       </div>
 
@@ -217,6 +224,13 @@ export const Dashboard = ({ data }) => {
                 />
               </LineChart>
             </ResponsiveContainer>
+          </div>
+        )}
+
+        {/* Savings Accounts Breakdown */}
+        {activeTab === 'savings-breakdown' && (
+          <div className="chart-section">
+            <SavingsAccountsTable accountsBreakdown={accountsBreakdown} />
           </div>
         )}
       </div>
