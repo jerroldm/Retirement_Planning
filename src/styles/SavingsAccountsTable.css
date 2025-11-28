@@ -1,0 +1,58 @@
+/* Savings Accounts Table Component Styles */
+
+.account-section {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background-color: #f9fafb;
+  border-radius: 8px;
+  border-left: 4px solid #3b82f6;
+}
+
+.account-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.account-header h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  color: #1f2937;
+}
+
+.account-type {
+  display: inline-block;
+  background-color: #dbeafe;
+  color: #1e40af;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.account-summary {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+  font-weight: 600;
+}
+
+.summary-label {
+  color: #6b7280;
+}
+
+.summary-value {
+  color: #059669;
+}
+
+.no-data-account {
+  color: #9ca3af;
+  font-style: italic;
+  margin: 1rem 0;
+}
