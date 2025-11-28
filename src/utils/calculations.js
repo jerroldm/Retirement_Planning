@@ -296,14 +296,6 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
     spouse2DeathAge = deathAge;
   }
 
-  // DEBUG: Log death ages
-  console.log('Death age values:', {
-    primaryDeathAge,
-    spouse2DeathAge,
-    deathAgeParam: deathAge,
-    personsArray: persons ? persons.map(p => ({ personType: p.personType, deathAge: p.deathAge })) : 'none'
-  });
-
   // Extract account balances and contributions from savingsAccounts if available
   if (savingsAccounts && savingsAccounts.length > 0) {
     // Sum up balances and contributions by account type
