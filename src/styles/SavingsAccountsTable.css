@@ -88,7 +88,6 @@
   white-space: nowrap;
   user-select: none;
   font-size: 13px;
-  min-width: 110px;
   border-right: 1px solid #e5e7eb;
 }
 
@@ -99,11 +98,11 @@
 .data-table th:first-child {
   text-align: center;
   padding-left: 14px;
-  min-width: 50px;
+  width: 50px;
 }
 
 .data-table th:nth-child(2) {
-  min-width: 70px;
+  width: 70px;
 }
 
 .data-table th:nth-child(3),
@@ -111,7 +110,7 @@
 .data-table th:nth-child(5),
 .data-table th:nth-child(6),
 .data-table th:nth-child(7) {
-  min-width: 130px;
+  width: 140px;
 }
 
 .data-table tbody tr {
@@ -154,7 +153,8 @@
 .currency {
   text-align: right;
   font-family: 'Courier New', monospace;
-  font-size: 12px;
+  font-size: 14px;
+  padding-right: 14px;
 }
 
 .currency.positive {
