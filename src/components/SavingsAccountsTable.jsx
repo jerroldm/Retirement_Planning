@@ -67,7 +67,7 @@ const SavingsAccountsTable = ({ accountsBreakdown = [] }) => {
                 </thead>
                 <tbody>
                   {account.yearlyHistory.map((record, index) => (
-                    <tr key={index} className={record.age >= 65 ? 'retired-row' : ''}>
+                    <tr key={index} className={record.isRetired ? 'retired-row' : ''}>
                       <td className="age-cell">{record.age}</td>
                       <td className="year-cell">{record.year}</td>
                       <td className="currency">${record.beginningBalance.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>

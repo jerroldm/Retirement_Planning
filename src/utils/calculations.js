@@ -1014,7 +1014,8 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
           contributions: yearlyContribution,
           withdrawals: yearlyWithdrawal,
           growth: yearlyGrowth,
-          endingBalance: account.currentBalance
+          endingBalance: account.currentBalance,
+          isRetired
         });
 
         // Reset yearly accumulators for next year
