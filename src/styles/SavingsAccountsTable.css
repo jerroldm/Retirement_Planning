@@ -1,5 +1,30 @@
 /* Savings Accounts Table Component Styles */
 
+.table-container {
+  padding: 15px;
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  margin: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 0;
+}
+
+.table-container h2 {
+  margin: 0 0 5px 0;
+  color: #333;
+  font-size: 24px;
+}
+
+.table-subtitle {
+  margin: 0 0 20px 0;
+  color: #999;
+  font-size: 13px;
+}
+
 .account-section {
   margin-bottom: 2rem;
   padding: 1.5rem;
@@ -33,6 +58,96 @@
   font-weight: 500;
 }
 
+.table-wrapper {
+  overflow-x: auto;
+  overflow-y: visible;
+  margin-bottom: 1rem;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.data-table thead {
+  background: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.data-table th {
+  padding: 12px 8px;
+  text-align: center;
+  font-weight: 600;
+  color: #495057;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.data-table th:first-child,
+.data-table td:first-child {
+  text-align: left;
+  padding-left: 12px;
+}
+
+.data-table tbody tr {
+  border-bottom: 1px solid #f0f0f0;
+  transition: background 0.2s;
+}
+
+.data-table tbody tr:hover {
+  background: #f9f9f9;
+}
+
+.data-table tbody tr.retired-row {
+  background: #f0f8ff;
+}
+
+.data-table tbody tr.retired-row:hover {
+  background: #e0f0ff;
+}
+
+.data-table td {
+  padding: 10px 8px;
+  text-align: center;
+  color: #495057;
+}
+
+.age-cell {
+  font-weight: 600;
+  color: #333;
+}
+
+.year-cell {
+  color: #666;
+}
+
+.currency {
+  text-align: right;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+}
+
+.currency.positive {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.currency.negative {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+.currency.growth {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.currency.total {
+  color: #007bff;
+  font-weight: 600;
+}
+
 .account-summary {
   display: flex;
   justify-content: flex-end;
@@ -49,6 +164,14 @@
 
 .summary-value {
   color: #059669;
+  font-family: 'Courier New', monospace;
+}
+
+.no-data {
+  text-align: center;
+  padding: 40px 20px;
+  color: #999;
+  font-size: 16px;
 }
 
 .no-data-account {

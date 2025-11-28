@@ -52,32 +52,34 @@ const SavingsAccountsTable = ({ accountsBreakdown = [] }) => {
           </div>
 
           {account.yearlyHistory && account.yearlyHistory.length > 0 ? (
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Age</th>
-                  <th>Year</th>
-                  <th>Beginning Balance</th>
-                  <th>Contributions</th>
-                  <th>Withdrawals</th>
-                  <th>Growth</th>
-                  <th>Ending Balance</th>
-                </tr>
-              </thead>
-              <tbody>
-                {account.yearlyHistory.map((record, index) => (
-                  <tr key={index} className={record.age >= 65 ? 'retired-row' : ''}>
-                    <td className="age-cell">{record.age}</td>
-                    <td className="year-cell">{record.year}</td>
-                    <td className="currency">${record.beginningBalance.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
-                    <td className="currency positive">${record.contributions.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
-                    <td className="currency negative">${record.withdrawals.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
-                    <td className="currency growth">${record.growth.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
-                    <td className="currency total">${record.endingBalance.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
+            <div className="table-wrapper">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Age</th>
+                    <th>Year</th>
+                    <th>Beginning Balance</th>
+                    <th>Contributions</th>
+                    <th>Withdrawals</th>
+                    <th>Growth</th>
+                    <th>Ending Balance</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {account.yearlyHistory.map((record, index) => (
+                    <tr key={index} className={record.age >= 65 ? 'retired-row' : ''}>
+                      <td className="age-cell">{record.age}</td>
+                      <td className="year-cell">{record.year}</td>
+                      <td className="currency">${record.beginningBalance.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
+                      <td className="currency positive">${record.contributions.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
+                      <td className="currency negative">${record.withdrawals.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
+                      <td className="currency growth">${record.growth.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
+                      <td className="currency total">${record.endingBalance.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ) : (
             <p className="no-data-account">No projection data available for this account</p>
           )}
