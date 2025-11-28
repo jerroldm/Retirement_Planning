@@ -218,7 +218,7 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
   // Contribution stop age defaults to retirement age (contributions stop when you retire)
   let primaryContributionStopAge = retirementAge;
   let primaryCurrentAge = calculateAge(birthMonth, birthYear);
-  let primaryDeathAge = deathAge;
+  let primaryDeathAge = null;
 
   let spouse2BirthMonth = null;
   let spouse2BirthYear = null;
@@ -235,7 +235,7 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
   let spouse2RothIRACompanyMatch = 0;
   let spouse2InvestmentAccountsContribution = 0;
   let spouse2ContributionStopAge = retirementAge;
-  let spouse2DeathAge = deathAge;
+  let spouse2DeathAge = null;
 
   // Extract data from persons array if available
   if (persons && persons.length > 0) {
@@ -283,6 +283,26 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
       }
     }
   }
+
+  // Fallback to deathAge parameter only if persons array didn't provide death ages
+  if (primaryDeathAge === null) {
+    primaryDeathAge = deathAge;
+  }
+  if (spouse2DeathAge === null && isMarried) {
+    spouse2DeathAge = deathAge;
+  }
+  // For single person scenario, ensure spouse2DeathAge is set
+  if (spouse2DeathAge === null) {
+    spouse2DeathAge = deathAge;
+  }
+
+  // DEBUG: Log death ages
+  console.log('Death age values:', {
+    primaryDeathAge,
+    spouse2DeathAge,
+    deathAgeParam: deathAge,
+    personsArray: persons ? persons.map(p => ({ personType: p.personType, deathAge: p.deathAge })) : 'none'
+  });
 
   // Extract account balances and contributions from savingsAccounts if available
   if (savingsAccounts && savingsAccounts.length > 0) {
