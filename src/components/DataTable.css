@@ -69,6 +69,11 @@
   padding-left: 12px;
 }
 
+.year-table .age-cell {
+  text-align: center;
+  padding-left: 8px;
+}
+
 .year-table th.sortable {
   cursor: pointer;
   transition: background 0.2s;
@@ -115,7 +120,6 @@
 .age-cell {
   font-weight: 600;
   color: #333;
-  text-align: center;
 }
 
 .badge {
