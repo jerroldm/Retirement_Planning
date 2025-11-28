@@ -6,6 +6,7 @@ import { Dashboard } from './components/Dashboard'
 import { DataTable } from './components/DataTable'
 import { ExpensesTable } from './components/ExpensesTable'
 import { MortgageAmortizationTable } from './components/MortgageAmortizationTable'
+import SavingsAccountsTable from './components/SavingsAccountsTable'
 import { calculateRetirementProjection, generateMortgageAmortizationSchedule, defaultInputs, calculateAge } from './utils/calculations'
 import { financialAPI } from './api/client'
 import { assetAPI } from './api/assetClient'
@@ -352,6 +353,7 @@ function AppContent() {
     { id: 'dashboard', label: '📊 Dashboard', type: 'view' },
     { id: 'table', label: '📋 Year-by-Year Data', type: 'view' },
     { id: 'expenses-breakdown', label: '💸 Expenses Breakdown', type: 'view' },
+    { id: 'savings-breakdown', label: '🏦 Savings Breakdown', type: 'view' },
     { id: 'mortgage-schedule', label: '🏦 Mortgage Schedule', type: 'view' },
     { id: 'divider', label: '', type: 'divider' },
     { id: 'personal', label: '👤 Personal', type: 'form' },
@@ -411,9 +413,10 @@ function AppContent() {
             <div className="loading-spinner">Loading your data...</div>
           ) : (
             <>
-              {activeView === 'dashboard' && <Dashboard data={projectionData} accountsBreakdown={accountsBreakdown} />}
+              {activeView === 'dashboard' && <Dashboard data={projectionData} />}
               {activeView === 'table' && <DataTable data={projectionData} />}
               {activeView === 'expenses-breakdown' && <ExpensesTable data={projectionData} />}
+              {activeView === 'savings-breakdown' && <SavingsAccountsTable accountsBreakdown={accountsBreakdown} />}
               {activeView === 'mortgage-schedule' && <MortgageAmortizationTable schedule={mortgageSchedule} />}
               {isFormTab(activeView) && (
                 <InputForm inputs={inputs} onInputsChange={handleInputsChange} activeTab={activeView} onAssetsSaved={reloadAssetData} onSavingsAccountsSaved={reloadSavingsAccountsData} onExpensesSaved={reloadExpensesData} />
