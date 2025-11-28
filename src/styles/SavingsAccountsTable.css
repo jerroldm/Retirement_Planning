@@ -75,6 +75,9 @@
 .data-table thead {
   background: #f8f9fa;
   border-bottom: 2px solid #dee2e6;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .data-table th {
@@ -86,6 +89,11 @@
   user-select: none;
   font-size: 13px;
   min-width: 110px;
+  border-right: 1px solid #e5e7eb;
+}
+
+.data-table th:last-child {
+  border-right: none;
 }
 
 .data-table th:first-child {
@@ -127,6 +135,11 @@
   padding: 12px 12px;
   text-align: center;
   color: #495057;
+  border-right: 1px solid #f0f0f0;
+}
+
+.data-table td:last-child {
+  border-right: none;
 }
 
 .age-cell {
