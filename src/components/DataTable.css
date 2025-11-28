@@ -133,6 +133,11 @@
   font-weight: 600;
 }
 
+.year-table th:last-child,
+.year-table td:last-child {
+  min-width: 100px;
+}
+
 .positive {
   color: #28a745;
   font-weight: 600;
