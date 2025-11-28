@@ -238,14 +238,19 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
   let spouse2DeathAge = null;
 
   // Extract data from persons array if available
+  console.log('[calculateRetirementProjection] Persons array:', persons);
   if (persons && persons.length > 0) {
     // Find primary person (self/primary)
     const primaryPerson = persons.find(p => p.personType === 'self' || p.personType === 'primary');
+    console.log('[calculateRetirementProjection] Primary person found:', primaryPerson);
     if (primaryPerson && primaryPerson.includeInCalculations) {
       if (primaryPerson.birthMonth) primaryBirthMonth = primaryPerson.birthMonth;
       if (primaryPerson.birthYear) primaryBirthYear = primaryPerson.birthYear;
       if (primaryPerson.retirementAge) primaryRetirementAge = primaryPerson.retirementAge;
-      if (primaryPerson.deathAge) primaryDeathAge = primaryPerson.deathAge;
+      if (primaryPerson.deathAge) {
+        console.log('[calculateRetirementProjection] Setting primaryDeathAge from person:', primaryPerson.deathAge);
+        primaryDeathAge = primaryPerson.deathAge;
+      }
       if (primaryPerson.currentSalary) primaryCurrentSalary = primaryPerson.currentSalary;
       if (primaryPerson.annualSalaryIncrease) primaryAnnualSalaryIncrease = primaryPerson.annualSalaryIncrease;
       if (primaryPerson.traditionalIRA) primaryTraditionalIRA = primaryPerson.traditionalIRA;
@@ -284,17 +289,25 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
     }
   }
 
-  // Fallback to deathAge parameter only if persons array didn't provide death ages
+  // Fallback to a reasonable default if persons array didn't provide death ages
+  // NOTE: We prefer person data over inputs.deathAge because persons table is the source of truth
+  const DEFAULT_DEATH_AGE = 95;
   if (primaryDeathAge === null) {
-    primaryDeathAge = deathAge;
+    primaryDeathAge = DEFAULT_DEATH_AGE;
   }
   if (spouse2DeathAge === null && isMarried) {
-    spouse2DeathAge = deathAge;
+    spouse2DeathAge = DEFAULT_DEATH_AGE;
   }
   // For single person scenario, ensure spouse2DeathAge is set
   if (spouse2DeathAge === null) {
-    spouse2DeathAge = deathAge;
+    spouse2DeathAge = DEFAULT_DEATH_AGE;
   }
+
+  console.log('[calculateRetirementProjection] Final death ages:', {
+    primaryDeathAge,
+    spouse2DeathAge,
+    maxAge: Math.max(primaryDeathAge, spouse2DeathAge)
+  });
 
   // Extract account balances and contributions from savingsAccounts if available
   if (savingsAccounts && savingsAccounts.length > 0) {
