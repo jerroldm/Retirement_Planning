@@ -266,41 +266,28 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved, on
 
   const handleAccountFormSubmit = async (submittedData) => {
     try {
-      console.log('handleAccountFormSubmit called with data:', submittedData);
-      console.log('editingAccount:', editingAccount);
-      console.log('Account ID in submittedData:', submittedData.id);
-
       // Use ID from submittedData (passed from form) rather than editingAccount state
       if (submittedData.id) {
         const accountId = submittedData.id;
         // Remove ID from data sent to body (it's already in the URL)
         const { id, ...dataWithoutId } = submittedData;
-        console.log('Calling updateAccount with ID:', accountId, 'and data:', dataWithoutId);
-        const updateResult = await savingsAccountAPI.updateAccount(accountId, dataWithoutId);
-        console.log('updateAccount result:', updateResult);
+        await savingsAccountAPI.updateAccount(accountId, dataWithoutId);
       } else {
-        console.log('Calling createAccount with data:', submittedData);
-        const createResult = await savingsAccountAPI.createAccount(submittedData);
-        console.log('createAccount result:', createResult);
+        await savingsAccountAPI.createAccount(submittedData);
       }
 
-      console.log('Reloading savings accounts...');
       await loadSavingsAccounts();
 
       if (onSavingsAccountsSaved) {
-        console.log('Calling onSavingsAccountsSaved callback');
         await onSavingsAccountsSaved();
       }
 
-      console.log('Closing form dialog');
       setShowAccountForm(false);
       setEditingAccount(null);
       setSelectedAccountType(null);
     } catch (error) {
-      console.error('Failed to save account - Full error:', error);
-      console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
-      alert('Failed to save account. Please try again. Check console for details.');
+      console.error('Failed to save account:', error);
+      alert('Failed to save account. Please try again.');
     }
   };
 
@@ -869,6 +856,7 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved, on
       {/* Savings Account Form Modal */}
       {showAccountForm && selectedAccountType && (
         <SavingsAccountForm
+          key={editingAccount?.id || 'new'}
           accountType={selectedAccountType}
           editingAccount={editingAccount}
           onSubmit={handleAccountFormSubmit}

@@ -3,7 +3,9 @@ import { ACCOUNT_TYPES, FIELD_DEFINITIONS } from '../config/savingsAccountConfig
 import './SavingsAccountForm.css';
 
 export const SavingsAccountForm = ({ accountType, editingAccount, onSubmit, onCancel, persons = [] }) => {
+
   const [formData, setFormData] = useState({
+    id: editingAccount?.id || null,
     accountName: '',
     personId: '',
     currentBalance: 0,
@@ -30,6 +32,11 @@ export const SavingsAccountForm = ({ accountType, editingAccount, onSubmit, onCa
         }
         return acc;
       }, {});
+
+      // Ensure ID is always set
+      if (!sanitizedData.id && editingAccount.id) {
+        sanitizedData.id = editingAccount.id;
+      }
 
       // Handle backward compatibility for Roth accounts
       // If editing an existing Roth account that only has currentBalance (not dual balances),
@@ -61,24 +68,13 @@ export const SavingsAccountForm = ({ accountType, editingAccount, onSubmit, onCa
       return;
     }
 
-    console.log('Full formData state:', formData);
-    console.log('rothBalance in formData:', formData.rothBalance);
-    console.log('traditionalMatchBalance in formData:', formData.traditionalMatchBalance);
-    console.log('editingAccount prop:', editingAccount);
-
     // Convert personId to number if it's a string
     const submittedData = {
       ...formData,
       personId: parseInt(formData.personId, 10),
-      accountType,
-      // Include the editing account ID if we're updating
-      id: editingAccount?.id
+      accountType
     };
 
-    console.log('Form submission data:', submittedData);
-    console.log('rothBalance in submittedData:', submittedData.rothBalance);
-    console.log('traditionalMatchBalance in submittedData:', submittedData.traditionalMatchBalance);
-    console.log('ID in submittedData:', submittedData.id);
     onSubmit(submittedData);
   };
 
