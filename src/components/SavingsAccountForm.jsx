@@ -30,6 +30,18 @@ export const SavingsAccountForm = ({ accountType, editingAccount, onSubmit, onCa
         }
         return acc;
       }, {});
+
+      // Handle backward compatibility for Roth accounts
+      // If editing an existing Roth account that only has currentBalance (not dual balances),
+      // migrate currentBalance to rothBalance and set traditionalMatchBalance to 0
+      if (editingAccount.accountType === 'roth-ira') {
+        if (editingAccount.currentBalance && !editingAccount.rothBalance && !editingAccount.traditionalMatchBalance) {
+          sanitizedData.rothBalance = editingAccount.currentBalance;
+          sanitizedData.traditionalMatchBalance = 0;
+          sanitizedData.currentBalance = 0; // Clear old field
+        }
+      }
+
       setFormData(sanitizedData);
     }
   }, [editingAccount]);
