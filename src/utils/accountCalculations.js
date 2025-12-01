@@ -18,8 +18,16 @@ export function initializeAccountStates(savingsAccounts) {
   return savingsAccounts.map(account => {
     // Handle Roth accounts with separate balance fields
     if (account.accountType === 'roth-ira') {
-      const rothBalance = parseFloat(account.rothBalance) || 0;
-      const traditionalMatchBalance = parseFloat(account.traditionalMatchBalance) || 0;
+      let rothBalance = parseFloat(account.rothBalance) || 0;
+      let traditionalMatchBalance = parseFloat(account.traditionalMatchBalance) || 0;
+      const currentBalance = parseFloat(account.currentBalance) || 0;
+
+      // Backward compatibility: if this is an old Roth account with currentBalance
+      // but no dual balances, migrate currentBalance to rothBalance
+      if (currentBalance > 0 && rothBalance === 0 && traditionalMatchBalance === 0) {
+        rothBalance = currentBalance;
+      }
+
       const totalBalance = rothBalance + traditionalMatchBalance;
 
       return {
