@@ -164,6 +164,24 @@ const initializeDatabase = () => {
     }
   });
 
+  // Add rothBalance column if it doesn't exist (for existing databases)
+  db.run(`
+    ALTER TABLE savings_accounts ADD COLUMN rothBalance REAL DEFAULT 0
+  `, (err) => {
+    if (err && !err.message.includes('duplicate column')) {
+      console.error('Error adding rothBalance column:', err);
+    }
+  });
+
+  // Add traditionalMatchBalance column if it doesn't exist (for existing databases)
+  db.run(`
+    ALTER TABLE savings_accounts ADD COLUMN traditionalMatchBalance REAL DEFAULT 0
+  `, (err) => {
+    if (err && !err.message.includes('duplicate column')) {
+      console.error('Error adding traditionalMatchBalance column:', err);
+    }
+  });
+
   // Persons table (for managing individual persons with their financial details)
   db.run(`
     CREATE TABLE IF NOT EXISTS persons (
