@@ -21,12 +21,16 @@ import { expensesClient } from '../api/expensesClient';
 import { SocialSecurityList } from './SocialSecurityList';
 import { SocialSecurityForm } from './SocialSecurityForm';
 import { socialSecurityClient } from '../api/socialSecurityClient';
+import { economicAssumptionsClient } from '../api/economicAssumptionsClient';
+import { taxConfigurationClient } from '../api/taxConfigurationClient';
 import { stateList } from '../config/stateTaxConfig.js';
 import { getStandardDeduction } from '../utils/taxCalculations.js';
 import './InputForm.css';
 
-export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved, onSavingsAccountsSaved, onExpensesSaved }) => {
+export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved, onSavingsAccountsSaved, onExpensesSaved, onEconomicAssumptionsSaved, onTaxConfigurationSaved, economicAssumptions: propsEconomicAssumptions, taxConfiguration: propsTaxConfiguration }) => {
   const [formData, setFormData] = useState(inputs || defaultInputs);
+  const [economicAssumptions, setEconomicAssumptions] = useState(propsEconomicAssumptions || {});
+  const [taxConfiguration, setTaxConfiguration] = useState(propsTaxConfiguration || {});
   const [assets, setAssets] = useState([]);
   const [assetsLoading, setAssetsLoading] = useState(false);
   const [showAssetTypeSelector, setShowAssetTypeSelector] = useState(false);
@@ -151,6 +155,20 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved, on
     setFormData(inputs || defaultInputs);
   }, [inputs]);
 
+  // Sync economicAssumptions when props change
+  useEffect(() => {
+    if (propsEconomicAssumptions) {
+      setEconomicAssumptions(propsEconomicAssumptions);
+    }
+  }, [propsEconomicAssumptions]);
+
+  // Sync taxConfiguration when props change
+  useEffect(() => {
+    if (propsTaxConfiguration) {
+      setTaxConfiguration(propsTaxConfiguration);
+    }
+  }, [propsTaxConfiguration]);
+
   // NOTE: Person syncing is disabled because birth data is stored in financial_data table and already synced via inputs prop.
   // The persons table is not being used for primary financial calculations at this time.
   // Persons are loaded for the UI (PersonList display), but data sync is intentionally skipped
@@ -182,6 +200,50 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved, on
   const handleReset = () => {
     setFormData(defaultInputs);
     onInputsChange(defaultInputs);
+  };
+
+  // Economic Assumptions handlers
+  const handleEconomicChange = (e) => {
+    const { name, value, type } = e.target;
+    const newValue = type === 'number' ? parseFloat(value) : value;
+    const updatedAssumptions = { ...economicAssumptions, [name]: newValue };
+    setEconomicAssumptions(updatedAssumptions);
+
+    // Auto-save economic assumptions
+    saveEconomicAssumptions(updatedAssumptions);
+  };
+
+  const saveEconomicAssumptions = async (data) => {
+    try {
+      await economicAssumptionsClient.saveAssumptions(data);
+      if (onEconomicAssumptionsSaved) {
+        onEconomicAssumptionsSaved();
+      }
+    } catch (error) {
+      console.error('Failed to save economic assumptions:', error);
+    }
+  };
+
+  // Tax Configuration handlers
+  const handleTaxChange = (e) => {
+    const { name, value, type } = e.target;
+    const newValue = type === 'number' ? parseFloat(value) : value;
+    const updatedConfig = { ...taxConfiguration, [name]: newValue };
+    setTaxConfiguration(updatedConfig);
+
+    // Auto-save tax configuration
+    saveTaxConfiguration(updatedConfig);
+  };
+
+  const saveTaxConfiguration = async (data) => {
+    try {
+      await taxConfigurationClient.saveConfiguration(data);
+      if (onTaxConfigurationSaved) {
+        onTaxConfigurationSaved();
+      }
+    } catch (error) {
+      console.error('Failed to save tax configuration:', error);
+    }
   };
 
   // Asset management handlers
@@ -259,6 +321,11 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved, on
   };
 
   const handleEditAccount = (account) => {
+    console.log('[handleEditAccount] Editing account:', account);
+    console.log('[handleEditAccount] Account ID:', account.id);
+    console.log('[handleEditAccount] Account rothBalance:', account.rothBalance);
+    console.log('[handleEditAccount] Account traditionalMatchBalance:', account.traditionalMatchBalance);
+    console.log('[handleEditAccount] Account currentBalance:', account.currentBalance);
     setEditingAccount(account);
     setSelectedAccountType(account.accountType);
     setShowAccountForm(true);
@@ -660,8 +727,8 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved, on
                   type="number"
                   id="investmentReturn"
                   name="investmentReturn"
-                  value={formData.investmentReturn}
-                  onChange={handleChange}
+                  value={economicAssumptions.investmentReturn ?? ''}
+                  onChange={handleEconomicChange}
                   min="0"
                   step="0.1"
                 />
@@ -672,8 +739,8 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved, on
                   type="number"
                   id="inflationRate"
                   name="inflationRate"
-                  value={formData.inflationRate}
-                  onChange={handleChange}
+                  value={economicAssumptions.inflationRate ?? ''}
+                  onChange={handleEconomicChange}
                   min="0"
                   step="0.1"
                 />
@@ -694,8 +761,8 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved, on
                 <select
                   id="filingStatus"
                   name="filingStatus"
-                  value={formData.filingStatus || 'single'}
-                  onChange={handleChange}
+                  value={taxConfiguration.filingStatus || 'single'}
+                  onChange={handleTaxChange}
                 >
                   <option value="single">Single</option>
                   <option value="married-joint">Married Filing Jointly</option>
@@ -713,8 +780,8 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved, on
                 <select
                   id="workingState"
                   name="workingState"
-                  value={formData.workingState || ''}
-                  onChange={handleChange}
+                  value={taxConfiguration.workingState || ''}
+                  onChange={handleTaxChange}
                   required
                 >
                   <option value="">-- Select State --</option>
@@ -731,8 +798,8 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved, on
                 <select
                   id="retirementState"
                   name="retirementState"
-                  value={formData.retirementState || ''}
-                  onChange={handleChange}
+                  value={taxConfiguration.retirementState || ''}
+                  onChange={handleTaxChange}
                 >
                   <option value="">-- No state change --</option>
                   {stateList.map(state => (
@@ -746,7 +813,7 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved, on
             </div>
 
             {/* State Change Timing - only show if retirementState is selected */}
-            {formData.retirementState && (
+            {taxConfiguration.retirementState && (
               <>
                 <h4>When to change states?</h4>
                 <div className="form-group">
@@ -755,8 +822,8 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved, on
                       type="radio"
                       name="stateChangeOption"
                       value="at-retirement"
-                      checked={(formData.stateChangeOption || 'at-retirement') === 'at-retirement'}
-                      onChange={handleChange}
+                      checked={(taxConfiguration.stateChangeOption || 'at-retirement') === 'at-retirement'}
+                      onChange={handleTaxChange}
                     />
                     At retirement age ({formData.retirementAge || 65})
                   </label>
@@ -765,22 +832,22 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved, on
                       type="radio"
                       name="stateChangeOption"
                       value="at-age"
-                      checked={formData.stateChangeOption === 'at-age'}
-                      onChange={handleChange}
+                      checked={taxConfiguration.stateChangeOption === 'at-age'}
+                      onChange={handleTaxChange}
                     />
                     At specific age
                   </label>
                 </div>
 
-                {formData.stateChangeOption === 'at-age' && (
+                {taxConfiguration.stateChangeOption === 'at-age' && (
                   <div className="form-group">
-                    <label htmlFor="stateChangeAge">Age to move to {stateList.find(s => s.code === formData.retirementState)?.name || 'retirement state'}</label>
+                    <label htmlFor="stateChangeAge">Age to move to {stateList.find(s => s.code === taxConfiguration.retirementState)?.name || 'retirement state'}</label>
                     <input
                       type="number"
                       id="stateChangeAge"
                       name="stateChangeAge"
-                      value={formData.stateChangeAge || ''}
-                      onChange={handleChange}
+                      value={taxConfiguration.stateChangeAge || ''}
+                      onChange={handleTaxChange}
                       min={formData.currentAge}
                       max={formData.deathAge}
                     />
@@ -797,14 +864,14 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved, on
                 <select
                   id="withdrawalStrategy"
                   name="withdrawalStrategy"
-                  value={formData.withdrawalStrategy || 'waterfall'}
-                  onChange={handleChange}
+                  value={taxConfiguration.withdrawalStrategy || 'waterfall'}
+                  onChange={handleTaxChange}
                 >
                   <option value="waterfall">Waterfall (Simple Tax-Efficient)</option>
                   <option value="tax-bracket-fill">Tax Bracket Fill (Optimized)</option>
                 </select>
                 <small>
-                  {formData.withdrawalStrategy === 'waterfall'
+                  {taxConfiguration.withdrawalStrategy === 'waterfall'
                     ? 'Draws from investment accounts first, then Traditional IRA, then Roth IRA'
                     : 'Fills available tax brackets with Traditional IRA first to minimize tax rate'}
                 </small>
@@ -814,12 +881,12 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved, on
             {/* Information Section */}
             <div className="info-section">
               <p><strong>Federal Tax Brackets:</strong> 2025 IRS progressive rates (10%, 12%, 22%, 24%, 32%, 35%, 37%)</p>
-              <p><strong>Standard Deduction:</strong> ${getStandardDeduction(formData.filingStatus || 'single').toLocaleString()}</p>
-              {formData.workingState && (
-                <p><strong>Working State Tax:</strong> {stateList.find(s => s.code === formData.workingState)?.name || formData.workingState}</p>
+              <p><strong>Standard Deduction:</strong> ${getStandardDeduction(taxConfiguration.filingStatus || 'single').toLocaleString()}</p>
+              {taxConfiguration.workingState && (
+                <p><strong>Working State Tax:</strong> {stateList.find(s => s.code === taxConfiguration.workingState)?.name || taxConfiguration.workingState}</p>
               )}
-              {formData.retirementState && (
-                <p><strong>Retirement State Tax:</strong> {stateList.find(s => s.code === formData.retirementState)?.name || formData.retirementState}</p>
+              {taxConfiguration.retirementState && (
+                <p><strong>Retirement State Tax:</strong> {stateList.find(s => s.code === taxConfiguration.retirementState)?.name || taxConfiguration.retirementState}</p>
               )}
             </div>
           </section>

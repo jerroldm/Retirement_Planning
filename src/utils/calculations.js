@@ -163,7 +163,7 @@ export const generateMortgageAmortizationSchedule = (inputs, persons = []) => {
   return schedule;
 };
 
-export const calculateRetirementProjection = (inputs, persons = [], incomeSources = [], savingsAccounts = [], expenses = []) => {
+export const calculateRetirementProjection = (inputs, persons = [], incomeSources = [], savingsAccounts = [], expenses = [], economicAssumptions = {}, taxConfiguration = {}) => {
   const {
     currentAge,
     retirementAge,
@@ -189,23 +189,27 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
     otherAssets,
     preRetirementAnnualExpenses,
     postRetirementAnnualExpenses,
-    investmentReturn,
-    inflationRate,
-    federalTaxRate,
-    stateTaxRate,
     allAssets,
     birthMonth,
     birthYear,
     homeSalePlanEnabled,
     homeSaleYear,
     homeSaleMonth,
-    workingState = 'TX',
-    retirementState = null,
-    stateChangeOption = 'at-retirement',
-    stateChangeAge = null,
-    filingStatus = 'single',
-    withdrawalStrategy = 'waterfall',
   } = inputs;
+
+  // Extract economic assumptions with defaults
+  const investmentReturn = economicAssumptions.investmentReturn ?? inputs.investmentReturn ?? 7;
+  const inflationRate = economicAssumptions.inflationRate ?? inputs.inflationRate ?? 3;
+
+  // Extract tax configuration with defaults
+  const federalTaxRate = taxConfiguration.federalTaxRate ?? inputs.federalTaxRate ?? 22;
+  const stateTaxRate = taxConfiguration.stateTaxRate ?? inputs.stateTaxRate ?? 5;
+  const workingState = taxConfiguration.workingState ?? inputs.workingState ?? 'TX';
+  const retirementState = taxConfiguration.retirementState ?? inputs.retirementState ?? null;
+  const stateChangeOption = taxConfiguration.stateChangeOption ?? inputs.stateChangeOption ?? 'at-retirement';
+  const stateChangeAge = taxConfiguration.stateChangeAge ?? inputs.stateChangeAge ?? null;
+  const filingStatus = taxConfiguration.filingStatus ?? inputs.filingStatus ?? 'single';
+  const withdrawalStrategy = taxConfiguration.withdrawalStrategy ?? inputs.withdrawalStrategy ?? 'waterfall';
 
   // Determine if there's a spouse based on persons list
   const isMarried = persons && persons.some(p => p.personType === 'spouse' && p.includeInCalculations);

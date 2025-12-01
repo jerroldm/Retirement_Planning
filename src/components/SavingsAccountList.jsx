@@ -3,6 +3,11 @@ import { ACCOUNT_TYPES } from '../config/savingsAccountConfig';
 import './SavingsAccountList.css';
 
 export const SavingsAccountList = ({ accounts, onEdit, onDelete, onAddAccount }) => {
+  console.log('[SavingsAccountList] Received accounts:', accounts);
+  if (accounts && accounts.length > 0) {
+    console.log('[SavingsAccountList] First account:', accounts[0]);
+    console.log('[SavingsAccountList] First account ID:', accounts[0].id);
+  }
   const hasAccounts = accounts && accounts.length > 0;
 
   if (!hasAccounts) {

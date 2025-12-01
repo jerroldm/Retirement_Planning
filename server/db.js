@@ -104,10 +104,6 @@ const initializeDatabase = () => {
       otherAssets REAL,
       preRetirementAnnualExpenses REAL,
       postRetirementAnnualExpenses REAL,
-      investmentReturn REAL,
-      inflationRate REAL,
-      federalTaxRate REAL,
-      stateTaxRate REAL,
       createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
       updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (userId) REFERENCES users(id)
@@ -279,6 +275,50 @@ const initializeDatabase = () => {
     }
   });
 
+  // Economic Assumptions table (for market return and inflation assumptions)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS economic_assumptions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      userId INTEGER NOT NULL UNIQUE,
+      investmentReturn REAL DEFAULT 7,
+      inflationRate REAL DEFAULT 3,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (userId) REFERENCES users(id)
+    )
+  `, (err) => {
+    if (err) {
+      console.error('Error creating economic_assumptions table:', err);
+    } else {
+      console.log('Economic assumptions table created or already exists');
+    }
+  });
+
+  // Tax Configuration table (for tax rates and withdrawal strategy)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS tax_configuration (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      userId INTEGER NOT NULL UNIQUE,
+      federalTaxRate REAL DEFAULT 22,
+      stateTaxRate REAL DEFAULT 5,
+      workingState TEXT DEFAULT 'TX',
+      retirementState TEXT,
+      stateChangeOption TEXT DEFAULT 'at-retirement',
+      stateChangeAge INTEGER,
+      filingStatus TEXT DEFAULT 'single',
+      withdrawalStrategy TEXT DEFAULT 'waterfall',
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (userId) REFERENCES users(id)
+    )
+  `, (err) => {
+    if (err) {
+      console.error('Error creating tax_configuration table:', err);
+    } else {
+      console.log('Tax configuration table created or already exists');
+    }
+  });
+
   // Scenarios table (for saving different scenarios)
   db.run(`
     CREATE TABLE IF NOT EXISTS scenarios (
@@ -294,64 +334,7 @@ const initializeDatabase = () => {
     )
   `);
 
-  // Run migrations for new tax system columns
-  runMigrations();
-};
-
-/**
- * Run database migrations for new tax system columns
- * Checks if columns exist before adding them to maintain idempotency
- */
-const runMigrations = () => {
-  // Migration: Add tax system columns to financial_data table
-  db.serialize(() => {
-    // Check if workingState column exists
-    db.all("PRAGMA table_info(financial_data)", (err, columns) => {
-      if (err) {
-        console.error('Error checking table schema:', err);
-        return;
-      }
-
-      const columnNames = columns.map(col => col.name);
-      const migrationsNeeded = [];
-
-      // Check which columns are missing
-      if (!columnNames.includes('workingState')) {
-        migrationsNeeded.push("ALTER TABLE financial_data ADD COLUMN workingState TEXT DEFAULT NULL");
-      }
-      if (!columnNames.includes('retirementState')) {
-        migrationsNeeded.push("ALTER TABLE financial_data ADD COLUMN retirementState TEXT DEFAULT NULL");
-      }
-      if (!columnNames.includes('stateChangeOption')) {
-        migrationsNeeded.push("ALTER TABLE financial_data ADD COLUMN stateChangeOption TEXT DEFAULT 'at-retirement'");
-      }
-      if (!columnNames.includes('stateChangeAge')) {
-        migrationsNeeded.push("ALTER TABLE financial_data ADD COLUMN stateChangeAge INTEGER DEFAULT NULL");
-      }
-      if (!columnNames.includes('filingStatus')) {
-        migrationsNeeded.push("ALTER TABLE financial_data ADD COLUMN filingStatus TEXT DEFAULT 'single'");
-      }
-      if (!columnNames.includes('withdrawalStrategy')) {
-        migrationsNeeded.push("ALTER TABLE financial_data ADD COLUMN withdrawalStrategy TEXT DEFAULT 'waterfall'");
-      }
-
-      // Run migrations
-      if (migrationsNeeded.length > 0) {
-        console.log(`Running ${migrationsNeeded.length} tax system migrations...`);
-        migrationsNeeded.forEach(migration => {
-          db.run(migration, (err) => {
-            if (err) {
-              console.error('Migration error:', err);
-            } else {
-              console.log('Migration completed:', migration.substring(0, 50) + '...');
-            }
-          });
-        });
-      } else {
-        console.log('Tax system columns already exist, no migrations needed');
-      }
-    });
-  });
+  // Tax columns are now stored in separate tax_configuration table (not in financial_data)
 };
 
 export default db;

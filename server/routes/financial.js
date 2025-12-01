@@ -68,16 +68,9 @@ router.post('/', verifyToken, (req, res) => {
     otherAssets,
     preRetirementAnnualExpenses,
     postRetirementAnnualExpenses,
-    investmentReturn,
-    inflationRate,
-    federalTaxRate,
-    stateTaxRate,
-    workingState,
-    retirementState,
-    stateChangeOption,
-    stateChangeAge,
-    filingStatus,
-    withdrawalStrategy,
+    // Note: investmentReturn, inflationRate, federalTaxRate, stateTaxRate, workingState, retirementState,
+    // stateChangeOption, stateChangeAge, filingStatus, and withdrawalStrategy are now stored in separate tables
+    // and should NOT be saved to financial_data
   } = req.body;
 
   // Check if user already has financial data
@@ -103,9 +96,7 @@ router.post('/', verifyToken, (req, res) => {
             investmentAccountsContribution = ?,
             homeValue = ?, homeMortgage = ?, homeMortgageRate = ?,
             homeMortgageMonthlyPayment = ?, homeMortgagePayoffYear = ?, homeMortgagePayoffMonth = ?, homePropertyTaxInsurance = ?, homePropertyTax = ?, homePropertyTaxAnnualIncrease = ?, homeInsurance = ?, homeInsuranceAnnualIncrease = ?, homeSalePlanEnabled = ?, homeSaleYear = ?, homeSaleMonth = ?, homeMortgageExtraPrincipalPayment = ?, otherAssets = ?,
-            preRetirementAnnualExpenses = ?, postRetirementAnnualExpenses = ?, investmentReturn = ?,
-            inflationRate = ?, federalTaxRate = ?, stateTaxRate = ?,
-            workingState = ?, retirementState = ?, stateChangeOption = ?, stateChangeAge = ?, filingStatus = ?, withdrawalStrategy = ?,
+            preRetirementAnnualExpenses = ?, postRetirementAnnualExpenses = ?,
             updatedAt = CURRENT_TIMESTAMP
             WHERE userId = ?`,
           [
@@ -119,9 +110,7 @@ router.post('/', verifyToken, (req, res) => {
             investmentAccountsContribution,
             homeValue, homeMortgage, homeMortgageRate,
             homeMortgageMonthlyPayment, homeMortgagePayoffYear, homeMortgagePayoffMonth, homePropertyTaxInsurance, homePropertyTax, homePropertyTaxAnnualIncrease, homeInsurance, homeInsuranceAnnualIncrease, homeSalePlanEnabled, homeSaleYear, homeSaleMonth, homeMortgageExtraPrincipalPayment, otherAssets,
-            preRetirementAnnualExpenses, postRetirementAnnualExpenses, investmentReturn,
-            inflationRate, federalTaxRate, stateTaxRate,
-            workingState, retirementState, stateChangeOption, stateChangeAge, filingStatus, withdrawalStrategy,
+            preRetirementAnnualExpenses, postRetirementAnnualExpenses,
             req.userId,
           ],
           function (err) {
@@ -148,10 +137,8 @@ router.post('/', verifyToken, (req, res) => {
             investmentAccountsContribution,
             homeValue, homeMortgage, homeMortgageRate,
             homeMortgageMonthlyPayment, homeMortgagePayoffYear, homeMortgagePayoffMonth, homePropertyTaxInsurance, homePropertyTax, homePropertyTaxAnnualIncrease, homeInsurance, homeInsuranceAnnualIncrease, homeSalePlanEnabled, homeSaleYear, homeSaleMonth, homeMortgageExtraPrincipalPayment, otherAssets,
-            preRetirementAnnualExpenses, postRetirementAnnualExpenses, investmentReturn,
-            inflationRate, federalTaxRate, stateTaxRate,
-            workingState, retirementState, stateChangeOption, stateChangeAge, filingStatus, withdrawalStrategy
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            preRetirementAnnualExpenses, postRetirementAnnualExpenses
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             req.userId, maritalStatus, birthMonth, birthYear, retirementAge, deathAge, contributionStopAge,
             currentSalary, annualSalaryIncrease,
@@ -161,9 +148,7 @@ router.post('/', verifyToken, (req, res) => {
             investmentAccountsContribution,
             homeValue, homeMortgage, homeMortgageRate,
             homeMortgageMonthlyPayment, homeMortgagePayoffYear, homeMortgagePayoffMonth, homePropertyTaxInsurance, homePropertyTax, homePropertyTaxAnnualIncrease, homeInsurance, homeInsuranceAnnualIncrease, homeSalePlanEnabled, homeSaleYear, homeSaleMonth, homeMortgageExtraPrincipalPayment, otherAssets,
-            preRetirementAnnualExpenses, postRetirementAnnualExpenses, investmentReturn,
-            inflationRate, federalTaxRate, stateTaxRate,
-            workingState, retirementState, stateChangeOption, stateChangeAge, filingStatus, withdrawalStrategy,
+            preRetirementAnnualExpenses, postRetirementAnnualExpenses,
           ],
           function (err) {
             if (err) {

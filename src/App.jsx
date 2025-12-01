@@ -14,6 +14,8 @@ import { personClient } from './api/personClient'
 import { incomeAPI } from './api/incomeClient'
 import { savingsAccountAPI } from './api/savingsAccountClient'
 import { expensesClient } from './api/expensesClient'
+import { economicAssumptionsClient } from './api/economicAssumptionsClient'
+import { taxConfigurationClient } from './api/taxConfigurationClient'
 import './App.css'
 
 function AppContent() {
@@ -23,6 +25,8 @@ function AppContent() {
   const [incomeSources, setIncomeSources] = useState([])
   const [savingsAccounts, setSavingsAccounts] = useState([])
   const [expenses, setExpenses] = useState([])
+  const [economicAssumptions, setEconomicAssumptions] = useState({})
+  const [taxConfiguration, setTaxConfiguration] = useState({})
   const [activeView, setActiveView] = useState('personal')
   const [isSaving, setIsSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState(null)
@@ -203,6 +207,24 @@ function AppContent() {
             console.log('Could not load assets:', assetError.message);
           }
 
+          // Load economic assumptions
+          let economicAssumptionsData = {};
+          try {
+            economicAssumptionsData = await economicAssumptionsClient.getAssumptions();
+            console.log('Economic assumptions loaded:', economicAssumptionsData);
+          } catch (economicError) {
+            console.log('Could not load economic assumptions:', economicError.message);
+          }
+
+          // Load tax configuration
+          let taxConfigurationData = {};
+          try {
+            taxConfigurationData = await taxConfigurationClient.getConfiguration();
+            console.log('Tax configuration loaded:', taxConfigurationData);
+          } catch (taxError) {
+            console.log('Could not load tax configuration:', taxError.message);
+          }
+
           // Merge asset data into inputs
           const mergedInputs = mergeAssetDataIntoInputs(baseInputs, assets);
           console.log('Loading data from DB - birthMonth:', mergedInputs.birthMonth, 'birthYear:', mergedInputs.birthYear, 'deathAge:', mergedInputs.deathAge);
@@ -212,6 +234,8 @@ function AppContent() {
           setIncomeSources(incomeSourcesList);
           setSavingsAccounts(savingsAccountsList);
           setExpenses(expensesList);
+          setEconomicAssumptions(economicAssumptionsData);
+          setTaxConfiguration(taxConfigurationData);
           setInputs(mergedInputs);
           setLastSaved(new Date(data.updatedAt))
         }
@@ -226,12 +250,12 @@ function AppContent() {
   }, [user])
 
   const { projectionData, accountsBreakdown } = useMemo(() => {
-    const result = calculateRetirementProjection(inputs, persons, incomeSources, savingsAccounts, expenses)
+    const result = calculateRetirementProjection(inputs, persons, incomeSources, savingsAccounts, expenses, economicAssumptions, taxConfiguration)
     return {
       projectionData: result.years,
       accountsBreakdown: result.accountsBreakdown || []
     }
-  }, [inputs, persons, incomeSources, savingsAccounts, expenses])
+  }, [inputs, persons, incomeSources, savingsAccounts, expenses, economicAssumptions, taxConfiguration])
 
   const mortgageSchedule = useMemo(() => {
     return generateMortgageAmortizationSchedule(inputs, persons)
@@ -267,6 +291,26 @@ function AppContent() {
     }
   };
 
+  const reloadEconomicAssumptions = async () => {
+    // Reload economic assumptions - this will trigger recalculation via useMemo
+    try {
+      const assumptions = await economicAssumptionsClient.getAssumptions();
+      setEconomicAssumptions(assumptions);
+    } catch (err) {
+      console.error('Failed to reload economic assumptions:', err);
+    }
+  };
+
+  const reloadTaxConfiguration = async () => {
+    // Reload tax configuration - this will trigger recalculation via useMemo
+    try {
+      const config = await taxConfigurationClient.getConfiguration();
+      setTaxConfiguration(config);
+    } catch (err) {
+      console.error('Failed to reload tax configuration:', err);
+    }
+  };
+
   const handleInputsChange = async (newInputs) => {
     console.log('=== handleInputsChange CALLED ===');
     console.log('newInputs.birthYear:', newInputs.birthYear);
@@ -278,7 +322,9 @@ function AppContent() {
       setIsSaving(true)
       console.log('Starting auto-save...');
       try {
-        // Only send fields that exist in the database schema
+        // Only send fields that exist in the financial_data table
+        // Note: investmentReturn, inflationRate, federalTaxRate, stateTaxRate, workingState, retirementState,
+        // stateChangeOption, stateChangeAge, filingStatus, and withdrawalStrategy are now saved to separate tables
         const dataToSave = {
           maritalStatus: newInputs.maritalStatus,
           birthMonth: newInputs.birthMonth,
@@ -314,16 +360,6 @@ function AppContent() {
           otherAssets: newInputs.otherAssets,
           preRetirementAnnualExpenses: newInputs.preRetirementAnnualExpenses,
           postRetirementAnnualExpenses: newInputs.postRetirementAnnualExpenses,
-          investmentReturn: newInputs.investmentReturn,
-          inflationRate: newInputs.inflationRate,
-          federalTaxRate: newInputs.federalTaxRate,
-          stateTaxRate: newInputs.stateTaxRate,
-          workingState: newInputs.workingState,
-          retirementState: newInputs.retirementState,
-          stateChangeOption: newInputs.stateChangeOption,
-          stateChangeAge: newInputs.stateChangeAge,
-          filingStatus: newInputs.filingStatus,
-          withdrawalStrategy: newInputs.withdrawalStrategy,
         }
         console.log('dataToSave being sent:', { birthMonth: dataToSave.birthMonth, birthYear: dataToSave.birthYear })
         await financialAPI.saveFinancialData(dataToSave)
@@ -419,7 +455,7 @@ function AppContent() {
               {activeView === 'savings-breakdown' && <SavingsAccountsTable accountsBreakdown={accountsBreakdown} />}
               {activeView === 'mortgage-schedule' && <MortgageAmortizationTable schedule={mortgageSchedule} />}
               {isFormTab(activeView) && (
-                <InputForm inputs={inputs} onInputsChange={handleInputsChange} activeTab={activeView} onAssetsSaved={reloadAssetData} onSavingsAccountsSaved={reloadSavingsAccountsData} onExpensesSaved={reloadExpensesData} />
+                <InputForm inputs={inputs} onInputsChange={handleInputsChange} activeTab={activeView} onAssetsSaved={reloadAssetData} onSavingsAccountsSaved={reloadSavingsAccountsData} onExpensesSaved={reloadExpensesData} onEconomicAssumptionsSaved={reloadEconomicAssumptions} onTaxConfigurationSaved={reloadTaxConfiguration} economicAssumptions={economicAssumptions} taxConfiguration={taxConfiguration} />
               )}
             </>
           )}

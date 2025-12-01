@@ -3,6 +3,9 @@ import { ACCOUNT_TYPES, FIELD_DEFINITIONS } from '../config/savingsAccountConfig
 import './SavingsAccountForm.css';
 
 export const SavingsAccountForm = ({ accountType, editingAccount, onSubmit, onCancel, persons = [] }) => {
+  console.log('[SavingsAccountForm] Rendering with editingAccount:', editingAccount);
+  console.log('[SavingsAccountForm] editingAccount?.id:', editingAccount?.id);
+  console.log('[SavingsAccountForm] accountType:', accountType);
 
   const [formData, setFormData] = useState({
     id: editingAccount?.id || null,
@@ -21,6 +24,7 @@ export const SavingsAccountForm = ({ accountType, editingAccount, onSubmit, onCa
 
   useEffect(() => {
     if (editingAccount) {
+      console.log('[useEffect] Processing editingAccount:', editingAccount);
       // Sanitize editingAccount to convert null values to appropriate defaults
       const sanitizedData = Object.entries(editingAccount).reduce((acc, [key, value]) => {
         const fieldDef = FIELD_DEFINITIONS[key];
@@ -49,6 +53,9 @@ export const SavingsAccountForm = ({ accountType, editingAccount, onSubmit, onCa
         }
       }
 
+      console.log('[useEffect] Final sanitizedData:', sanitizedData);
+      console.log('[useEffect] sanitizedData.rothBalance:', sanitizedData.rothBalance);
+      console.log('[useEffect] sanitizedData.traditionalMatchBalance:', sanitizedData.traditionalMatchBalance);
       setFormData(sanitizedData);
     }
   }, [editingAccount]);

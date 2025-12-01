@@ -43,7 +43,7 @@ router.post('/', verifyToken, (req, res) => {
   db.run(
     `INSERT INTO savings_accounts (userId, accountType, accountName, personId, owner, currentBalance, rothBalance, traditionalMatchBalance, annualContribution, companyMatch, stopContributingMode, stopContributingAge, stopContributingMonth, stopContributingYear)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [req.userId, accountType, accountName, personId || null, owner || '', currentBalance || 0, rothBalance || 0, traditionalMatchBalance || 0, annualContribution || 0, companyMatch || 0, stopContributingMode || 'retirement', stopContributingAge || 0, stopContributingMonth || 0, stopContributingYear || 0],
+    [req.userId, accountType, accountName, parseInt(personId) || null, owner || '', parseFloat(currentBalance) || 0, parseFloat(rothBalance) || 0, parseFloat(traditionalMatchBalance) || 0, parseFloat(annualContribution) || 0, parseFloat(companyMatch) || 0, stopContributingMode || 'retirement', parseInt(stopContributingAge) || 0, parseInt(stopContributingMonth) || 0, parseInt(stopContributingYear) || 0],
     function(err) {
       if (err) {
         console.error('Failed to create savings account:', err);
