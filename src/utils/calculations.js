@@ -1190,7 +1190,7 @@ export const defaultInputs = {
   retirementAge: 65,
   deathAge: 95,
   contributionStopAge: 65,
-  currentSalary: 0,
+  currentSalary: 100000,
   annualSalaryIncrease: 3,
   traditionalIRA: 50000,
   rothIRA: 25000,

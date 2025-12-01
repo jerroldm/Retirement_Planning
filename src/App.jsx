@@ -103,7 +103,7 @@ function AppContent() {
             retirementAge: data.retirementAge || 65,
             deathAge: data.deathAge || 95,
             contributionStopAge: data.contributionStopAge || 65,
-            currentSalary: data.currentSalary || 0,
+            currentSalary: data.currentSalary || 100000,
             annualSalaryIncrease: data.annualSalaryIncrease || 3,
             traditionalIRA: data.traditionalIRA || 50000,
             rothIRA: data.rothIRA || 25000,
