@@ -76,6 +76,14 @@ router.put('/:id', verifyToken, (req, res) => {
     stopContributingYear
   } = req.body;
 
+  console.log('Updating account with data:', {
+    accountType,
+    accountName,
+    rothBalance,
+    traditionalMatchBalance,
+    currentBalance
+  });
+
   db.run(
     `UPDATE savings_accounts
      SET accountType = ?, accountName = ?, personId = ?, owner = ?, currentBalance = ?, rothBalance = ?, traditionalMatchBalance = ?, annualContribution = ?, companyMatch = ?, stopContributingMode = ?, stopContributingAge = ?, stopContributingMonth = ?, stopContributingYear = ?, updatedAt = CURRENT_TIMESTAMP

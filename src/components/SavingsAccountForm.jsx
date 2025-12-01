@@ -68,6 +68,7 @@ export const SavingsAccountForm = ({ accountType, editingAccount, onSubmit, onCa
       accountType
     };
 
+    console.log('Form submission data:', submittedData);
     onSubmit(submittedData);
   };
 
