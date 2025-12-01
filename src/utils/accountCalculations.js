@@ -15,23 +15,55 @@ export function initializeAccountStates(savingsAccounts) {
     return [];
   }
 
-  return savingsAccounts.map(account => ({
-    id: account.id,
-    accountName: account.accountName,
-    accountType: account.accountType,
-    personId: account.personId,
-    currentBalance: parseFloat(account.currentBalance) || 0,
-    annualContribution: parseFloat(account.annualContribution) || 0,
-    companyMatch: parseFloat(account.companyMatch) || 0,
-    stopContributingMode: account.stopContributingMode || 'retirement',
-    stopContributingAge: account.stopContributingAge,
-    stopContributingMonth: account.stopContributingMonth,
-    stopContributingYear: account.stopContributingYear,
-    yearlyHistory: [], // Year-by-year breakdown of this account
-    yearlyWithdrawal: 0, // Accumulated withdrawals for current year
-    pendingContribution: 0, // Pending contribution for current year
-    pendingMatch: 0 // Pending company match for current year
-  }));
+  return savingsAccounts.map(account => {
+    // Handle Roth accounts with separate balance fields
+    if (account.accountType === 'roth-ira') {
+      const rothBalance = parseFloat(account.rothBalance) || 0;
+      const traditionalMatchBalance = parseFloat(account.traditionalMatchBalance) || 0;
+      const totalBalance = rothBalance + traditionalMatchBalance;
+
+      return {
+        id: account.id,
+        accountName: account.accountName,
+        accountType: account.accountType,
+        personId: account.personId,
+        rothBalance: rothBalance,
+        traditionalMatchBalance: traditionalMatchBalance,
+        currentBalance: totalBalance, // Total for aggregate calculations
+        annualContribution: parseFloat(account.annualContribution) || 0,
+        companyMatch: parseFloat(account.companyMatch) || 0,
+        stopContributingMode: account.stopContributingMode || 'retirement',
+        stopContributingAge: account.stopContributingAge,
+        stopContributingMonth: account.stopContributingMonth,
+        stopContributingYear: account.stopContributingYear,
+        yearlyHistory: [], // Year-by-year breakdown of this account
+        yearlyWithdrawal: 0, // Accumulated withdrawals for current year
+        pendingContribution: 0, // Pending Roth contribution (goes to rothBalance)
+        pendingMatch: 0, // Pending Traditional match contribution (goes to traditionalMatchBalance)
+        pendingRothGrowth: 0, // Growth on Roth portion
+        pendingTraditionalGrowth: 0 // Growth on Traditional match portion
+      };
+    }
+
+    // Standard accounts with single currentBalance
+    return {
+      id: account.id,
+      accountName: account.accountName,
+      accountType: account.accountType,
+      personId: account.personId,
+      currentBalance: parseFloat(account.currentBalance) || 0,
+      annualContribution: parseFloat(account.annualContribution) || 0,
+      companyMatch: parseFloat(account.companyMatch) || 0,
+      stopContributingMode: account.stopContributingMode || 'retirement',
+      stopContributingAge: account.stopContributingAge,
+      stopContributingMonth: account.stopContributingMonth,
+      stopContributingYear: account.stopContributingYear,
+      yearlyHistory: [], // Year-by-year breakdown of this account
+      yearlyWithdrawal: 0, // Accumulated withdrawals for current year
+      pendingContribution: 0, // Pending contribution for current year
+      pendingMatch: 0 // Pending company match for current year
+    };
+  });
 }
 
 /**

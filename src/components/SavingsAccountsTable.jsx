@@ -63,6 +63,12 @@ const SavingsAccountsTable = ({ accountsBreakdown = [] }) => {
                     <th>Withdrawals</th>
                     <th>Growth</th>
                     <th>Ending Balance</th>
+                    {account.accountType === 'roth-ira' && (
+                      <>
+                        <th>Roth Balance</th>
+                        <th>Traditional Match Balance</th>
+                      </>
+                    )}
                   </tr>
                 </thead>
                 <tbody>
@@ -78,6 +84,12 @@ const SavingsAccountsTable = ({ accountsBreakdown = [] }) => {
                       <td className="currency negative">${record.withdrawals.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
                       <td className="currency growth">${record.growth.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
                       <td className="currency total">${record.endingBalance.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
+                      {account.accountType === 'roth-ira' && (
+                        <>
+                          <td className="currency roth">${(record.rothBalance || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
+                          <td className="currency traditional">${(record.traditionalMatchBalance || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
+                        </>
+                      )}
                     </tr>
                   ))}
                 </tbody>

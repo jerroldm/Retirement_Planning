@@ -143,6 +143,8 @@ const initializeDatabase = () => {
       accountName TEXT NOT NULL,
       owner TEXT NOT NULL,
       currentBalance REAL DEFAULT 0,
+      rothBalance REAL DEFAULT 0,
+      traditionalMatchBalance REAL DEFAULT 0,
       annualContribution REAL DEFAULT 0,
       companyMatch REAL DEFAULT 0,
       stopContributingMode TEXT DEFAULT 'retirement',

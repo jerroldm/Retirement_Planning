@@ -173,6 +173,16 @@
   font-weight: 600;
 }
 
+.currency.roth {
+  color: #059669;
+  font-weight: 600;
+}
+
+.currency.traditional {
+  color: #7c3aed;
+  font-weight: 600;
+}
+
 .account-summary {
   display: flex;
   justify-content: flex-end;

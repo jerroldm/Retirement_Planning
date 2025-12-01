@@ -7,6 +7,8 @@ export const SavingsAccountForm = ({ accountType, editingAccount, onSubmit, onCa
     accountName: '',
     personId: '',
     currentBalance: 0,
+    rothBalance: 0,
+    traditionalMatchBalance: 0,
     annualContribution: 0,
     companyMatch: 0,
     stopContributingMode: 'retirement',
@@ -81,8 +83,62 @@ export const SavingsAccountForm = ({ accountType, editingAccount, onSubmit, onCa
         <p className="account-type-label">{accountConfig.label}</p>
 
         <form onSubmit={handleSubmit}>
+          {/* Special handling for Roth accounts: show dual balance fields */}
+          {accountType === 'roth-ira' && (
+            <>
+              <div className="form-group">
+                <label htmlFor="rothBalance">{FIELD_DEFINITIONS['rothBalance'].label}</label>
+                <input
+                  type="number"
+                  id="rothBalance"
+                  name="rothBalance"
+                  value={formData.rothBalance || ''}
+                  onChange={handleChange}
+                  step="0.01"
+                  min="0"
+                  placeholder="Employee contributions balance"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="traditionalMatchBalance">{FIELD_DEFINITIONS['traditionalMatchBalance'].label}</label>
+                <input
+                  type="number"
+                  id="traditionalMatchBalance"
+                  name="traditionalMatchBalance"
+                  value={formData.traditionalMatchBalance || ''}
+                  onChange={handleChange}
+                  step="0.01"
+                  min="0"
+                  placeholder="Company match balance"
+                />
+              </div>
+            </>
+          )}
+
+          {/* Standard currentBalance field for non-Roth accounts */}
+          {accountType !== 'roth-ira' && (
+            <div className="form-group">
+              <label htmlFor="currentBalance">{FIELD_DEFINITIONS['currentBalance'].label}</label>
+              <input
+                type="number"
+                id="currentBalance"
+                name="currentBalance"
+                value={formData.currentBalance || ''}
+                onChange={handleChange}
+                step="0.01"
+                min="0"
+                placeholder="Current balance"
+              />
+            </div>
+          )}
+
           {fieldsToShow.map((fieldName, index) => {
             const fieldConfig = FIELD_DEFINITIONS[fieldName];
+
+            // Skip balance fields - we handle them separately above
+            if (fieldName === 'currentBalance' || fieldName === 'rothBalance' || fieldName === 'traditionalMatchBalance') {
+              return null;
+            }
 
             // Skip stopContributingAge if mode is not 'specific-age'
             if (fieldName === 'stopContributingAge' && formData.stopContributingMode !== 'specific-age') {

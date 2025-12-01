@@ -26,6 +26,8 @@ router.post('/', verifyToken, (req, res) => {
     personId,
     owner,
     currentBalance,
+    rothBalance,
+    traditionalMatchBalance,
     annualContribution,
     companyMatch,
     stopContributingMode,
@@ -39,9 +41,9 @@ router.post('/', verifyToken, (req, res) => {
   }
 
   db.run(
-    `INSERT INTO savings_accounts (userId, accountType, accountName, personId, owner, currentBalance, annualContribution, companyMatch, stopContributingMode, stopContributingAge, stopContributingMonth, stopContributingYear)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [req.userId, accountType, accountName, personId || null, owner || '', currentBalance || 0, annualContribution || 0, companyMatch || 0, stopContributingMode || 'retirement', stopContributingAge || 0, stopContributingMonth || 0, stopContributingYear || 0],
+    `INSERT INTO savings_accounts (userId, accountType, accountName, personId, owner, currentBalance, rothBalance, traditionalMatchBalance, annualContribution, companyMatch, stopContributingMode, stopContributingAge, stopContributingMonth, stopContributingYear)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [req.userId, accountType, accountName, personId || null, owner || '', currentBalance || 0, rothBalance || 0, traditionalMatchBalance || 0, annualContribution || 0, companyMatch || 0, stopContributingMode || 'retirement', stopContributingAge || 0, stopContributingMonth || 0, stopContributingYear || 0],
     function(err) {
       if (err) {
         console.error('Failed to create savings account:', err);
@@ -64,6 +66,8 @@ router.put('/:id', verifyToken, (req, res) => {
     personId,
     owner,
     currentBalance,
+    rothBalance,
+    traditionalMatchBalance,
     annualContribution,
     companyMatch,
     stopContributingMode,
@@ -74,9 +78,9 @@ router.put('/:id', verifyToken, (req, res) => {
 
   db.run(
     `UPDATE savings_accounts
-     SET accountType = ?, accountName = ?, personId = ?, owner = ?, currentBalance = ?, annualContribution = ?, companyMatch = ?, stopContributingMode = ?, stopContributingAge = ?, stopContributingMonth = ?, stopContributingYear = ?, updatedAt = CURRENT_TIMESTAMP
+     SET accountType = ?, accountName = ?, personId = ?, owner = ?, currentBalance = ?, rothBalance = ?, traditionalMatchBalance = ?, annualContribution = ?, companyMatch = ?, stopContributingMode = ?, stopContributingAge = ?, stopContributingMonth = ?, stopContributingYear = ?, updatedAt = CURRENT_TIMESTAMP
      WHERE id = ? AND userId = ?`,
-    [accountType, accountName, personId || null, owner || '', currentBalance || 0, annualContribution || 0, companyMatch || 0, stopContributingMode || 'retirement', stopContributingAge || 0, stopContributingMonth || 0, stopContributingYear || 0, id, req.userId],
+    [accountType, accountName, personId || null, owner || '', currentBalance || 0, rothBalance || 0, traditionalMatchBalance || 0, annualContribution || 0, companyMatch || 0, stopContributingMode || 'retirement', stopContributingAge || 0, stopContributingMonth || 0, stopContributingYear || 0, id, req.userId],
     function(err) {
       if (err) {
         console.error('Failed to update savings account:', err);

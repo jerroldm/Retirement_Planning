@@ -901,8 +901,13 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
             annualContributionAmount = primaryInvestmentAccountsContribution || 0;
           }
 
+          // For first year (current year), prorate contributions for remaining months
+          if (yearIndex === 0) {
+            const remainingMonths = 12 - currentMonth + 1; // +1 to include current month
+            annualContributionAmount = annualContributionAmount * (remainingMonths / 12);
+          }
           // For retirement year, prorate contributions for months worked
-          if (isRetirementYear) {
+          else if (isRetirementYear) {
             const monthsPreRetirement = primaryBirthMonth - 1;
             annualContributionAmount = annualContributionAmount * (monthsPreRetirement / 12);
           }
@@ -913,7 +918,13 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
           // Also add company match for eligible account types
           if (account.companyMatch > 0) {
             let companyMatchAmount = account.companyMatch || 0;
-            if (isRetirementYear) {
+            // For first year (current year), prorate for remaining months
+            if (yearIndex === 0) {
+              const remainingMonths = 12 - currentMonth + 1; // +1 to include current month
+              companyMatchAmount = companyMatchAmount * (remainingMonths / 12);
+            }
+            // For retirement year, prorate for months worked
+            else if (isRetirementYear) {
               const monthsPreRetirement = primaryBirthMonth - 1;
               companyMatchAmount = companyMatchAmount * (monthsPreRetirement / 12);
             }
@@ -992,36 +1003,91 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
         let yearlyContribution = 0;
         let yearlyWithdrawal = account.yearlyWithdrawal || 0;
 
-        // Apply growth to account balance if this is not the first year
-        if (yearIndex > 0) {
-          yearlyGrowth = account.currentBalance * (investmentReturn / 100);
-          account.currentBalance = account.currentBalance * (1 + investmentReturn / 100);
+        // Special handling for Roth accounts with dual balances
+        if (account.accountType === 'roth-ira') {
+          // Apply growth separately to each portion if this is not the first year
+          if (yearIndex > 0) {
+            const rothGrowth = account.rothBalance * (investmentReturn / 100);
+            const traditionalGrowth = account.traditionalMatchBalance * (investmentReturn / 100);
+            yearlyGrowth = rothGrowth + traditionalGrowth;
+
+            account.rothBalance = account.rothBalance * (1 + investmentReturn / 100);
+            account.traditionalMatchBalance = account.traditionalMatchBalance * (1 + investmentReturn / 100);
+          }
+
+          // Apply contributions to appropriate portions
+          account.rothBalance += account.pendingContribution;
+          account.traditionalMatchBalance += account.pendingMatch;
+          yearlyContribution = account.pendingContribution + account.pendingMatch;
+
+          // Apply withdrawals proportionally or from largest portion first
+          if (yearlyWithdrawal > 0) {
+            // Withdraw from traditional match first (tax-deferred portion)
+            const traditionalWithdrawal = Math.min(yearlyWithdrawal, account.traditionalMatchBalance);
+            account.traditionalMatchBalance -= traditionalWithdrawal;
+
+            const remainingWithdrawal = yearlyWithdrawal - traditionalWithdrawal;
+            if (remainingWithdrawal > 0) {
+              account.rothBalance = Math.max(0, account.rothBalance - remainingWithdrawal);
+            }
+          }
+
+          // Update currentBalance for aggregate tracking
+          account.currentBalance = account.rothBalance + account.traditionalMatchBalance;
+
+          // Record yearly history with both portions
+          account.yearlyHistory.push({
+            age,
+            year: projectedCalendarYear,
+            beginningBalance: account.currentBalance - yearlyGrowth - yearlyContribution + yearlyWithdrawal,
+            contributions: yearlyContribution,
+            withdrawals: yearlyWithdrawal,
+            growth: yearlyGrowth,
+            endingBalance: account.currentBalance,
+            isRetired,
+            rothBalance: account.rothBalance,
+            traditionalMatchBalance: account.traditionalMatchBalance
+          });
+
+          // Reset yearly accumulators for next year
+          account.yearlyWithdrawal = 0;
+          account.pendingContribution = 0;
+          account.pendingMatch = 0;
+          account.pendingRothGrowth = 0;
+          account.pendingTraditionalGrowth = 0;
+        } else {
+          // Standard account handling
+          // Apply growth to account balance if this is not the first year
+          if (yearIndex > 0) {
+            yearlyGrowth = account.currentBalance * (investmentReturn / 100);
+            account.currentBalance = account.currentBalance * (1 + investmentReturn / 100);
+          }
+
+          // Add pending contribution and match to the account
+          const totalContributionThisYear = account.pendingContribution + account.pendingMatch;
+          yearlyContribution = totalContributionThisYear;
+          account.currentBalance += totalContributionThisYear;
+
+          // Apply withdrawals (reduce balance)
+          account.currentBalance = Math.max(0, account.currentBalance - yearlyWithdrawal);
+
+          // Record yearly history for this account
+          account.yearlyHistory.push({
+            age,
+            year: projectedCalendarYear,
+            beginningBalance: account.currentBalance - yearlyGrowth - yearlyContribution + yearlyWithdrawal,
+            contributions: yearlyContribution,
+            withdrawals: yearlyWithdrawal,
+            growth: yearlyGrowth,
+            endingBalance: account.currentBalance,
+            isRetired
+          });
+
+          // Reset yearly accumulators for next year
+          account.yearlyWithdrawal = 0;
+          account.pendingContribution = 0;
+          account.pendingMatch = 0;
         }
-
-        // Add pending contribution and match to the account
-        const totalContributionThisYear = account.pendingContribution + account.pendingMatch;
-        yearlyContribution = totalContributionThisYear;
-        account.currentBalance += totalContributionThisYear;
-
-        // Apply withdrawals (reduce balance)
-        account.currentBalance = Math.max(0, account.currentBalance - yearlyWithdrawal);
-
-        // Record yearly history for this account
-        account.yearlyHistory.push({
-          age,
-          year: projectedCalendarYear,
-          beginningBalance: account.currentBalance - yearlyGrowth - yearlyContribution + yearlyWithdrawal,
-          contributions: yearlyContribution,
-          withdrawals: yearlyWithdrawal,
-          growth: yearlyGrowth,
-          endingBalance: account.currentBalance,
-          isRetired
-        });
-
-        // Reset yearly accumulators for next year
-        account.yearlyWithdrawal = 0;
-        account.pendingContribution = 0;
-        account.pendingMatch = 0;
       }
     }
 
