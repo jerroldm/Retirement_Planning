@@ -64,17 +64,21 @@ export const SavingsAccountForm = ({ accountType, editingAccount, onSubmit, onCa
     console.log('Full formData state:', formData);
     console.log('rothBalance in formData:', formData.rothBalance);
     console.log('traditionalMatchBalance in formData:', formData.traditionalMatchBalance);
+    console.log('editingAccount prop:', editingAccount);
 
     // Convert personId to number if it's a string
     const submittedData = {
       ...formData,
       personId: parseInt(formData.personId, 10),
-      accountType
+      accountType,
+      // Include the editing account ID if we're updating
+      id: editingAccount?.id
     };
 
     console.log('Form submission data:', submittedData);
     console.log('rothBalance in submittedData:', submittedData.rothBalance);
     console.log('traditionalMatchBalance in submittedData:', submittedData.traditionalMatchBalance);
+    console.log('ID in submittedData:', submittedData.id);
     onSubmit(submittedData);
   };
 

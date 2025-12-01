@@ -268,11 +268,15 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved, on
     try {
       console.log('handleAccountFormSubmit called with data:', submittedData);
       console.log('editingAccount:', editingAccount);
-      console.log('Will update account ID:', editingAccount?.id);
+      console.log('Account ID in submittedData:', submittedData.id);
 
-      if (editingAccount) {
-        console.log('Calling updateAccount with ID:', editingAccount.id, 'and data:', submittedData);
-        const updateResult = await savingsAccountAPI.updateAccount(editingAccount.id, submittedData);
+      // Use ID from submittedData (passed from form) rather than editingAccount state
+      if (submittedData.id) {
+        const accountId = submittedData.id;
+        // Remove ID from data sent to body (it's already in the URL)
+        const { id, ...dataWithoutId } = submittedData;
+        console.log('Calling updateAccount with ID:', accountId, 'and data:', dataWithoutId);
+        const updateResult = await savingsAccountAPI.updateAccount(accountId, dataWithoutId);
         console.log('updateAccount result:', updateResult);
       } else {
         console.log('Calling createAccount with data:', submittedData);
