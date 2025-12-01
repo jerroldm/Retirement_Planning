@@ -61,6 +61,10 @@ export const SavingsAccountForm = ({ accountType, editingAccount, onSubmit, onCa
       return;
     }
 
+    console.log('Full formData state:', formData);
+    console.log('rothBalance in formData:', formData.rothBalance);
+    console.log('traditionalMatchBalance in formData:', formData.traditionalMatchBalance);
+
     // Convert personId to number if it's a string
     const submittedData = {
       ...formData,
@@ -69,6 +73,8 @@ export const SavingsAccountForm = ({ accountType, editingAccount, onSubmit, onCa
     };
 
     console.log('Form submission data:', submittedData);
+    console.log('rothBalance in submittedData:', submittedData.rothBalance);
+    console.log('traditionalMatchBalance in submittedData:', submittedData.traditionalMatchBalance);
     onSubmit(submittedData);
   };
 
