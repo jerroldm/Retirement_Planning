@@ -4,13 +4,13 @@ export const PERSON_TYPES = {
     label: 'Self',
     description: 'Primary household member',
     icon: '👤',
-    fields: ['firstName', 'birthMonth', 'birthYear', 'currentSalary', 'annualSalaryIncrease', 'retirementAge', 'deathAge'],
+    fields: ['firstName', 'birthMonth', 'birthYear', 'retirementAge', 'deathAge'],
   },
   'spouse': {
     label: 'Spouse',
     description: 'Spouse or domestic partner',
     icon: '💑',
-    fields: ['firstName', 'birthMonth', 'birthYear', 'currentSalary', 'annualSalaryIncrease', 'retirementAge', 'deathAge'],
+    fields: ['firstName', 'birthMonth', 'birthYear', 'retirementAge', 'deathAge'],
   },
   'dependent': {
     label: 'Dependent',
@@ -44,10 +44,6 @@ export const PERSON_FIELD_DEFINITIONS = {
     ]
   },
   birthYear: { label: 'Birth Year', type: 'number', min: '1920', max: '2024' },
-
-  // Income
-  currentSalary: { label: 'Current Annual Salary', type: 'number', step: '100', min: '0', placeholder: 'e.g., 100000' },
-  annualSalaryIncrease: { label: 'Annual Salary Increase (%)', type: 'number', step: '0.1', min: '0', placeholder: 'e.g., 3' },
 
   // Retirement planning
   retirementAge: { label: 'Target Retirement Age', type: 'number', min: '50', max: '100' },
