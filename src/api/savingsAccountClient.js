@@ -28,6 +28,10 @@ export const savingsAccountAPI = {
   },
 
   async updateAccount(accountId, accountData) {
+    console.log('savingsAccountClient.updateAccount called with ID:', accountId);
+    console.log('Request body:', accountData);
+    console.log('Auth token present:', !!localStorage.getItem('authToken'));
+
     const response = await fetch(`${API_BASE}/savings-accounts/${accountId}`, {
       method: 'PUT',
       headers: {
@@ -36,8 +40,19 @@ export const savingsAccountAPI = {
       },
       body: JSON.stringify(accountData)
     });
-    if (!response.ok) throw new Error('Failed to update account');
-    return response.json();
+
+    console.log('Response status:', response.status);
+    console.log('Response ok:', response.ok);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Update failed with status', response.status, ':', errorText);
+      throw new Error('Failed to update account');
+    }
+
+    const result = await response.json();
+    console.log('Update result:', result);
+    return result;
   },
 
   async deleteAccount(accountId) {

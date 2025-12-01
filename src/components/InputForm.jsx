@@ -266,21 +266,37 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved, on
 
   const handleAccountFormSubmit = async (submittedData) => {
     try {
+      console.log('handleAccountFormSubmit called with data:', submittedData);
+      console.log('editingAccount:', editingAccount);
+      console.log('Will update account ID:', editingAccount?.id);
+
       if (editingAccount) {
-        await savingsAccountAPI.updateAccount(editingAccount.id, submittedData);
+        console.log('Calling updateAccount with ID:', editingAccount.id, 'and data:', submittedData);
+        const updateResult = await savingsAccountAPI.updateAccount(editingAccount.id, submittedData);
+        console.log('updateAccount result:', updateResult);
       } else {
-        await savingsAccountAPI.createAccount(submittedData);
+        console.log('Calling createAccount with data:', submittedData);
+        const createResult = await savingsAccountAPI.createAccount(submittedData);
+        console.log('createAccount result:', createResult);
       }
+
+      console.log('Reloading savings accounts...');
       await loadSavingsAccounts();
+
       if (onSavingsAccountsSaved) {
+        console.log('Calling onSavingsAccountsSaved callback');
         await onSavingsAccountsSaved();
       }
+
+      console.log('Closing form dialog');
       setShowAccountForm(false);
       setEditingAccount(null);
       setSelectedAccountType(null);
     } catch (error) {
-      console.error('Failed to save account:', error);
-      alert('Failed to save account. Please try again.');
+      console.error('Failed to save account - Full error:', error);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+      alert('Failed to save account. Please try again. Check console for details.');
     }
   };
 
