@@ -8,9 +8,9 @@ export const ACCOUNT_TYPES = {
   },
   'roth-ira': {
     label: 'Roth IRA/401(k)',
-    description: 'Tax-free retirement account',
+    description: 'Tax-free retirement account (with Traditional match portion)',
     icon: '💰',
-    fields: ['accountName', 'personId', 'currentBalance', 'annualContribution', 'companyMatch', 'stopContributingMode', 'stopContributingAge', 'stopContributingMonth', 'stopContributingYear'],
+    fields: ['accountName', 'personId', 'rothBalance', 'traditionalMatchBalance', 'annualContribution', 'companyMatch', 'stopContributingMode', 'stopContributingAge', 'stopContributingMonth', 'stopContributingYear'],
   },
   'investment-account': {
     label: 'Investment/Brokerage Account',
@@ -37,6 +37,8 @@ export const FIELD_DEFINITIONS = {
   accountName: { label: 'Account Name', type: 'text', placeholder: 'e.g., Main 401(k), Emergency Fund' },
   personId: { label: 'Account Owner', type: 'select', placeholder: 'Select owner' },
   currentBalance: { label: 'Current Balance', type: 'number', step: '0.01', min: '0' },
+  rothBalance: { label: 'Roth Balance (Employee Contributions)', type: 'number', step: '0.01', min: '0' },
+  traditionalMatchBalance: { label: 'Traditional Match Balance (Company Match)', type: 'number', step: '0.01', min: '0' },
   annualContribution: { label: 'Annual Contribution', type: 'number', step: '0.01', min: '0' },
   companyMatch: { label: 'Annual Company Match', type: 'number', step: '0.01', min: '0' },
   stopContributingMode: {
