@@ -428,7 +428,8 @@ export const InputForm = ({ onInputsChange, inputs, activeTab, onAssetsSaved, on
         });
 
         setFormData(updatedFormData);
-        onInputsChange(updatedFormData);
+        // Only trigger recalculation without auto-save, since person data is already saved
+        // onInputsChange will auto-save person fields to persons table
       }
     } catch (error) {
       console.error('Failed to save person:', error);
