@@ -8,7 +8,6 @@ import { ExpensesTable } from './components/ExpensesTable'
 import { MortgageAmortizationTable } from './components/MortgageAmortizationTable'
 import SavingsAccountsTable from './components/SavingsAccountsTable'
 import { calculateRetirementProjection, generateMortgageAmortizationSchedule, defaultInputs, calculateAge } from './utils/calculations'
-import { financialAPI } from './api/client'
 import { assetAPI } from './api/assetClient'
 import { personClient } from './api/personClient'
 import { incomeAPI } from './api/incomeClient'
@@ -86,167 +85,183 @@ function AppContent() {
     return baseInputs;
   };
 
-  // Load user's financial data on mount
+  // Load user's data from individual tables (not from financial_data)
   useEffect(() => {
-    const loadFinancialData = async () => {
+    const loadUserData = async () => {
       if (!user) return
 
       setIsLoadingData(true)
       try {
-        const data = await financialAPI.getFinancialData()
-        console.log('App.jsx - Financial data loaded from API:', { birthMonth: data?.birthMonth, birthYear: data?.birthYear, data });
-        if (data) {
-          const calculatedAge = calculateAge(data.birthMonth, data.birthYear);
-
-          // Create base inputs from financial data (person demographic data comes from persons table)
-          const baseInputs = {
-            maritalStatus: data.maritalStatus || 'single',
-            currentAge: calculatedAge,
-            birthMonth: data.birthMonth,
-            birthYear: data.birthYear,
-            retirementAge: data.retirementAge || 65,
-            deathAge: data.deathAge || 95,
-            contributionStopAge: data.contributionStopAge || 65,
-            currentSalary: data.currentSalary || 100000,
-            annualSalaryIncrease: data.annualSalaryIncrease || 3,
-            traditionalIRA: data.traditionalIRA || 50000,
-            rothIRA: data.rothIRA || 25000,
-            investmentAccounts: data.investmentAccounts || 100000,
-            traditionalIRAContribution: data.traditionalIRAContribution || 10000,
-            traditionIRACompanyMatch: data.traditionIRACompanyMatch || 5000,
-            rothIRAContribution: data.rothIRAContribution || 5000,
-            rothIRACompanyMatch: data.rothIRACompanyMatch || 0,
-            investmentAccountsContribution: data.investmentAccountsContribution || 5000,
-            homeValue: data.homeValue,
-            homeMortgage: data.homeMortgage,
-            homeMortgageRate: data.homeMortgageRate,
-            homeMortgageMonthlyPayment: data.homeMortgageMonthlyPayment,
-            homeMortgagePayoffYear: data.homeMortgagePayoffYear,
-            homeMortgagePayoffMonth: data.homeMortgagePayoffMonth,
-            homePropertyTaxInsurance: data.homePropertyTaxInsurance,
-            homePropertyTax: data.homePropertyTax,
-            homePropertyTaxAnnualIncrease: data.homePropertyTaxAnnualIncrease,
-            homeInsurance: data.homeInsurance,
-            homeInsuranceAnnualIncrease: data.homeInsuranceAnnualIncrease,
-            homeSalePlanEnabled: data.homeSalePlanEnabled,
-            homeSaleYear: data.homeSaleYear,
-            homeSaleMonth: data.homeSaleMonth,
-            homeMortgageExtraPrincipalPayment: data.homeMortgageExtraPrincipalPayment,
-            otherAssets: data.otherAssets || 50000,
-            preRetirementAnnualExpenses: data.preRetirementAnnualExpenses || 60000,
-            postRetirementAnnualExpenses: data.postRetirementAnnualExpenses || 45000,
-            investmentReturn: data.investmentReturn || 7,
-            inflationRate: data.inflationRate || 3,
-            federalTaxRate: data.federalTaxRate || 22,
-            stateTaxRate: data.stateTaxRate || 5,
-            workingState: data.workingState || 'TX',
-            retirementState: data.retirementState || null,
-            stateChangeOption: data.stateChangeOption || 'at-retirement',
-            stateChangeAge: data.stateChangeAge || null,
-            filingStatus: data.filingStatus || 'single',
-            withdrawalStrategy: data.withdrawalStrategy || 'waterfall',
-          };
-
-          // Load persons data first (before setting inputs)
-          let personsList = [];
-          try {
-            personsList = await personClient.getPersons();
-            console.log('Persons loaded:', personsList);
-          } catch (personError) {
-            console.log('Could not load persons:', personError.message);
-          }
-
-          // Migrate home data from financial_data to assets table if needed
-          try {
-            const migrationResult = await assetAPI.migrateHomeData();
-            console.log('Home data migration result:', migrationResult);
-          } catch (migrationError) {
-            console.log('Home data migration skipped or already migrated:', migrationError.message);
-          }
-
-          // Migrate person ownership - assign unassigned assets/accounts to 'Self' person
-          try {
-            const ownershipResult = await assetAPI.migratePersonOwnership();
-            console.log('Person ownership migration result:', ownershipResult);
-          } catch (ownershipError) {
-            console.log('Person ownership migration skipped:', ownershipError.message);
-          }
-
-          // Load income sources
-          let incomeSourcesList = [];
-          try {
-            incomeSourcesList = await incomeAPI.getSources();
-            console.log('Income sources loaded:', incomeSourcesList);
-          } catch (incomeError) {
-            console.log('Could not load income sources:', incomeError.message);
-          }
-
-          // Load savings accounts
-          let savingsAccountsList = [];
-          try {
-            savingsAccountsList = await savingsAccountAPI.getAccounts();
-            console.log('Savings accounts loaded:', savingsAccountsList);
-          } catch (savingsError) {
-            console.log('Could not load savings accounts:', savingsError.message);
-          }
-
-          // Load expenses
-          let expensesList = [];
-          try {
-            expensesList = await expensesClient.getExpenses();
-            console.log('Expenses loaded:', expensesList);
-          } catch (expensesError) {
-            console.log('Could not load expenses:', expensesError.message);
-          }
-
-          // Load assets
-          let assets = [];
-          try {
-            assets = await assetAPI.getAssets();
-          } catch (assetError) {
-            console.log('Could not load assets:', assetError.message);
-          }
-
-          // Load economic assumptions
-          let economicAssumptionsData = {};
-          try {
-            economicAssumptionsData = await economicAssumptionsClient.getAssumptions();
-            console.log('Economic assumptions loaded:', economicAssumptionsData);
-          } catch (economicError) {
-            console.log('Could not load economic assumptions:', economicError.message);
-          }
-
-          // Load tax configuration
-          let taxConfigurationData = {};
-          try {
-            taxConfigurationData = await taxConfigurationClient.getConfiguration();
-            console.log('Tax configuration loaded:', taxConfigurationData);
-          } catch (taxError) {
-            console.log('Could not load tax configuration:', taxError.message);
-          }
-
-          // Merge asset data into inputs
-          const mergedInputs = mergeAssetDataIntoInputs(baseInputs, assets);
-          console.log('Loading data from DB - birthMonth:', mergedInputs.birthMonth, 'birthYear:', mergedInputs.birthYear, 'deathAge:', mergedInputs.deathAge);
-
-          // Set ALL state at once to ensure calculations have all data together
-          setPersons(personsList);
-          setIncomeSources(incomeSourcesList);
-          setSavingsAccounts(savingsAccountsList);
-          setExpenses(expensesList);
-          setEconomicAssumptions(economicAssumptionsData);
-          setTaxConfiguration(taxConfigurationData);
-          setInputs(mergedInputs);
-          setLastSaved(new Date(data.updatedAt))
+        // Load all individual data tables
+        let personsList = [];
+        try {
+          personsList = await personClient.getPersons();
+          console.log('Persons loaded:', personsList);
+        } catch (personError) {
+          console.log('Could not load persons:', personError.message);
         }
+
+        // Migrate home data from financial_data to assets table if needed
+        try {
+          const migrationResult = await assetAPI.migrateHomeData();
+          console.log('Home data migration result:', migrationResult);
+        } catch (migrationError) {
+          console.log('Home data migration skipped or already migrated:', migrationError.message);
+        }
+
+        // Migrate person ownership - assign unassigned assets/accounts to 'Self' person
+        try {
+          const ownershipResult = await assetAPI.migratePersonOwnership();
+          console.log('Person ownership migration result:', ownershipResult);
+        } catch (ownershipError) {
+          console.log('Person ownership migration skipped:', ownershipError.message);
+        }
+
+        let incomeSourcesList = [];
+        try {
+          incomeSourcesList = await incomeAPI.getSources();
+          console.log('Income sources loaded:', incomeSourcesList);
+        } catch (incomeError) {
+          console.log('Could not load income sources:', incomeError.message);
+        }
+
+        let savingsAccountsList = [];
+        try {
+          savingsAccountsList = await savingsAccountAPI.getAccounts();
+          console.log('Savings accounts loaded:', savingsAccountsList);
+        } catch (savingsError) {
+          console.log('Could not load savings accounts:', savingsError.message);
+        }
+
+        let expensesList = [];
+        try {
+          expensesList = await expensesClient.getExpenses();
+          console.log('Expenses loaded:', expensesList);
+        } catch (expensesError) {
+          console.log('Could not load expenses:', expensesError.message);
+        }
+
+        let assets = [];
+        try {
+          assets = await assetAPI.getAssets();
+        } catch (assetError) {
+          console.log('Could not load assets:', assetError.message);
+        }
+
+        let economicAssumptionsData = {};
+        try {
+          economicAssumptionsData = await economicAssumptionsClient.getAssumptions();
+          console.log('Economic assumptions loaded:', economicAssumptionsData);
+        } catch (economicError) {
+          console.log('Could not load economic assumptions:', economicError.message);
+        }
+
+        let taxConfigurationData = {};
+        try {
+          taxConfigurationData = await taxConfigurationClient.getConfiguration();
+          console.log('Tax configuration loaded:', taxConfigurationData);
+        } catch (taxError) {
+          console.log('Could not load tax configuration:', taxError.message);
+        }
+
+        // Build inputs from individual data tables (not from financial_data)
+        const primaryPerson = personsList.find(p => p.personType === 'self' || p.personType === 'primary');
+        const calculatedAge = primaryPerson ? calculateAge(primaryPerson.birthMonth, primaryPerson.birthYear) : 0;
+
+        const baseInputs = {
+          // From persons table
+          maritalStatus: personsList.length > 1 ? 'married' : 'single',
+          currentAge: calculatedAge,
+          birthMonth: primaryPerson?.birthMonth || null,
+          birthYear: primaryPerson?.birthYear || null,
+          retirementAge: primaryPerson?.retirementAge || 65,
+          deathAge: primaryPerson?.deathAge || 95,
+          contributionStopAge: primaryPerson?.contributionStopAge || primaryPerson?.retirementAge || 65,
+          currentSalary: primaryPerson?.currentSalary || 0,
+          annualSalaryIncrease: primaryPerson?.annualSalaryIncrease || 0,
+          traditionalIRA: primaryPerson?.traditionalIRA || 0,
+          rothIRA: primaryPerson?.rothIRA || 0,
+          investmentAccounts: primaryPerson?.investmentAccounts || 0,
+          traditionalIRAContribution: primaryPerson?.traditionalIRAContribution || 0,
+          traditionIRACompanyMatch: primaryPerson?.traditionIRACompanyMatch || 0,
+          rothIRAContribution: primaryPerson?.rothIRAContribution || 0,
+          rothIRACompanyMatch: primaryPerson?.rothIRACompanyMatch || 0,
+          investmentAccountsContribution: primaryPerson?.investmentAccountsContribution || 0,
+
+          // From assets table - home data
+          homeValue: null,
+          homeMortgage: null,
+          homeMortgageRate: null,
+          homeMortgageMonthlyPayment: null,
+          homeMortgagePayoffYear: null,
+          homeMortgagePayoffMonth: null,
+          homePropertyTaxInsurance: null,
+          homePropertyTax: null,
+          homePropertyTaxAnnualIncrease: null,
+          homeInsurance: null,
+          homeInsuranceAnnualIncrease: null,
+          homeSalePlanEnabled: null,
+          homeSaleYear: null,
+          homeSaleMonth: null,
+          homeMortgageExtraPrincipalPayment: null,
+          otherAssets: 0,
+
+          // From expenses table
+          preRetirementAnnualExpenses: 0,
+          postRetirementAnnualExpenses: 0,
+
+          // From economic_assumptions table
+          investmentReturn: economicAssumptionsData.investmentReturn ?? 7,
+          inflationRate: economicAssumptionsData.inflationRate ?? 3,
+
+          // From tax_configuration table
+          federalTaxRate: taxConfigurationData.federalTaxRate ?? 22,
+          stateTaxRate: taxConfigurationData.stateTaxRate ?? 5,
+          workingState: taxConfigurationData.workingState ?? 'TX',
+          retirementState: taxConfigurationData.retirementState ?? null,
+          stateChangeOption: taxConfigurationData.stateChangeOption ?? 'at-retirement',
+          stateChangeAge: taxConfigurationData.stateChangeAge ?? null,
+          filingStatus: taxConfigurationData.filingStatus ?? 'single',
+          withdrawalStrategy: taxConfigurationData.withdrawalStrategy ?? 'waterfall',
+        };
+
+        // Merge asset data into inputs
+        const mergedInputs = mergeAssetDataIntoInputs(baseInputs, assets);
+        console.log('Loading data from individual tables - birthMonth:', mergedInputs.birthMonth, 'birthYear:', mergedInputs.birthYear, 'deathAge:', mergedInputs.deathAge);
+
+        // Aggregate expenses from expenses table
+        let preRetirementTotal = 0;
+        let postRetirementTotal = 0;
+        if (expensesList && expensesList.length > 0) {
+          expensesList.forEach(expense => {
+            if (expense.preRetirement) {
+              preRetirementTotal += (expense.monthlyAmount || 0) * 12;
+            }
+            if (expense.postRetirement) {
+              postRetirementTotal += (expense.monthlyAmount || 0) * 12;
+            }
+          });
+        }
+        mergedInputs.preRetirementAnnualExpenses = preRetirementTotal || mergedInputs.preRetirementAnnualExpenses;
+        mergedInputs.postRetirementAnnualExpenses = postRetirementTotal || mergedInputs.postRetirementAnnualExpenses;
+
+        // Set ALL state at once to ensure calculations have all data together
+        setPersons(personsList);
+        setIncomeSources(incomeSourcesList);
+        setSavingsAccounts(savingsAccountsList);
+        setExpenses(expensesList);
+        setEconomicAssumptions(economicAssumptionsData);
+        setTaxConfiguration(taxConfigurationData);
+        setInputs(mergedInputs);
+        setLastSaved(new Date())
       } catch (err) {
-        console.error('Failed to load financial data:', err)
+        console.error('Failed to load user data:', err)
       } finally {
         setIsLoadingData(false)
       }
     }
 
-    loadFinancialData()
+    loadUserData()
   }, [user])
 
   const { projectionData, accountsBreakdown } = useMemo(() => {
@@ -317,55 +332,37 @@ function AppContent() {
     console.log('newInputs.birthMonth:', newInputs.birthMonth);
     setInputs(newInputs)
 
-    // Auto-save to server
-    if (user) {
+    // Auto-save to server - save person data to persons table
+    if (user && persons && persons.length > 0) {
       setIsSaving(true)
-      console.log('Starting auto-save...');
+      console.log('Starting auto-save to persons table...');
       try {
-        // Only send fields that exist in the financial_data table
-        // Note: investmentReturn, inflationRate, federalTaxRate, stateTaxRate, workingState, retirementState,
-        // stateChangeOption, stateChangeAge, filingStatus, and withdrawalStrategy are now saved to separate tables
-        const dataToSave = {
-          maritalStatus: newInputs.maritalStatus,
-          birthMonth: newInputs.birthMonth,
-          birthYear: newInputs.birthYear,
-          retirementAge: newInputs.retirementAge,
-          deathAge: newInputs.deathAge,
-          contributionStopAge: newInputs.contributionStopAge,
-          currentSalary: newInputs.currentSalary,
-          annualSalaryIncrease: newInputs.annualSalaryIncrease,
-          traditionalIRA: newInputs.traditionalIRA,
-          rothIRA: newInputs.rothIRA,
-          investmentAccounts: newInputs.investmentAccounts,
-          traditionalIRAContribution: newInputs.traditionalIRAContribution,
-          traditionIRACompanyMatch: newInputs.traditionIRACompanyMatch,
-          rothIRAContribution: newInputs.rothIRAContribution,
-          rothIRACompanyMatch: newInputs.rothIRACompanyMatch,
-          investmentAccountsContribution: newInputs.investmentAccountsContribution,
-          homeValue: newInputs.homeValue,
-          homeMortgage: newInputs.homeMortgage,
-          homeMortgageRate: newInputs.homeMortgageRate,
-          homeMortgageMonthlyPayment: newInputs.homeMortgageMonthlyPayment,
-          homeMortgagePayoffYear: newInputs.homeMortgagePayoffYear,
-          homeMortgagePayoffMonth: newInputs.homeMortgagePayoffMonth,
-          homePropertyTaxInsurance: newInputs.homePropertyTaxInsurance,
-          homePropertyTax: newInputs.homePropertyTax,
-          homePropertyTaxAnnualIncrease: newInputs.homePropertyTaxAnnualIncrease,
-          homeInsurance: newInputs.homeInsurance,
-          homeInsuranceAnnualIncrease: newInputs.homeInsuranceAnnualIncrease,
-          homeSalePlanEnabled: newInputs.homeSalePlanEnabled,
-          homeSaleYear: newInputs.homeSaleYear,
-          homeSaleMonth: newInputs.homeSaleMonth,
-          homeMortgageExtraPrincipalPayment: newInputs.homeMortgageExtraPrincipalPayment,
-          otherAssets: newInputs.otherAssets,
-          preRetirementAnnualExpenses: newInputs.preRetirementAnnualExpenses,
-          postRetirementAnnualExpenses: newInputs.postRetirementAnnualExpenses,
+        const primaryPerson = persons.find(p => p.personType === 'self' || p.personType === 'primary');
+        if (primaryPerson) {
+          // Save person data to persons table
+          const personDataToSave = {
+            birthMonth: newInputs.birthMonth,
+            birthYear: newInputs.birthYear,
+            retirementAge: newInputs.retirementAge,
+            deathAge: newInputs.deathAge,
+            contributionStopAge: newInputs.contributionStopAge,
+            currentSalary: newInputs.currentSalary,
+            annualSalaryIncrease: newInputs.annualSalaryIncrease,
+            traditionalIRA: newInputs.traditionalIRA,
+            rothIRA: newInputs.rothIRA,
+            investmentAccounts: newInputs.investmentAccounts,
+            traditionalIRAContribution: newInputs.traditionalIRAContribution,
+            traditionIRACompanyMatch: newInputs.traditionIRACompanyMatch,
+            rothIRAContribution: newInputs.rothIRAContribution,
+            rothIRACompanyMatch: newInputs.rothIRACompanyMatch,
+            investmentAccountsContribution: newInputs.investmentAccountsContribution,
+          };
+          console.log('Saving person data:', personDataToSave);
+          await personClient.updatePerson(primaryPerson.id, personDataToSave);
         }
-        console.log('dataToSave being sent:', { birthMonth: dataToSave.birthMonth, birthYear: dataToSave.birthYear })
-        await financialAPI.saveFinancialData(dataToSave)
         setLastSaved(new Date())
       } catch (err) {
-        console.error('Failed to save data:', err)
+        console.error('Failed to save person data:', err)
       } finally {
         setIsSaving(false)
       }
