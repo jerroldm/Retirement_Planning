@@ -389,8 +389,9 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
   }
 
   // Extract expense amounts from expenses array if available
-  let calculatedPreRetirementExpenses = preRetirementAnnualExpenses;
-  let calculatedPostRetirementExpenses = postRetirementAnnualExpenses;
+  // Initialize with defaults (expenses table is the source of truth)
+  let calculatedPreRetirementExpenses = 0;
+  let calculatedPostRetirementExpenses = 0;
 
   if (expenses && expenses.length > 0) {
     // Sum up expenses by pre/post retirement phase
@@ -965,6 +966,9 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
     currentRothIRA = Math.max(0, currentRothIRA - withdrawalFromRetirements.rothIRA);
     currentInvestmentAccounts = Math.max(0, currentInvestmentAccounts - withdrawalFromRetirements.investmentAccounts);
 
+    // Save sale proceeds before resetting (needed for per-account tracking in Phase 3)
+    const yearlySaleProceeds = currentSaleProceeds;
+
     // Investment accounts growth - only apply growth starting from next year
     if (yearIndex > 0) {
       currentTraditionalIRA = currentTraditionalIRA * (1 + investmentReturn / 100) + traditionalContribution;
@@ -999,11 +1003,13 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
 
     // ===== PHASE 3: GROWTH & FINALIZATION PHASE (Per-Account Tracking) =====
     // Apply growth and contributions to individual account balances, then record yearly history
+    let saleProceededAdded = false; // Track if we've already added sale proceeds to an investment account this year
     if (accountStates && accountStates.length > 0) {
       for (const account of accountStates) {
         let yearlyGrowth = 0;
         let yearlyContribution = 0;
         let yearlyWithdrawal = account.yearlyWithdrawal || 0;
+        let yearlySaleProceeds = 0; // Track sale proceeds for this account in yearly history
 
         // Special handling for Roth accounts with dual balances
         if (account.accountType === 'roth-ira') {
@@ -1070,6 +1076,14 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
           yearlyContribution = totalContributionThisYear;
           account.currentBalance += totalContributionThisYear;
 
+          // Add sale proceeds to investment accounts (only once per year)
+          let accountSaleProceeds = 0;
+          if (account.accountType === 'investment-account' && !saleProceededAdded && yearlySaleProceeds > 0) {
+            accountSaleProceeds = yearlySaleProceeds;
+            account.currentBalance += yearlySaleProceeds;
+            saleProceededAdded = true; // Mark that we've added sale proceeds to an investment account
+          }
+
           // Apply withdrawals (reduce balance)
           account.currentBalance = Math.max(0, account.currentBalance - yearlyWithdrawal);
 
@@ -1077,10 +1091,11 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
           account.yearlyHistory.push({
             age,
             year: projectedCalendarYear,
-            beginningBalance: account.currentBalance - yearlyGrowth - yearlyContribution + yearlyWithdrawal,
+            beginningBalance: account.currentBalance - yearlyGrowth - yearlyContribution - accountSaleProceeds + yearlyWithdrawal,
             contributions: yearlyContribution,
             withdrawals: yearlyWithdrawal,
             growth: yearlyGrowth,
+            saleProceeds: accountSaleProceeds,
             endingBalance: account.currentBalance,
             isRetired
           });
@@ -1093,12 +1108,47 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
       }
     }
 
+    // Sync aggregate balances from per-account tracking
+    // This ensures the Year-by-Year table shows the same values as the Savings Breakdown table
+    if (accountStates && accountStates.length > 0) {
+      let syncedTraditionalIRA = 0;
+      let syncedRothIRA = 0;
+      let syncedInvestmentAccounts = 0;
+
+      for (const account of accountStates) {
+        if (account.accountType === 'traditional-ira') {
+          syncedTraditionalIRA += account.currentBalance;
+        } else if (account.accountType === 'roth-ira') {
+          syncedRothIRA += account.currentBalance;
+        } else if (account.accountType === 'investment-account') {
+          syncedInvestmentAccounts += account.currentBalance;
+        }
+      }
+
+      // Update aggregate balances to match per-account tracking
+      currentTraditionalIRA = syncedTraditionalIRA;
+      currentRothIRA = syncedRothIRA;
+      currentInvestmentAccounts = syncedInvestmentAccounts;
+    }
+
     // Total portfolio value
     const totalRetirementSavings = Math.max(
       0,
       currentTraditionalIRA + currentRothIRA + currentInvestmentAccounts +
       (isMarried ? currentSpouse2TraditionalIRA + currentSpouse2RothIRA + currentSpouse2InvestmentAccounts : 0)
     );
+
+    // Debug logging for age 60
+    if (age === 60) {
+      console.log('[calculateRetirementProjection] Age 60 Retirement Savings Breakdown:', {
+        age,
+        projectedCalendarYear,
+        currentTraditionalIRA: Math.round(currentTraditionalIRA),
+        currentRothIRA: Math.round(currentRothIRA),
+        currentInvestmentAccounts: Math.round(currentInvestmentAccounts),
+        totalRetirementSavings: Math.round(totalRetirementSavings)
+      });
+    }
     const homeEquity = Math.max(0, currentHomeValue - remainingMortgage);
     const totalNetWorth = totalRetirementSavings + homeEquity + otherAssets;
 
@@ -1184,44 +1234,7 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
 };
 
 export const defaultInputs = {
-  // Person 1 Information
-  firstName: '',
-  birthMonth: 6,
-  birthYear: 1989,
-  currentAge: calculateAge(6, 1989),
-  retirementAge: 65,
-  deathAge: 95,
-  contributionStopAge: 65,
-  currentSalary: 100000,
-  annualSalaryIncrease: 3,
-  traditionalIRA: 50000,
-  rothIRA: 25000,
-  investmentAccounts: 100000,
-  traditionalIRAContribution: 0,
-  traditionIRACompanyMatch: 0,
-  rothIRAContribution: 0,
-  rothIRACompanyMatch: 0,
-  investmentAccountsContribution: 0,
-
-  // Person 2 Information (for married couples)
-  spouse2FirstName: '',
-  spouse2BirthMonth: 6,
-  spouse2BirthYear: 1989,
-  spouse2CurrentAge: calculateAge(6, 1989),
-  spouse2RetirementAge: 65,
-  spouse2CurrentSalary: 80000,
-  spouse2AnnualSalaryIncrease: 3,
-  spouse2TraditionalIRA: 40000,
-  spouse2RothIRA: 20000,
-  spouse2InvestmentAccounts: 80000,
-  spouse2TraditionalIRAContribution: 0,
-  spouse2TraditionalIRACompanyMatch: 0,
-  spouse2RothIRAContribution: 0,
-  spouse2RothIRACompanyMatch: 0,
-  spouse2InvestmentAccountsContribution: 0,
-  spouse2ContributionStopAge: 65,
-
-  // Joint Assets
+  // Home/Asset Data (from assets table via mergeAssetDataIntoInputs)
   homeValue: 500000,
   homeMortgage: 300000,
   homeMortgageRate: 4.5,
@@ -1239,21 +1252,12 @@ export const defaultInputs = {
   homeMortgageExtraPrincipalPayment: 0,
   otherAssets: 50000,
 
-  // Expenses (separate from mortgage)
-  preRetirementAnnualExpenses: 60000,
-  postRetirementAnnualExpenses: 45000,
-
-  // Economic Assumptions
-  investmentReturn: 7,
-  inflationRate: 3,
-  federalTaxRate: 22,
-  stateTaxRate: 5,
-
-  // Tax Configuration
-  workingState: 'TX',
-  retirementState: null,
-  stateChangeOption: 'at-retirement',
-  stateChangeAge: null,
-  filingStatus: 'single',
-  withdrawalStrategy: 'waterfall',
+  // Note: Person, income, savings, expense, economic, and tax data
+  // should NOT be in inputs. They come from their respective tables:
+  // - persons: from persons table
+  // - incomeSources: from income_sources table
+  // - savingsAccounts: from savings_accounts table
+  // - expenses: from expenses table
+  // - economicAssumptions: from economic_assumptions table
+  // - taxConfiguration: from tax_configuration table
 };
