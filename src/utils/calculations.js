@@ -164,21 +164,8 @@ export const generateMortgageAmortizationSchedule = (inputs, persons = []) => {
 };
 
 export const calculateRetirementProjection = (inputs, persons = [], incomeSources = [], savingsAccounts = [], expenses = [], economicAssumptions = {}, taxConfiguration = {}) => {
+  // Extract home/asset data from inputs (this comes from assets table via mergeAssetDataIntoInputs)
   const {
-    currentAge,
-    retirementAge,
-    deathAge,
-    contributionStopAge,
-    currentSalary,
-    annualSalaryIncrease,
-    traditionalIRA,
-    rothIRA,
-    investmentAccounts,
-    traditionalIRAContribution,
-    traditionIRACompanyMatch,
-    rothIRAContribution,
-    rothIRACompanyMatch,
-    investmentAccountsContribution,
     homeValue,
     homeMortgage,
     homeMortgageRate,
@@ -187,56 +174,52 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
     homeMortgagePayoffMonth,
     homePropertyTaxInsurance,
     otherAssets,
-    preRetirementAnnualExpenses,
-    postRetirementAnnualExpenses,
     allAssets,
-    birthMonth,
-    birthYear,
     homeSalePlanEnabled,
     homeSaleYear,
     homeSaleMonth,
   } = inputs;
 
-  // Extract economic assumptions with defaults
-  const investmentReturn = economicAssumptions.investmentReturn ?? inputs.investmentReturn ?? 7;
-  const inflationRate = economicAssumptions.inflationRate ?? inputs.inflationRate ?? 3;
+  // Extract economic assumptions - no fallback to inputs (use table data only)
+  const investmentReturn = economicAssumptions.investmentReturn ?? 7;
+  const inflationRate = economicAssumptions.inflationRate ?? 3;
 
-  // Extract tax configuration with defaults
-  const federalTaxRate = taxConfiguration.federalTaxRate ?? inputs.federalTaxRate ?? 22;
-  const stateTaxRate = taxConfiguration.stateTaxRate ?? inputs.stateTaxRate ?? 5;
-  const workingState = taxConfiguration.workingState ?? inputs.workingState ?? 'TX';
-  const retirementState = taxConfiguration.retirementState ?? inputs.retirementState ?? null;
-  const stateChangeOption = taxConfiguration.stateChangeOption ?? inputs.stateChangeOption ?? 'at-retirement';
-  const stateChangeAge = taxConfiguration.stateChangeAge ?? inputs.stateChangeAge ?? null;
-  const filingStatus = taxConfiguration.filingStatus ?? inputs.filingStatus ?? 'single';
-  const withdrawalStrategy = taxConfiguration.withdrawalStrategy ?? inputs.withdrawalStrategy ?? 'waterfall';
+  // Extract tax configuration - no fallback to inputs (use table data only)
+  const federalTaxRate = taxConfiguration.federalTaxRate ?? 22;
+  const stateTaxRate = taxConfiguration.stateTaxRate ?? 5;
+  const workingState = taxConfiguration.workingState ?? 'TX';
+  const retirementState = taxConfiguration.retirementState ?? null;
+  const stateChangeOption = taxConfiguration.stateChangeOption ?? 'at-retirement';
+  const stateChangeAge = taxConfiguration.stateChangeAge ?? null;
+  const filingStatus = taxConfiguration.filingStatus ?? 'single';
+  const withdrawalStrategy = taxConfiguration.withdrawalStrategy ?? 'waterfall';
 
   // Determine if there's a spouse based on persons list
   const isMarried = persons && persons.some(p => p.personType === 'spouse' && p.includeInCalculations);
 
-  // Extract person data from persons array
-  let primaryBirthMonth = birthMonth;
-  let primaryBirthYear = birthYear;
-  let primaryRetirementAge = retirementAge;
-  let primaryCurrentSalary = currentSalary;
-  let primaryAnnualSalaryIncrease = annualSalaryIncrease;
-  let primaryTraditionalIRA = traditionalIRA;
-  let primaryRothIRA = rothIRA;
-  let primaryInvestmentAccounts = investmentAccounts;
-  let primaryTraditionalIRAContribution = traditionalIRAContribution;
-  let primaryTraditionalIRACompanyMatch = traditionIRACompanyMatch;
-  let primaryRothIRAContribution = rothIRAContribution;
-  let primaryRothIRACompanyMatch = rothIRACompanyMatch;
-  let primaryInvestmentAccountsContribution = investmentAccountsContribution;
-  // Contribution stop age defaults to retirement age (contributions stop when you retire)
-  let primaryContributionStopAge = retirementAge;
-  let primaryCurrentAge = calculateAge(birthMonth, birthYear);
+  // Extract person data ONLY from persons array (persons table is the source of truth)
+  // Initialize with reasonable defaults only
+  let primaryBirthMonth = null;
+  let primaryBirthYear = null;
+  let primaryRetirementAge = 65;
+  let primaryCurrentSalary = 0;
+  let primaryAnnualSalaryIncrease = 0;
+  let primaryTraditionalIRA = 0;
+  let primaryRothIRA = 0;
+  let primaryInvestmentAccounts = 0;
+  let primaryTraditionalIRAContribution = 0;
+  let primaryTraditionalIRACompanyMatch = 0;
+  let primaryRothIRAContribution = 0;
+  let primaryRothIRACompanyMatch = 0;
+  let primaryInvestmentAccountsContribution = 0;
+  let primaryContributionStopAge = 65;
+  let primaryCurrentAge = 0;
   let primaryDeathAge = null;
 
   let spouse2BirthMonth = null;
   let spouse2BirthYear = null;
   let spouse2CurrentAge = 0;
-  let spouse2RetirementAge = retirementAge;
+  let spouse2RetirementAge = 65;
   let spouse2CurrentSalary = 0;
   let spouse2AnnualSalaryIncrease = 0;
   let spouse2TraditionalIRA = 0;
@@ -247,57 +230,72 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
   let spouse2RothIRAContribution = 0;
   let spouse2RothIRACompanyMatch = 0;
   let spouse2InvestmentAccountsContribution = 0;
-  let spouse2ContributionStopAge = retirementAge;
+  let spouse2ContributionStopAge = 65;
   let spouse2DeathAge = null;
 
-  // Extract data from persons array if available
+  // Extract data from persons array - THIS IS THE ONLY SOURCE OF PERSON DATA
   console.log('[calculateRetirementProjection] Persons array:', persons);
   if (persons && persons.length > 0) {
     // Find primary person (self/primary)
     const primaryPerson = persons.find(p => p.personType === 'self' || p.personType === 'primary');
     console.log('[calculateRetirementProjection] Primary person found:', primaryPerson);
     if (primaryPerson && primaryPerson.includeInCalculations) {
-      if (primaryPerson.birthMonth) primaryBirthMonth = primaryPerson.birthMonth;
-      if (primaryPerson.birthYear) primaryBirthYear = primaryPerson.birthYear;
-      if (primaryPerson.retirementAge) primaryRetirementAge = primaryPerson.retirementAge;
-      if (primaryPerson.deathAge) {
-        console.log('[calculateRetirementProjection] Setting primaryDeathAge from person:', primaryPerson.deathAge);
-        primaryDeathAge = primaryPerson.deathAge;
+      // These fields are required - use them directly from persons table
+      primaryBirthMonth = primaryPerson.birthMonth ?? null;
+      primaryBirthYear = primaryPerson.birthYear ?? null;
+
+      // These have reasonable defaults
+      primaryRetirementAge = primaryPerson.retirementAge ?? 65;
+      primaryCurrentSalary = primaryPerson.currentSalary ?? 0;
+      primaryAnnualSalaryIncrease = primaryPerson.annualSalaryIncrease ?? 0;
+      primaryTraditionalIRA = primaryPerson.traditionalIRA ?? 0;
+      primaryRothIRA = primaryPerson.rothIRA ?? 0;
+      primaryInvestmentAccounts = primaryPerson.investmentAccounts ?? 0;
+      primaryTraditionalIRAContribution = primaryPerson.traditionalIRAContribution ?? 0;
+      primaryTraditionalIRACompanyMatch = primaryPerson.traditionIRACompanyMatch ?? 0;
+      primaryRothIRAContribution = primaryPerson.rothIRAContribution ?? 0;
+      primaryRothIRACompanyMatch = primaryPerson.rothIRACompanyMatch ?? 0;
+      primaryInvestmentAccountsContribution = primaryPerson.investmentAccountsContribution ?? 0;
+      primaryContributionStopAge = primaryPerson.contributionStopAge ?? primaryRetirementAge;
+      primaryDeathAge = primaryPerson.deathAge ?? null;
+
+      // Calculate age from birth data
+      if (primaryBirthMonth && primaryBirthYear) {
+        primaryCurrentAge = calculateAge(primaryBirthMonth, primaryBirthYear);
       }
-      if (primaryPerson.currentSalary) primaryCurrentSalary = primaryPerson.currentSalary;
-      if (primaryPerson.annualSalaryIncrease) primaryAnnualSalaryIncrease = primaryPerson.annualSalaryIncrease;
-      if (primaryPerson.traditionalIRA) primaryTraditionalIRA = primaryPerson.traditionalIRA;
-      if (primaryPerson.rothIRA) primaryRothIRA = primaryPerson.rothIRA;
-      if (primaryPerson.investmentAccounts) primaryInvestmentAccounts = primaryPerson.investmentAccounts;
-      if (primaryPerson.traditionalIRAContribution) primaryTraditionalIRAContribution = primaryPerson.traditionalIRAContribution;
-      if (primaryPerson.traditionIRACompanyMatch) primaryTraditionalIRACompanyMatch = primaryPerson.traditionIRACompanyMatch;
-      if (primaryPerson.rothIRAContribution) primaryRothIRAContribution = primaryPerson.rothIRAContribution;
-      if (primaryPerson.rothIRACompanyMatch) primaryRothIRACompanyMatch = primaryPerson.rothIRACompanyMatch;
-      if (primaryPerson.investmentAccountsContribution) primaryInvestmentAccountsContribution = primaryPerson.investmentAccountsContribution;
-      if (primaryPerson.contributionStopAge) primaryContributionStopAge = primaryPerson.contributionStopAge;
-      primaryCurrentAge = calculateAge(primaryBirthMonth, primaryBirthYear);
+
+      console.log('[calculateRetirementProjection] Primary person data extracted:', {
+        birthMonth: primaryBirthMonth,
+        birthYear: primaryBirthYear,
+        retirementAge: primaryRetirementAge,
+        deathAge: primaryDeathAge,
+        currentAge: primaryCurrentAge
+      });
     }
 
     // Find spouse (if married and spouse exists)
     if (isMarried) {
       const spousePerson = persons.find(p => p.personType === 'spouse');
       if (spousePerson && spousePerson.includeInCalculations) {
-        spouse2BirthMonth = spousePerson.birthMonth;
-        spouse2BirthYear = spousePerson.birthYear;
-        spouse2CurrentAge = calculateAge(spouse2BirthMonth, spouse2BirthYear);
-        if (spousePerson.retirementAge) spouse2RetirementAge = spousePerson.retirementAge;
-        if (spousePerson.deathAge) spouse2DeathAge = spousePerson.deathAge;
-        if (spousePerson.currentSalary) spouse2CurrentSalary = spousePerson.currentSalary;
-        if (spousePerson.annualSalaryIncrease) spouse2AnnualSalaryIncrease = spousePerson.annualSalaryIncrease;
-        if (spousePerson.traditionalIRA) spouse2TraditionalIRA = spousePerson.traditionalIRA;
-        if (spousePerson.rothIRA) spouse2RothIRA = spousePerson.rothIRA;
-        if (spousePerson.investmentAccounts) spouse2InvestmentAccounts = spousePerson.investmentAccounts;
-        if (spousePerson.traditionalIRAContribution) spouse2TraditionalIRAContribution = spousePerson.traditionalIRAContribution;
-        if (spousePerson.traditionIRACompanyMatch) spouse2TraditionalIRACompanyMatch = spousePerson.traditionIRACompanyMatch;
-        if (spousePerson.rothIRAContribution) spouse2RothIRAContribution = spousePerson.rothIRAContribution;
-        if (spousePerson.rothIRACompanyMatch) spouse2RothIRACompanyMatch = spousePerson.rothIRACompanyMatch;
-        if (spousePerson.investmentAccountsContribution) spouse2InvestmentAccountsContribution = spousePerson.investmentAccountsContribution;
-        if (spousePerson.contributionStopAge) spouse2ContributionStopAge = spousePerson.contributionStopAge;
+        spouse2BirthMonth = spousePerson.birthMonth ?? null;
+        spouse2BirthYear = spousePerson.birthYear ?? null;
+        spouse2RetirementAge = spousePerson.retirementAge ?? 65;
+        spouse2CurrentSalary = spousePerson.currentSalary ?? 0;
+        spouse2AnnualSalaryIncrease = spousePerson.annualSalaryIncrease ?? 0;
+        spouse2TraditionalIRA = spousePerson.traditionalIRA ?? 0;
+        spouse2RothIRA = spousePerson.rothIRA ?? 0;
+        spouse2InvestmentAccounts = spousePerson.investmentAccounts ?? 0;
+        spouse2TraditionalIRAContribution = spousePerson.traditionalIRAContribution ?? 0;
+        spouse2TraditionalIRACompanyMatch = spousePerson.traditionIRACompanyMatch ?? 0;
+        spouse2RothIRAContribution = spousePerson.rothIRAContribution ?? 0;
+        spouse2RothIRACompanyMatch = spousePerson.rothIRACompanyMatch ?? 0;
+        spouse2InvestmentAccountsContribution = spousePerson.investmentAccountsContribution ?? 0;
+        spouse2ContributionStopAge = spousePerson.contributionStopAge ?? spouse2RetirementAge;
+        spouse2DeathAge = spousePerson.deathAge ?? null;
+
+        if (spouse2BirthMonth && spouse2BirthYear) {
+          spouse2CurrentAge = calculateAge(spouse2BirthMonth, spouse2BirthYear);
+        }
       }
     }
   }
