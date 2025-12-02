@@ -411,6 +411,36 @@ Verification at age 60:
 - Federal Tax: Correctly calculated on taxable income
 - State Tax: Correctly applied CA taxes on income earned before retirement
 
+### Phase 4b: Home Sale Proceeds Fix - COMPLETE ✅
+
+**Status:** December 1, 2025
+
+Fixed critical issue where home sale proceeds were not being properly added to investment accounts when home was sold. The issue had three layers of bugs:
+
+**Bugs Fixed:**
+1. **Duplicate accumulation** - Sale proceeds were being added in TWO separate code paths (lines 550 and 561), resulting in $750k being accumulated twice
+2. **Variable shadowing** - Local variable declaration on line 1012 shadowed the outer variable, preventing proceeds from being added to per-account accounts
+3. **Aggregate/per-account sync** - Sale proceeds were only added to aggregate, but aggregates were overwritten by sync from per-account, losing the proceeds
+
+**Implementation Details:**
+- **Line 550-553** - Asset loop accumulates sale proceeds from all assets with `sellPlanEnabled`
+- **Lines 555-557** - Removed duplicate home sale proceeds accumulation (now handled by asset loop)
+- **Line 970** - Save sale proceeds before resetting: `const yearlySaleProceeds = currentSaleProceeds`
+- **Lines 975-1000** - Aggregate growth phase removed sale proceeds (only per-account phase adds them)
+- **Lines 1005-1105** - Per-account tracking phase adds sale proceeds to investment accounts (lines 1081-1084)
+- **Lines 1110-1127** - Sync aggregates from per-account values (now includes the sale proceeds)
+
+**Result:**
+- Home sale proceeds ($750k in test scenario) now correctly added to investment accounts
+- Home equity properly zeroes out when home sells
+- Total Net Worth increases by exactly the sale proceeds amount in sale year
+
+**Commits:**
+- `bbe54c3` - Fix home sale proceeds being lost during per-account/aggregate sync
+- `0f32421` - Fix variable shadowing bug in sale proceeds handling
+- `cacd93b` - Remove duplicate sale proceeds addition from aggregate growth phase
+- `1a49315` - Fix duplicate home sale proceeds being added twice
+
 ### Phase 5: Tax System Implementation - PENDING
 
 **Status:** Foundation prepared, not yet implemented
