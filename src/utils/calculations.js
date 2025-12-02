@@ -970,13 +970,14 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
     const yearlySaleProceeds = currentSaleProceeds;
 
     // Investment accounts growth - only apply growth starting from next year
+    // NOTE: Sale proceeds are NOT added to aggregate here because the per-account tracking
+    // is the source of truth (aggregates are synced from per-account after PHASE 3)
     if (yearIndex > 0) {
       currentTraditionalIRA = currentTraditionalIRA * (1 + investmentReturn / 100) + traditionalContribution;
       currentRothIRA = currentRothIRA * (1 + investmentReturn / 100) + rothContribution;
       currentInvestmentAccounts =
         currentInvestmentAccounts * (1 + investmentReturn / 100) +
-        investmentContribution +
-        currentSaleProceeds;
+        investmentContribution;
 
       if (isMarried) {
         currentSpouse2TraditionalIRA = currentSpouse2TraditionalIRA * (1 + investmentReturn / 100) + spouse2TraditionalContribution;
@@ -989,7 +990,7 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
       // Current year: only add new contributions, no investment growth on existing balance
       currentTraditionalIRA = currentTraditionalIRA + traditionalContribution;
       currentRothIRA = currentRothIRA + rothContribution;
-      currentInvestmentAccounts = currentInvestmentAccounts + investmentContribution + currentSaleProceeds;
+      currentInvestmentAccounts = currentInvestmentAccounts + investmentContribution;
 
       if (isMarried) {
         currentSpouse2TraditionalIRA = currentSpouse2TraditionalIRA + spouse2TraditionalContribution;
@@ -998,7 +999,7 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
       }
     }
 
-    // Reset sale proceeds after adding to investment accounts
+    // Reset sale proceeds after saving (they're added in per-account phase only)
     currentSaleProceeds = 0;
 
     // ===== PHASE 3: GROWTH & FINALIZATION PHASE (Per-Account Tracking) =====
