@@ -1009,7 +1009,6 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
         let yearlyGrowth = 0;
         let yearlyContribution = 0;
         let yearlyWithdrawal = account.yearlyWithdrawal || 0;
-        let yearlySaleProceeds = 0; // Track sale proceeds for this account in yearly history
 
         // Special handling for Roth accounts with dual balances
         if (account.accountType === 'roth-ira') {
