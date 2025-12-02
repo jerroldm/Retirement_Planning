@@ -552,16 +552,9 @@ export const calculateRetirementProjection = (inputs, persons = [], incomeSource
       }
     }
 
-    // Also check for primary residence sale (legacy home asset)
-    if (homeSalePlanEnabled && homeSaleYear === projectedCalendarYear) {
-      // Check if there are expected proceeds in the home asset from allAssets
-      if (allAssets && allAssets.length > 0) {
-        const homeAsset = allAssets.find(a => a.assetType === 'primary-residence');
-        if (homeAsset && homeAsset.expectedSaleProceeds) {
-          currentSaleProceeds += homeAsset.expectedSaleProceeds;
-        }
-      }
-    }
+    // Note: Home sale proceeds are already handled in the allAssets loop above (lines 549-551)
+    // No need to add them again here. The homeSalePlanEnabled and homeSaleYear fields are
+    // used to zero out the home value (lines 568-571), not to add proceeds
 
     // Zero out home value and mortgage in the sale year and after
     // (proceeds are added to investments, so we don't double-count by including home equity)
